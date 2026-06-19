@@ -216,11 +216,15 @@ export default function Lesson() {
         {viewMode === 'path' && (
           <div className="space-y-4">
             {allCompleted && (
-              <div className="rounded-2xl p-5 text-center mb-4"
-                style={{ background: '#E8F5E9', color: '#2E7D32' }}>
-                🎉 All lessons complete! Phase quiz coming soon.
-              </div>
-            )}
+          <div className="rounded-2xl p-6 text-center mb-4" style={{ background: '#E8F5E9' }}>
+            <p className="font-bold mb-3" style={{ color: '#2E7D32' }}>🎉 All lessons complete!</p>
+            <Link to={`/quiz/${phaseNumber}`}
+             className="inline-block px-6 py-3 rounded-xl text-sm font-bold transition-all"
+              style={{ background: '#D4AF37', color: '#0A2342' }}>
+              Take Phase Quiz →
+           </Link>
+        </div>
+      )}
 
             {lessonTitles.map((title, index) => {
               const status = getLessonStatus(index)
@@ -263,8 +267,8 @@ export default function Lesson() {
               <div className="text-center py-10">
                 <div className="w-10 h-10 rounded-full border-4 animate-spin mx-auto mb-4"
                   style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }} />
-                <p className="font-medium mb-1" style={{ color: '#0A2342' }}>Preparing your lesson...</p>
-                <p className="text-sm" style={{ color: '#6B7A99' }}>Your AI tutor is writing this just for you</p>
+                <p className="font-medium mb-1" style={{ color: '#0A2342' }}>Crafting your lesson...</p>
+                <p className="text-sm" style={{ color: '#6B7A99' }}>Personalizing this just for you — a few seconds</p>
               </div>
 
             ) : error ? (

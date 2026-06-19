@@ -13,6 +13,7 @@ export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
+  const [progress, setProgress] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -35,7 +36,13 @@ export default function Dashboard() {
         return
       }
 
+      const { data: progressRows } = await supabase
+        .from('phase_progress')
+        .select('*')
+        .eq('user_id', user.id)
+
       setProfile(data)
+      setProgress(progressRows || [])
       setLoading(false)
     }
 
@@ -64,8 +71,12 @@ export default function Dashboard() {
   const masteryScore = skillValues.length
     ? Math.round(skillValues.reduce((a, b) => a + b, 0) / skillValues.length)
     : 0
+
   const totalPhases = roadmap.phases?.length || 0
-  const currentPhase = 1
+  const passedPhaseNumbers = new Set(progress.filter(p => p.passed).map(p => p.phase_number))
+  const sortedPhaseNumbers = (roadmap.phases || []).map(p => p.number).sort((a, b) => a - b)
+  const currentPhase = sortedPhaseNumbers.find(n => !passedPhaseNumbers.has(n)) || sortedPhaseNumbers[sortedPhaseNumbers.length - 1] || 1
+  const allPhasesPassed = totalPhases > 0 && passedPhaseNumbers.size === totalPhases
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
@@ -79,8 +90,8 @@ export default function Dashboard() {
             <p className="text-sm mt-1" style={{ color: '#6B7A99' }}>Complete Beginner → Professional Data Analyst</p>
           </div>
           <span className="text-xs font-bold px-4 py-2 rounded-full"
-            style={{ background: '#FFFBEF', color: '#D4AF37', border: '1px solid #D4AF37' }}>
-            In Progress
+            style={{ background: allPhasesPassed ? '#E8F5E9' : '#FFFBEF', color: allPhasesPassed ? '#2E7D32' : '#D4AF37', border: `1px solid ${allPhasesPassed ? '#2E7D32' : '#D4AF37'}` }}>
+            {allPhasesPassed ? 'All Phases Complete 🎉' : 'In Progress'}
           </span>
         </div>
 
@@ -88,8 +99,8 @@ export default function Dashboard() {
           {[
             { label: 'Mastery Score', value: `${masteryScore}%` },
             { label: 'Phases', value: totalPhases },
-            { label: 'Current Phase', value: `${currentPhase} / ${totalPhases}` },
-            { label: 'Status', value: 'Assessment Complete', highlight: true }
+            { label: 'Current Phase', value: `${Math.min(currentPhase, totalPhases)} / ${totalPhases}` },
+            { label: 'Phases Passed', value: `${passedPhaseNumbers.size} / ${totalPhases}`, highlight: true }
           ].map((stat) => (
             <div key={stat.label} className="rounded-2xl p-5 text-center" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
               <p className="text-xs mb-1" style={{ color: '#6B7A99' }}>{stat.label}</p>
@@ -118,7 +129,8 @@ export default function Dashboard() {
         <h3 className="text-sm font-bold mb-4" style={{ color: '#0A2342' }}>Your learning journey</h3>
         <div className="space-y-4 mb-8">
           {roadmap.phases?.map((phase) => {
-            const isActive = phase.number === currentPhase
+            const isPassed = passedPhaseNumbers.has(phase.number)
+            const isActive = phase.number <= currentPhase
             return (
               <button
                 key={phase.number}
@@ -129,8 +141,8 @@ export default function Dashboard() {
               >
                 <div className="flex items-start justify-between mb-2 flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl font-bold" style={{ color: '#D4AF37' }}>
-                      {String(phase.number).padStart(2, '0')}
+                    <span className="text-2xl font-bold" style={{ color: isPassed ? '#2E7D32' : '#D4AF37' }}>
+                      {isPassed ? '✓' : String(phase.number).padStart(2, '0')}
                     </span>
                     <h4 className="font-bold" style={{ color: '#0A2342' }}>{phase.title}</h4>
                   </div>
@@ -139,6 +151,9 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <p className="text-sm" style={{ color: '#6B7A99' }}>{phase.topics}</p>
+                {isPassed && (
+                  <p className="text-xs font-semibold mt-2" style={{ color: '#2E7D32' }}>Passed ✓ — click to review</p>
+                )}
               </button>
             )
           })}

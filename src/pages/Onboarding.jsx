@@ -120,7 +120,7 @@ export default function Onboarding() {
       navigate('/dashboard')
     } catch (err) {
       console.error('Onboarding error:', err)
-      setError(`Error: ${err.message || JSON.stringify(err)}`)
+      setError("We couldn't build your roadmap right now. Please try again.")
       setGenerating(false)
     }
   }
