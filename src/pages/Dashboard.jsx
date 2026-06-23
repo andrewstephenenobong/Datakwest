@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
+import { getDisplayStreak } from '../lib/gamification'
 
 const skillLabels = {
   excel: 'Excel', sql: 'SQL', python: 'Python',
@@ -36,12 +37,14 @@ export default function Dashboard() {
         return
       }
 
+      const { displayStreak, isActiveToday } = getDisplayStreak(data.streak, data.last_active_date)
+
       const { data: progressRows } = await supabase
         .from('phase_progress')
         .select('*')
         .eq('user_id', user.id)
 
-      setProfile(data)
+      setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
       setProgress(progressRows || [])
       setLoading(false)
     }
@@ -80,7 +83,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
-      <Navbar streak={streak} xp={xp} />
+      <Navbar streak={streak} xp={xp} streakActive={profile.streakActiveToday} />
 
       <div className="max-w-4xl mx-auto px-6 py-10">
 

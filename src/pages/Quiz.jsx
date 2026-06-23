@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
+import { awardXp } from '../lib/gamification'
+import { logEvent } from '../lib/analytics'
 
 const PASS_THRESHOLD = 70
 
@@ -24,12 +26,16 @@ export default function Quiz() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [correctCount, setCorrectCount] = useState(0)
+  const [missedTopics, setMissedTopics] = useState([])
+
+  const [xp, setXp] = useState(0)
+  const [streak, setStreak] = useState(0)
 
   useEffect(() => {
     async function load() {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('roadmap, assessment')
+        .select('roadmap, assessment, xp, streak')
         .eq('id', user.id)
         .single()
 
@@ -55,6 +61,8 @@ export default function Quiz() {
 
       setPhase(foundPhase)
       setAssessment(profile.assessment)
+      setXp(profile.xp || 0)
+      setStreak(profile.streak || 0)
       setProgressRow(progress || null)
       setLoading(false)
     }
@@ -84,7 +92,9 @@ export default function Quiz() {
       setSelectedOption(null)
       setAnswered(false)
       setCorrectCount(0)
+      setMissedTopics([])
       setStage('quiz')
+      logEvent(user.id, 'quiz_started', { phase_number: phaseNumber })
     } catch (err) {
       console.error('Quiz generation error:', err)
       setError("We couldn't generate your quiz right now. Please try again.")
@@ -98,6 +108,9 @@ export default function Quiz() {
     setAnswered(true)
     if (i === questions[qIndex].correctIndex) {
       setCorrectCount(c => c + 1)
+    } else {
+      const topic = questions[qIndex].topic
+      if (topic) setMissedTopics(prev => [...new Set([...prev, topic])])
     }
   }
 
@@ -114,6 +127,7 @@ export default function Quiz() {
   async function finishQuiz() {
     const percentage = Math.round((correctCount / questions.length) * 100)
     const passed = percentage >= PASS_THRESHOLD
+    const isFirstPass = passed && !progressRow?.passed
 
     const newBest = Math.max(progressRow?.best_score || 0, percentage)
     const newAttempts = (progressRow?.attempts || 0) + 1
@@ -132,6 +146,13 @@ export default function Quiz() {
       .single()
 
     if (!upsertError) setProgressRow(upserted)
+    logEvent(user.id, passed ? 'quiz_passed' : 'quiz_failed', { phase_number: phaseNumber, percentage, attempt: newAttempts })
+
+    if (isFirstPass) {
+      const newXp = await awardXp(user.id, xp, 50)
+      setXp(newXp)
+    }
+
     setStage('results')
   }
 
@@ -157,7 +178,7 @@ export default function Quiz() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
-      <Navbar />
+      <Navbar xp={xp} streak={streak} />
 
       <div className="max-w-2xl mx-auto px-6 py-10">
         <Link to="/dashboard" className="text-sm font-semibold mb-6 inline-block" style={{ color: '#6B7A99' }}>
@@ -199,7 +220,7 @@ export default function Quiz() {
               <p className="text-xs font-semibold" style={{ color: '#6B7A99' }}>
                 QUESTION {qIndex + 1} OF {questions.length}
               </p>
-              <div className="flex gap-1 flex-wrap max-w-[200px] justify-end">
+              <div className="flex gap-1 flex-wrap max-w-50 justify-end">
                 {questions.map((_, i) => (
                   <div key={i} className="w-4 h-1.5 rounded-full" style={{ background: i <= qIndex ? '#D4AF37' : '#E2E8F0' }} />
                 ))}
@@ -252,8 +273,18 @@ export default function Quiz() {
                 🎉 You passed! The next phase is now unlocked.
               </div>
             ) : (
-              <div className="rounded-2xl p-5 mb-6" style={{ background: '#FEE2E2', color: '#991B1B' }}>
-                You need {PASS_THRESHOLD}% to pass. Review the lessons and try again.
+              <div className="rounded-2xl p-5 mb-6 text-left" style={{ background: '#FEE2E2', color: '#991B1B' }}>
+                <p className="font-bold mb-2">You need {PASS_THRESHOLD}% to pass.</p>
+                {missedTopics.length > 0 ? (
+                  <>
+                    <p className="text-sm mb-2">Here's specifically what to review:</p>
+                    <ul className="text-sm list-disc pl-5 space-y-1">
+                      {missedTopics.map((t, i) => <li key={i}>{t}</li>)}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="text-sm">Review the lessons and try again.</p>
+                )}
               </div>
             )}
 
@@ -265,11 +296,18 @@ export default function Quiz() {
                   Try Again
                 </button>
               )}
-              <button onClick={() => navigate('/dashboard')}
-                className="flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all"
+              {!passedThisAttempt && missedTopics.length > 0 && (
+                <Link to={`/remediate/${phaseNumber}`} state={{ topics: missedTopics }}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold border-2 text-center transition-all"
+                  style={{ borderColor: '#D4AF37', color: '#0A2342' }}>
+                  Review Weak Topics →
+                </Link>
+              )}
+              <Link to="/dashboard"
+                className="flex-1 py-3 rounded-xl text-sm font-bold border-2 text-center transition-all"
                 style={{ borderColor: '#0A2342', color: '#0A2342' }}>
                 Back to Dashboard
-              </button>
+              </Link>
             </div>
           </div>
         )}

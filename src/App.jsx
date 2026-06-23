@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Lesson from './pages/Lesson'
 import Quiz from './pages/Quiz'
 import ProtectedRoute from './components/ProtectedRoute'
+import Remediate from './pages/Remediate'
 
 export default function App() {
   return (
@@ -17,6 +18,8 @@ export default function App() {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/lesson/:id" element={<ProtectedRoute><Lesson /></ProtectedRoute>} />
       <Route path="/quiz/:id" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
+      <Route path="/quiz/:id" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
+      <Route path="/remediate/:id" element={<ProtectedRoute><Remediate /></ProtectedRoute>} />
     </Routes>
   )
 }

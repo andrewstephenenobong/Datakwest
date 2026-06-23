@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { logEvent } from '../lib/analytics'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -13,9 +14,14 @@ export default function Signup() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({ email, password })
-    if (error) { setError(error.message); setLoading(false) }
-    else navigate('/onboarding')
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    } else {
+      if (data?.user?.id) logEvent(data.user.id, 'signup_completed')
+      navigate('/onboarding')
+    }
   }
 
   return (

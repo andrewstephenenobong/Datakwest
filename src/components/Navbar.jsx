@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
-export default function Navbar({ streak = 0, xp = 0 }) {
+export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
   const navigate = useNavigate()
   const { user } = useAuth()
 
@@ -22,7 +22,9 @@ export default function Navbar({ streak = 0, xp = 0 }) {
 
       <div className="flex items-center gap-5">
         <div className="hidden sm:flex items-center gap-4 text-sm font-semibold" style={{ color: '#6B7A99' }}>
-          <span>🔥 {streak} day streak</span>
+        <span style={{ opacity: streakActive ? 1 : 0.4 }} title={streakActive ? 'Active today' : 'Complete a lesson today to keep your streak!'}>
+         🔥 {streak} day streak
+        </span>
           <span>⭐ {xp} XP</span>
         </div>
         <span className="text-sm hidden md:inline" style={{ color: '#6B7A99' }}>{user?.email}</span>

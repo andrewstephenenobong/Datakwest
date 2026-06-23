@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { logEvent } from '../lib/analytics'
 
 const steps = [
   {
@@ -117,6 +118,7 @@ export default function Onboarding() {
 
       if (upsertError) throw upsertError
 
+      logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal })
       navigate('/dashboard')
     } catch (err) {
       console.error('Onboarding error:', err)

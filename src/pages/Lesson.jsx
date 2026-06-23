@@ -3,6 +3,9 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
+import DiagramRenderer from '../components/DiagramRenderer'
+import { awardXp, checkInStreak } from '../lib/gamification'
+import { logEvent } from '../lib/analytics'
 
 export default function Lesson() {
   const { id } = useParams()
@@ -23,11 +26,20 @@ export default function Lesson() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [answered, setAnswered] = useState(false)
 
+  const [practiceSubmission, setPracticeSubmission] = useState('')
+  const [practiceFeedback, setPracticeFeedback] = useState(null)
+  const [practiceEvaluating, setPracticeEvaluating] = useState(false)
+  const [practiceError, setPracticeError] = useState('')
+
+  const [xp, setXp] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [lastActiveDate, setLastActiveDate] = useState(null)
+
   useEffect(() => {
     async function load() {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('roadmap, assessment')
+        .select('roadmap, assessment, xp, streak, last_active_date')
         .eq('id', user.id)
         .single()
 
@@ -55,6 +67,9 @@ export default function Lesson() {
 
       setPhase(foundPhase)
       setAssessment(profile.assessment)
+      setXp(profile.xp || 0)
+      setStreak(profile.streak || 0)
+      setLastActiveDate(profile.last_active_date || null)
       setLessonTitles(titles)
       setLessonRows(existingLessons || [])
       setLoading(false)
@@ -79,13 +94,21 @@ export default function Lesson() {
 
     setError('')
     setActiveIndex(index)
+    logEvent(user.id, 'lesson_started', { phase_number: phaseNumber, lesson_index: index, topic: lessonTitles[index] })
     setQIndex(0)
     setSelectedOption(null)
     setAnswered(false)
+    setPracticeSubmission('')
+    setPracticeFeedback(null)
+    setPracticeError('')
 
     const existingRow = lessonRows.find(r => r.lesson_index === index)
     if (existingRow?.content) {
       setViewMode('content')
+      if (existingRow.practice_submission && existingRow.practice_feedback) {
+        setPracticeSubmission(existingRow.practice_submission)
+        setPracticeFeedback(existingRow.practice_feedback)
+      }
       return
     }
 
@@ -127,8 +150,8 @@ export default function Lesson() {
 
       setLessonRows(prev => [...prev.filter(r => r.lesson_index !== index), upserted])
     } catch (err) {
-      console.error(err)
-      setError(`Error generating lesson: ${err.message}`)
+      console.error('Lesson generation error:', err)
+      setError("We couldn't load this lesson right now. Please try again.")
     } finally {
       setGenerating(false)
     }
@@ -151,7 +174,65 @@ export default function Lesson() {
     }
   }
 
+  async function submitPractice() {
+    if (!practiceSubmission.trim()) return
+
+    setPracticeEvaluating(true)
+    setPracticeError('')
+
+    try {
+      const task = activeContentRef.practiceTask
+      const { data, error: fnError } = await supabase.functions.invoke('evaluate-practice', {
+        body: {
+          task: task.task,
+          schemaDescription: task.schemaDescription,
+          sampleRows: task.sampleRows,
+          expectedOutcome: task.expectedOutcome,
+          submission: practiceSubmission
+        }
+      })
+
+      if (fnError) throw fnError
+      if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
+
+      setPracticeFeedback(data)
+      logEvent(user.id, 'practice_submitted', { phase_number: phaseNumber, lesson_index: activeIndex, correct: data.isCorrect })
+
+      const row = lessonRows.find(r => r.lesson_index === activeIndex)
+      if (row) {
+        const { error: updateError } = await supabase
+          .from('lessons')
+          .update({
+            practice_submission: practiceSubmission,
+            practice_feedback: data,
+            practice_attempts: (row.practice_attempts || 0) + 1
+          })
+          .eq('id', row.id)
+
+        if (!updateError) {
+          setLessonRows(prev => prev.map(r => r.id === row.id
+            ? { ...r, practice_submission: practiceSubmission, practice_feedback: data, practice_attempts: (r.practice_attempts || 0) + 1 }
+            : r
+          ))
+        }
+      }
+    } catch (err) {
+      console.error('Practice evaluation error:', err)
+      setPracticeError("We couldn't check your answer right now. Please try again.")
+    } finally {
+      setPracticeEvaluating(false)
+    }
+  }
+
+  function retryPractice() {
+    setPracticeFeedback(null)
+    setPracticeSubmission('')
+    setPracticeError('')
+  }
+
   async function markComplete() {
+    if (activeContentRef.practiceTask && !practiceFeedback?.isCorrect) return
+
     const row = lessonRows.find(r => r.lesson_index === activeIndex)
     if (!row) return
 
@@ -164,6 +245,11 @@ export default function Lesson() {
       setLessonRows(prev =>
         prev.map(r => r.id === row.id ? { ...r, completed: true } : r)
       )
+      const newXp = await awardXp(user.id, xp, 10)
+      setXp(newXp)
+      logEvent(user.id, 'lesson_completed', { phase_number: phaseNumber, lesson_index: activeIndex })
+      const { streak: newStreak } = await checkInStreak(user.id, streak, lastActiveDate)
+      setStreak(newStreak)
     }
 
     setViewMode('path')
@@ -196,13 +282,14 @@ export default function Lesson() {
   const activeContent = activeIndex !== null
     ? lessonRows.find(r => r.lesson_index === activeIndex)?.content
     : null
+  const activeContentRef = activeContent || {}
+  const activeLessonRow = activeIndex !== null ? lessonRows.find(r => r.lesson_index === activeIndex) : null
   const questions = activeContent?.checkQuestions || []
   const currentQuestion = questions[qIndex]
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
-      <Navbar />
-
+      <Navbar xp={xp} streak={streak} />
       <div className="max-w-2xl mx-auto px-6 py-10">
         <Link to="/dashboard" className="text-sm font-semibold mb-6 inline-block"
           style={{ color: '#6B7A99' }}>
@@ -212,19 +299,18 @@ export default function Lesson() {
         <h1 className="text-2xl font-bold mb-1" style={{ color: '#0A2342' }}>{phase.title}</h1>
         <p className="text-sm mb-8" style={{ color: '#6B7A99' }}>{phase.weeks}</p>
 
-        {/* LESSON PATH VIEW */}
         {viewMode === 'path' && (
           <div className="space-y-4">
             {allCompleted && (
-          <div className="rounded-2xl p-6 text-center mb-4" style={{ background: '#E8F5E9' }}>
-            <p className="font-bold mb-3" style={{ color: '#2E7D32' }}>🎉 All lessons complete!</p>
-            <Link to={`/quiz/${phaseNumber}`}
-             className="inline-block px-6 py-3 rounded-xl text-sm font-bold transition-all"
-              style={{ background: '#D4AF37', color: '#0A2342' }}>
-              Take Phase Quiz →
-           </Link>
-        </div>
-      )}
+              <div className="rounded-2xl p-6 text-center mb-4" style={{ background: '#E8F5E9' }}>
+                <p className="font-bold mb-3" style={{ color: '#2E7D32' }}>🎉 All lessons complete!</p>
+                <Link to={`/quiz/${phaseNumber}`}
+                  className="inline-block px-6 py-3 rounded-xl text-sm font-bold transition-all"
+                  style={{ background: '#D4AF37', color: '#0A2342' }}>
+                  Take Phase Quiz →
+                </Link>
+              </div>
+            )}
 
             {lessonTitles.map((title, index) => {
               const status = getLessonStatus(index)
@@ -240,7 +326,7 @@ export default function Lesson() {
                     cursor: status === 'locked' ? 'default' : 'pointer'
                   }}
                 >
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm"
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
                     style={{
                       background: status === 'completed' ? '#0A2342' : status === 'current' ? '#D4AF37' : '#E2E8F0',
                       color: status === 'locked' ? '#6B7A99' : 'white'
@@ -259,7 +345,6 @@ export default function Lesson() {
           </div>
         )}
 
-        {/* LESSON CONTENT VIEW */}
         {viewMode === 'content' && (
           <div className="bg-white rounded-3xl p-8" style={{ boxShadow: '0 8px 32px rgba(10,35,66,0.1)' }}>
 
@@ -283,7 +368,6 @@ export default function Lesson() {
 
             ) : activeContent ? (
               <>
-                {/* Lesson Title */}
                 <div className="flex items-center gap-3 mb-6">
                   <button onClick={() => { setViewMode('path'); setActiveIndex(null) }}
                     className="text-sm font-semibold" style={{ color: '#6B7A99' }}>←</button>
@@ -292,14 +376,14 @@ export default function Lesson() {
                   </h2>
                 </div>
 
-                {/* Explanation */}
                 <div className="text-sm mb-6 space-y-3 leading-relaxed" style={{ color: '#1E293B' }}>
                   {activeContent.explanation.split('\n').filter(Boolean).map((para, i) => (
                     <p key={i}>{para}</p>
                   ))}
                 </div>
 
-                {/* Key Points */}
+                <DiagramRenderer diagram={activeContent.diagram} />
+
                 {activeContent.keyPoints?.length > 0 && (
                   <div className="rounded-2xl p-5 mb-6" style={{ background: '#F5F7FA' }}>
                     <p className="text-xs font-bold mb-3" style={{ color: '#0A2342' }}>📌 KEY POINTS</p>
@@ -311,7 +395,6 @@ export default function Lesson() {
                   </div>
                 )}
 
-                {/* Example */}
                 {activeContent.example && (
                   <div className="rounded-2xl p-5 mb-6"
                     style={{ background: '#FFFBEF', border: '1px solid #D4AF37' }}>
@@ -320,7 +403,6 @@ export default function Lesson() {
                   </div>
                 )}
 
-                {/* Exercise */}
                 {activeContent.exercise && (
                   <div className="rounded-2xl p-5 mb-6"
                     style={{ background: '#F0F4FF', border: '1px solid #0A2342' }}>
@@ -329,15 +411,84 @@ export default function Lesson() {
                   </div>
                 )}
 
-                {/* Quiz Questions */}
+                {activeContent.practiceTask && (
+                  <div className="rounded-2xl p-5 mb-6" style={{ background: '#FFFFFF', border: '2px solid #D4AF37' }}>
+                    <p className="text-xs font-bold mb-3" style={{ color: '#0A2342' }}>⌨️ HANDS-ON PRACTICE — WRITE REAL SQL</p>
+
+                    <div className="rounded-xl p-4 mb-4" style={{ background: '#0A2342' }}>
+                      <p className="text-xs font-mono mb-2" style={{ color: '#D4AF37' }}>{activeContent.practiceTask.schemaDescription}</p>
+                      <pre className="text-xs font-mono whitespace-pre-wrap" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {activeContent.practiceTask.sampleRows}
+                      </pre>
+                    </div>
+
+                    <p className="text-sm font-bold mb-3" style={{ color: '#0A2342' }}>{activeContent.practiceTask.task}</p>
+
+                    {!practiceFeedback ? (
+                      <>
+                        <textarea
+                          value={practiceSubmission}
+                          onChange={e => setPracticeSubmission(e.target.value)}
+                          placeholder="Write your SQL query here..."
+                          rows={4}
+                          className="w-full px-4 py-3 rounded-xl border-2 text-sm font-mono outline-none resize-none"
+                          style={{ borderColor: '#E2E8F0', color: '#0A2342', background: '#FAFAFA' }}
+                        />
+
+                        {practiceError && (
+                          <p className="text-sm mt-2" style={{ color: '#991B1B' }}>{practiceError}</p>
+                        )}
+
+                        <button
+                          onClick={submitPractice}
+                          disabled={!practiceSubmission.trim() || practiceEvaluating}
+                          className="w-full mt-3 py-3 rounded-xl text-sm font-bold transition-all"
+                          style={{
+                            background: practiceSubmission.trim() ? '#D4AF37' : '#E2E8F0',
+                            color: practiceSubmission.trim() ? '#0A2342' : '#6B7A99'
+                          }}
+                        >
+                          {practiceEvaluating ? 'Checking your query...' : 'Submit query'}
+                        </button>
+                      </>
+                    ) : (
+                      <div>
+                        <div className="rounded-xl p-4 mb-3" style={{ background: '#F5F7FA' }}>
+                          <p className="text-xs font-mono mb-1" style={{ color: '#6B7A99' }}>Your query:</p>
+                          <pre className="text-sm font-mono whitespace-pre-wrap" style={{ color: '#0A2342' }}>{practiceSubmission}</pre>
+                        </div>
+
+                        <div className="rounded-xl p-4" style={{
+                          background: practiceFeedback.isCorrect ? '#E8F5E9' : '#FEE2E2',
+                          color: practiceFeedback.isCorrect ? '#2E7D32' : '#991B1B'
+                        }}>
+                          <p className="font-bold text-sm mb-1">
+                            {practiceFeedback.isCorrect ? '✅ Correct!' : '❌ Not quite right'}
+                          </p>
+                          <p className="text-sm leading-relaxed">{practiceFeedback.feedback}</p>
+                        </div>
+
+                        {!practiceFeedback.isCorrect && (
+                          <button
+                            onClick={retryPractice}
+                            className="w-full mt-3 py-3 rounded-xl text-sm font-bold border-2 transition-all"
+                            style={{ borderColor: '#0A2342', color: '#0A2342' }}
+                          >
+                            Try again
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {currentQuestion && (
                   <div className="border-t pt-6" style={{ borderColor: '#E2E8F0' }}>
-                    {/* Progress */}
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-xs font-semibold" style={{ color: '#6B7A99' }}>
                         QUIZ — QUESTION {qIndex + 1} OF {questions.length}
                       </p>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap max-w-[200px] justify-end">
                         {questions.map((_, i) => (
                           <div key={i} className="w-6 h-1.5 rounded-full"
                             style={{ background: i <= qIndex ? '#D4AF37' : '#E2E8F0' }} />
@@ -390,14 +541,16 @@ export default function Lesson() {
                   </div>
                 )}
 
-                {/* No questions fallback */}
-                {!currentQuestion && !generating && (
-                  <button onClick={markComplete}
-                    className="w-full py-3 rounded-xl text-sm font-bold transition-all mt-4"
-                    style={{ background: '#D4AF37', color: '#0A2342' }}>
-                    Mark as complete ✓
-                  </button>
-                )}
+                {!currentQuestion && !generating && (() => {
+                  const practiceRequired = activeContent.practiceTask && !practiceFeedback?.isCorrect
+                  return (
+                    <button onClick={markComplete} disabled={practiceRequired}
+                      className="w-full py-3 rounded-xl text-sm font-bold transition-all mt-4"
+                      style={{ background: practiceRequired ? '#E2E8F0' : '#D4AF37', color: practiceRequired ? '#6B7A99' : '#0A2342' }}>
+                      {practiceRequired ? 'Complete the practice task above first' : 'Mark as complete ✓'}
+                    </button>
+                  )
+                })()}
               </>
             ) : null}
           </div>
