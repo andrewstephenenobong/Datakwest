@@ -16,7 +16,7 @@ export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
     <div className="flex items-center gap-3 h-full overflow-visible">
       <div className="h-12 w-44 flex items-center overflow-visible">
         <img
-          src="/src/assets/datakwest_icon_bg3.png"
+          src="/datakwest_icon_bg3.png"
           alt="DataKwest logo"
           className="h-100 w-auto object-contain"
         />
