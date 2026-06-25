@@ -301,17 +301,6 @@ export default function Lesson() {
 
         {viewMode === 'path' && (
           <div className="space-y-4">
-            {allCompleted && (
-              <div className="rounded-2xl p-6 text-center mb-4" style={{ background: '#E8F5E9' }}>
-                <p className="font-bold mb-3" style={{ color: '#2E7D32' }}>🎉 All lessons complete!</p>
-                <Link to={`/quiz/${phaseNumber}`}
-                  className="inline-block px-6 py-3 rounded-xl text-sm font-bold transition-all"
-                  style={{ background: '#D4AF37', color: '#0A2342' }}>
-                  Take Phase Quiz →
-                </Link>
-              </div>
-            )}
-
             {lessonTitles.map((title, index) => {
               const status = getLessonStatus(index)
               return (
@@ -342,6 +331,17 @@ export default function Lesson() {
                 </button>
               )
             })}
+
+            {allCompleted && (
+              <div className="rounded-2xl p-6 text-center" style={{ background: '#E8F5E9' }}>
+                <p className="font-bold mb-3" style={{ color: '#2E7D32' }}>🎉 All lessons complete!</p>
+                <Link to={`/quiz/${phaseNumber}`}
+                  className="inline-block px-6 py-3 rounded-xl text-sm font-bold transition-all"
+                  style={{ background: '#D4AF37', color: '#0A2342' }}>
+                  Take Phase Quiz →
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -413,7 +413,14 @@ export default function Lesson() {
 
                 {activeContent.practiceTask && (
                   <div className="rounded-2xl p-5 mb-6" style={{ background: '#FFFFFF', border: '2px solid #D4AF37' }}>
-                    <p className="text-xs font-bold mb-3" style={{ color: '#0A2342' }}>⌨️ HANDS-ON PRACTICE — WRITE REAL SQL</p>
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                      <p className="text-xs font-bold" style={{ color: '#0A2342' }}>⌨️ HANDS-ON PRACTICE — WRITE REAL SQL</p>
+                      {!practiceFeedback?.isCorrect && !activeLessonRow?.completed && (
+                        <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: '#FFFBEF', color: '#D4AF37', border: '1px solid #D4AF37' }}>
+                          Required to continue
+                        </span>
+                      )}
+                    </div>
 
                     <div className="rounded-xl p-4 mb-4" style={{ background: '#0A2342' }}>
                       <p className="text-xs font-mono mb-2" style={{ color: '#D4AF37' }}>{activeContent.practiceTask.schemaDescription}</p>
@@ -424,7 +431,17 @@ export default function Lesson() {
 
                     <p className="text-sm font-bold mb-3" style={{ color: '#0A2342' }}>{activeContent.practiceTask.task}</p>
 
-                    {!practiceFeedback ? (
+                    {activeLessonRow?.completed ? (
+                      <div>
+                        <div className="rounded-xl p-4 mb-3" style={{ background: '#F5F7FA' }}>
+                          <p className="text-xs font-mono mb-1" style={{ color: '#6B7A99' }}>Your final answer:</p>
+                          <pre className="text-sm font-mono whitespace-pre-wrap" style={{ color: '#0A2342' }}>{practiceSubmission}</pre>
+                        </div>
+                        <div className="rounded-xl p-4" style={{ background: '#E8F5E9', color: '#2E7D32' }}>
+                          <p className="font-bold text-sm">✅ Already completed correctly</p>
+                        </div>
+                      </div>
+                    ) : !practiceFeedback ? (
                       <>
                         <textarea
                           value={practiceSubmission}
@@ -466,6 +483,9 @@ export default function Lesson() {
                             {practiceFeedback.isCorrect ? '✅ Correct!' : '❌ Not quite right'}
                           </p>
                           <p className="text-sm leading-relaxed">{practiceFeedback.feedback}</p>
+                          {!practiceFeedback.isCorrect && (
+                            <p className="text-xs font-semibold mt-2">You'll need to get this right before you can move on — give it another try below.</p>
+                          )}
                         </div>
 
                         {!practiceFeedback.isCorrect && (
@@ -488,7 +508,7 @@ export default function Lesson() {
                       <p className="text-xs font-semibold" style={{ color: '#6B7A99' }}>
                         QUIZ — QUESTION {qIndex + 1} OF {questions.length}
                       </p>
-                      <div className="flex gap-1 flex-wrap max-w-[200px] justify-end">
+                      <div className="flex gap-1 flex-wrap max-w-50 justify-end">
                         {questions.map((_, i) => (
                           <div key={i} className="w-6 h-1.5 rounded-full"
                             style={{ background: i <= qIndex ? '#D4AF37' : '#E2E8F0' }} />

@@ -12,13 +12,16 @@ export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
   }
 
   return (
-    <nav className="w-full px-6 py-4 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #E2E8F0' }}>
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#0A2342' }}>
-          <span className="text-sm font-bold" style={{ color: '#D4AF37' }}>D</span>
-        </div>
-        <span className="font-bold text-lg" style={{ color: '#0A2342' }}>DataKwest</span>
+  <nav className="w-full h-20 px-6 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #E2E8F0' }}>
+    <div className="flex items-center gap-3 h-full overflow-visible">
+      <div className="h-12 w-44 flex items-center overflow-visible">
+        <img
+          src="/src/assets/datakwest_icon_bg3.png"
+          alt="DataKwest logo"
+          className="h-100 w-auto object-contain"
+        />
       </div>
+    </div>
 
       <div className="flex items-center gap-5">
         <div className="hidden sm:flex items-center gap-4 text-sm font-semibold" style={{ color: '#6B7A99' }}>

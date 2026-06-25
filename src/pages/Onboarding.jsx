@@ -165,7 +165,7 @@ export default function Onboarding() {
           <h2 className="text-2xl font-bold mb-8" style={{ color: '#0A2342' }}>{step.question}</h2>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl text-sm break-words" style={{ background: '#FEE2E2', color: '#991B1B' }}>{error}</div>
+            <div className="mb-4 p-3 rounded-xl text-sm wrap-break-word" style={{ background: '#FEE2E2', color: '#991B1B' }}>{error}</div>
           )}
 
           {!showOtherInput ? (
