@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -15,6 +15,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [progress, setProgress] = useState([])
+  const [skillProgress, setSkillProgress] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -45,6 +46,7 @@ export default function Dashboard() {
         .eq('user_id', user.id)
 
       setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
+      setSkillProgress(data.skill_progress || {})
       setProgress(progressRows || [])
       setLoading(false)
     }
@@ -98,6 +100,20 @@ export default function Dashboard() {
           </span>
         </div>
 
+        <Link to="/tracks"
+          className="block rounded-2xl p-5 mb-8 transition-all"
+          style={{ background: '#0A2342', boxShadow: '0 2px 12px rgba(10,35,66,0.15)' }}>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <p className="font-bold text-white">🐍 Want to go deeper on one skill?</p>
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Explore standalone Skill Tracks — beginner to advanced, at your own pace
+              </p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4AF37' }}>Explore →</span>
+          </div>
+        </Link>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Mastery Score', value: `${masteryScore}%` },
@@ -113,19 +129,22 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Starting skill levels</h3>
+          <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Your skill levels</h3>
           <div className="space-y-4">
-            {Object.entries(roadmap.skillLevels || {}).map(([key, value]) => (
-              <div key={key}>
-                <div className="flex justify-between text-sm mb-1.5">
-                  <span style={{ color: '#0A2342' }}>{skillLabels[key] || key}</span>
-                  <span style={{ color: '#6B7A99' }}>{value}%</span>
+            {Object.entries(roadmap.skillLevels || {}).map(([key, startingValue]) => {
+              const grown = Math.min(100, Math.round((startingValue || 0) + (skillProgress[key] || 0)))
+              return (
+                <div key={key}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span style={{ color: '#0A2342' }}>{skillLabels[key] || key}</span>
+                    <span style={{ color: '#6B7A99' }}>{grown}%</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full" style={{ background: '#E2E8F0' }}>
+                    <div className="h-2 rounded-full transition-all duration-500" style={{ background: '#0A2342', width: `${grown}%` }} />
+                  </div>
                 </div>
-                <div className="w-full h-2 rounded-full" style={{ background: '#E2E8F0' }}>
-                  <div className="h-2 rounded-full" style={{ background: '#0A2342', width: `${value}%` }} />
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -134,6 +153,7 @@ export default function Dashboard() {
           {roadmap.phases?.map((phase) => {
             const isPassed = passedPhaseNumbers.has(phase.number)
             const isActive = phase.number <= currentPhase
+
             return (
               <button
                 key={phase.number}
@@ -156,6 +176,9 @@ export default function Dashboard() {
                 <p className="text-sm" style={{ color: '#6B7A99' }}>{phase.topics}</p>
                 {isPassed && (
                   <p className="text-xs font-semibold mt-2" style={{ color: '#2E7D32' }}>Passed ✓ — click to review</p>
+                )}
+                {!isActive && (
+                  <p className="text-xs font-semibold mt-2" style={{ color: '#6B7A99' }}>🔒 Complete the previous phase to unlock</p>
                 )}
               </button>
             )

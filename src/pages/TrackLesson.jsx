@@ -5,19 +5,21 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import DiagramRenderer from '../components/DiagramRenderer'
 import { awardXp, checkInStreak, awardSkillProgress } from '../lib/gamification'
+import { ensureTrackProgress, updateLessonState } from '../lib/trackProgress'
 import { logEvent } from '../lib/analytics'
 
-export default function Lesson() {
-  const { id } = useParams()
-  const phaseNumber = parseInt(id, 10)
+export default function TrackLesson() {
+  const { skill, phaseNumber: phaseNumberParam } = useParams()
+  const phaseNumber = parseInt(phaseNumberParam, 10)
   const { user } = useAuth()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [track, setTrack] = useState(null)
   const [phase, setPhase] = useState(null)
-  const [assessment, setAssessment] = useState(null)
   const [lessonTitles, setLessonTitles] = useState([])
-  const [lessonRows, setLessonRows] = useState([])
+  const [lessonState, setLessonState] = useState({})
+  const [lessonContents, setLessonContents] = useState({})
 
   const [viewMode, setViewMode] = useState('path')
   const [choiceIndex, setChoiceIndex] = useState(null)
@@ -39,19 +41,29 @@ export default function Lesson() {
 
   useEffect(() => {
     async function load() {
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
-        .select('roadmap, assessment, xp, streak, last_active_date')
+        .select('xp, streak, last_active_date')
         .eq('id', user.id)
         .single()
 
-      if (profileError || !profile?.roadmap) {
-        setError('Could not load your roadmap.')
+      setXp(profile?.xp || 0)
+      setStreak(profile?.streak || 0)
+      setLastActiveDate(profile?.last_active_date || null)
+
+      const { data: trackRow } = await supabase
+        .from('skill_tracks')
+        .select('title, phases')
+        .eq('skill', skill)
+        .maybeSingle()
+
+      if (!trackRow) {
+        setError('Track not found.')
         setLoading(false)
         return
       }
 
-      const foundPhase = profile.roadmap.phases?.find(p => p.number === phaseNumber)
+      const foundPhase = trackRow.phases?.find(p => p.number === phaseNumber)
       if (!foundPhase) {
         setError('Phase not found.')
         setLoading(false)
@@ -59,35 +71,26 @@ export default function Lesson() {
       }
 
       const titles = foundPhase.topics.split('·').map(t => t.trim()).filter(Boolean)
+      const progressRow = await ensureTrackProgress(user.id, skill)
 
-      const { data: existingLessons } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('phase_number', phaseNumber)
-        .order('lesson_index', { ascending: true })
-
+      setTrack(trackRow)
       setPhase(foundPhase)
-      setAssessment(profile.assessment)
-      setXp(profile.xp || 0)
-      setStreak(profile.streak || 0)
-      setLastActiveDate(profile.last_active_date || null)
       setLessonTitles(titles)
-      setLessonRows(existingLessons || [])
+      setLessonState(progressRow?.lesson_state || {})
       setLoading(false)
     }
 
     if (user) load()
-  }, [user, phaseNumber])
+  }, [user, skill, phaseNumber])
+
+  function cacheKeyFor(index) {
+    return `${phaseNumber}-${index}`
+  }
 
   function getLessonStatus(index) {
-    const row = lessonRows.find(r => r.lesson_index === index)
-    if (row?.completed) return 'completed'
-    const firstIncomplete = lessonTitles.findIndex(
-      (_, i) => !lessonRows.find(r => r.lesson_index === i)?.completed
-    )
-    if (index === firstIncomplete) return 'current'
-    return 'locked'
+    const state = lessonState[cacheKeyFor(index)]
+    if (state?.completed) return 'completed'
+    return 'current' // no locking in skill tracks — open to everyone, any order
   }
 
   function resetPracticeState() {
@@ -101,108 +104,81 @@ export default function Lesson() {
 
   function handleLessonClick(index) {
     const status = getLessonStatus(index)
-    if (status === 'locked') return
-
     if (status === 'completed') {
       setChoiceIndex(index)
       setViewMode('choice')
       return
     }
-
     openLesson(index)
   }
 
   function openLessonForReview(index) {
-    const existingRow = lessonRows.find(r => r.lesson_index === index)
+    const state = lessonState[cacheKeyFor(index)]
     setError('')
     setActiveIndex(index)
     setReviewOnly(true)
     resetPracticeState()
-    if (existingRow?.practice_submission && existingRow?.practice_feedback) {
-      setPracticeSubmission(existingRow.practice_submission)
-      setPracticeFeedback(existingRow.practice_feedback)
+    if (state?.practice_submission && state?.practice_feedback) {
+      setPracticeSubmission(state.practice_submission)
+      setPracticeFeedback(state.practice_feedback)
     }
     setViewMode('content')
+    if (!lessonContents[cacheKeyFor(index)]) {
+      loadLessonContent(index)
+    }
   }
 
   function openLessonForRetake(index) {
     setReviewOnly(false)
     resetPracticeState()
-    openLesson(index, { forceRetake: true })
+    openLesson(index)
   }
 
-  async function openLesson(index, { forceRetake = false } = {}) {
-    const status = getLessonStatus(index)
-    if (status === 'locked') return
-
-    setError('')
-    setActiveIndex(index)
-    setReviewOnly(false)
-    logEvent(user.id, 'lesson_started', { phase_number: phaseNumber, lesson_index: index, topic: lessonTitles[index] })
-    setQIndex(0)
-    setSelectedOption(null)
-    setAnswered(false)
-
-    if (!forceRetake) {
-      setPracticeSubmission('')
-      setPracticeFeedback(null)
-      setPracticeError('')
-    }
-
-    const existingRow = lessonRows.find(r => r.lesson_index === index)
-    if (existingRow?.content) {
-      setViewMode('content')
-      if (!forceRetake && existingRow.practice_submission && existingRow.practice_feedback) {
-        setPracticeSubmission(existingRow.practice_submission)
-        setPracticeFeedback(existingRow.practice_feedback)
-      }
-      return
-    }
+  async function loadLessonContent(index) {
+    const key = cacheKeyFor(index)
+    if (lessonContents[key]) return lessonContents[key]
 
     setGenerating(true)
-    setViewMode('content')
-
+    setError('')
     try {
-      const backgroundSummary = assessment
-        ? `${assessment.background || ''}. Excel: ${assessment.excelLevel || 'unknown'}. Coding: ${assessment.coding || 'unknown'}. SQL: ${assessment.sql || 'unknown'}.`
-        : 'beginner'
-      const learningStyle = assessment?.learningStyle || 'theory + practice'
-
-      const { data, error: fnError } = await supabase.functions.invoke('smart-service', {
+      const { data, error: fnError } = await supabase.functions.invoke('generate-track-lesson', {
         body: {
+          skill,
+          phaseNumber,
+          lessonIndex: index,
           topic: lessonTitles[index],
-          phaseTitle: phase.title,
-          background: backgroundSummary,
-          learningStyle
+          phaseTitle: phase.title
         }
       })
-
       if (fnError) throw fnError
       if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
 
-      const { data: upserted, error: upsertError } = await supabase
-        .from('lessons')
-        .upsert({
-          user_id: user.id,
-          phase_number: phaseNumber,
-          lesson_index: index,
-          title: lessonTitles[index],
-          content: data.content,
-          skill: data.content.skill || 'none',
-          completed: false
-        }, { onConflict: 'user_id,phase_number,lesson_index' })
-        .select()
-        .single()
-
-      if (upsertError) throw upsertError
-
-      setLessonRows(prev => [...prev.filter(r => r.lesson_index !== index), upserted])
+      setLessonContents(prev => ({ ...prev, [key]: data.content }))
+      return data.content
     } catch (err) {
-      console.error('Lesson generation error:', err)
+      console.error('Track lesson generation error:', err)
       setError("We couldn't load this lesson right now. Please try again.")
+      return null
     } finally {
       setGenerating(false)
     }
+  }
+
+  async function openLesson(index) {
+    setError('')
+    setActiveIndex(index)
+    setReviewOnly(false)
+    logEvent(user.id, 'track_lesson_started', { skill, phase_number: phaseNumber, lesson_index: index, topic: lessonTitles[index] })
+    resetPracticeState()
+
+    const state = lessonState[cacheKeyFor(index)]
+    if (state?.practice_submission && state?.practice_feedback) {
+      setPracticeSubmission(state.practice_submission)
+      setPracticeFeedback(state.practice_feedback)
+    }
+
+    setViewMode('content')
+    await loadLessonContent(index)
   }
 
   function handleAnswer(i) {
@@ -245,26 +221,16 @@ export default function Lesson() {
       if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
 
       setPracticeFeedback(data)
-      logEvent(user.id, 'practice_submitted', { phase_number: phaseNumber, lesson_index: activeIndex, correct: data.isCorrect, practice_type: task.practiceType })
+      logEvent(user.id, 'track_practice_submitted', { skill, phase_number: phaseNumber, lesson_index: activeIndex, correct: data.isCorrect, practice_type: task.practiceType })
 
-      const row = lessonRows.find(r => r.lesson_index === activeIndex)
-      if (row) {
-        const { error: updateError } = await supabase
-          .from('lessons')
-          .update({
-            practice_submission: practiceSubmission,
-            practice_feedback: data,
-            practice_attempts: (row.practice_attempts || 0) + 1
-          })
-          .eq('id', row.id)
-
-        if (!updateError) {
-          setLessonRows(prev => prev.map(r => r.id === row.id
-            ? { ...r, practice_submission: practiceSubmission, practice_feedback: data, practice_attempts: (r.practice_attempts || 0) + 1 }
-            : r
-          ))
-        }
-      }
+      const key = cacheKeyFor(activeIndex)
+      const existingAttempts = lessonState[key]?.practice_attempts || 0
+      const updatedRow = await updateLessonState(user.id, skill, key, {
+        practice_submission: practiceSubmission,
+        practice_feedback: data,
+        practice_attempts: existingAttempts + 1
+      })
+      if (updatedRow) setLessonState(updatedRow.lesson_state || {})
     } catch (err) {
       console.error('Practice evaluation error:', err)
       setPracticeError("We couldn't check your answer right now. Please try again.")
@@ -282,33 +248,24 @@ export default function Lesson() {
   async function markComplete() {
     if (activeContentRef.practiceTask && !practiceFeedback?.isCorrect) return
 
-    const row = lessonRows.find(r => r.lesson_index === activeIndex)
-    if (!row) return
+    const key = cacheKeyFor(activeIndex)
+    const wasAlreadyCompleted = lessonState[key]?.completed
 
-    const wasAlreadyCompleted = row.completed
+    const updatedRow = await updateLessonState(user.id, skill, key, { completed: true })
+    if (updatedRow) setLessonState(updatedRow.lesson_state || {})
 
-    const { error: updateError } = await supabase
-      .from('lessons')
-      .update({ completed: true })
-      .eq('id', row.id)
-
-    if (!updateError) {
-      setLessonRows(prev =>
-        prev.map(r => r.id === row.id ? { ...r, completed: true } : r)
-      )
-
-      if (!wasAlreadyCompleted) {
-        const newXp = await awardXp(user.id, xp, 10)
-        setXp(newXp)
-        logEvent(user.id, 'lesson_completed', { phase_number: phaseNumber, lesson_index: activeIndex })
-        const { streak: newStreak } = await checkInStreak(user.id, streak, lastActiveDate)
-        setStreak(newStreak)
-        if (row.skill && row.skill !== 'none') {
-          await awardSkillProgress(user.id, row.skill, 4)
-        }
-      } else {
-        logEvent(user.id, 'lesson_retaken', { phase_number: phaseNumber, lesson_index: activeIndex })
+    if (!wasAlreadyCompleted) {
+      const newXp = await awardXp(user.id, xp, 10)
+      setXp(newXp)
+      logEvent(user.id, 'track_lesson_completed', { skill, phase_number: phaseNumber, lesson_index: activeIndex })
+      const { streak: newStreak } = await checkInStreak(user.id, streak, lastActiveDate)
+      setStreak(newStreak)
+      const lessonSkill = activeContentRef.skill
+      if (lessonSkill && lessonSkill !== 'none') {
+        await awardSkillProgress(user.id, lessonSkill, 4)
       }
+    } else {
+      logEvent(user.id, 'track_lesson_retaken', { skill, phase_number: phaseNumber, lesson_index: activeIndex })
     }
 
     setViewMode('path')
@@ -328,8 +285,7 @@ export default function Lesson() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F7FA' }}>
-        <div className="w-10 h-10 rounded-full border-4 animate-spin"
-          style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }} />
+        <div className="w-10 h-10 rounded-full border-4 animate-spin" style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }} />
       </div>
     )
   }
@@ -342,25 +298,27 @@ export default function Lesson() {
     )
   }
 
-  const allCompleted = lessonTitles.every(
-    (_, i) => lessonRows.find(r => r.lesson_index === i)?.completed
-  )
-  const activeContent = activeIndex !== null
-    ? lessonRows.find(r => r.lesson_index === activeIndex)?.content
-    : null
+  const activeContent = activeIndex !== null ? lessonContents[cacheKeyFor(activeIndex)] : null
   const activeContentRef = activeContent || {}
-  const activeLessonRow = activeIndex !== null ? lessonRows.find(r => r.lesson_index === activeIndex) : null
   const questions = activeContent?.checkQuestions || []
   const currentQuestion = questions[qIndex]
   const showPracticeReadOnly = reviewOnly && activeContentRef.practiceTask
+
+  const practiceTypeLabels = {
+    python: { header: 'WRITE REAL PYTHON', placeholder: 'Write your Python code here...', button: 'Submit code' },
+    excel: { header: 'WRITE THE EXCEL FORMULA', placeholder: 'Write your formula here... e.g. =SUM(B2:B6)', button: 'Submit formula' },
+    sql: { header: 'WRITE REAL SQL', placeholder: 'Write your SQL query here...', button: 'Submit query' }
+  }
+  const practiceLabels = activeContent?.practiceTask
+    ? (practiceTypeLabels[activeContent.practiceTask.practiceType] || practiceTypeLabels.sql)
+    : null
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
       <Navbar xp={xp} streak={streak} />
       <div className="max-w-2xl mx-auto px-6 py-10">
-        <Link to="/dashboard" className="text-sm font-semibold mb-6 inline-block"
-          style={{ color: '#6B7A99' }}>
-          ← Back to Dashboard
+        <Link to={`/tracks/${skill}`} className="text-sm font-semibold mb-6 inline-block" style={{ color: '#6B7A99' }}>
+          ← Back to {track?.title || 'Track'}
         </Link>
 
         <h1 className="text-2xl font-bold mb-1" style={{ color: '#0A2342' }}>{phase.title}</h1>
@@ -374,41 +332,22 @@ export default function Lesson() {
                 <button
                   key={index}
                   onClick={() => handleLessonClick(index)}
-                  disabled={status === 'locked'}
                   className="w-full flex items-center gap-4 bg-white rounded-2xl p-5 text-left transition-all"
-                  style={{
-                    boxShadow: '0 2px 12px rgba(10,35,66,0.06)',
-                    opacity: status === 'locked' ? 0.5 : 1,
-                    cursor: status === 'locked' ? 'default' : 'pointer'
-                  }}
+                  style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}
                 >
                   <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
-                    style={{
-                      background: status === 'completed' ? '#0A2342' : status === 'current' ? '#D4AF37' : '#E2E8F0',
-                      color: status === 'locked' ? '#6B7A99' : 'white'
-                    }}>
+                    style={{ background: status === 'completed' ? '#0A2342' : '#D4AF37', color: 'white' }}>
                     {status === 'completed' ? '✓' : index + 1}
                   </div>
                   <div>
                     <p className="font-medium" style={{ color: '#0A2342' }}>{title}</p>
                     <p className="text-xs mt-0.5" style={{ color: '#6B7A99' }}>
-                      {status === 'completed' ? 'Completed — tap to review or retake' : status === 'current' ? 'Start lesson' : 'Locked'}
+                      {status === 'completed' ? 'Completed — tap to review or retake' : 'Start lesson'}
                     </p>
                   </div>
                 </button>
               )
             })}
-
-            {allCompleted && (
-              <div className="rounded-2xl p-6 text-center" style={{ background: '#E8F5E9' }}>
-                <p className="font-bold mb-3" style={{ color: '#2E7D32' }}>🎉 All lessons complete!</p>
-                <Link to={`/quiz/${phaseNumber}`}
-                  className="inline-block px-6 py-3 rounded-xl text-sm font-bold transition-all"
-                  style={{ background: '#D4AF37', color: '#0A2342' }}>
-                  Take Phase Quiz →
-                </Link>
-              </div>
-            )}
           </div>
         )}
 
@@ -421,18 +360,14 @@ export default function Lesson() {
             <p className="text-sm mb-6" style={{ color: '#6B7A99' }}>You've already completed this lesson. What would you like to do?</p>
 
             <div className="space-y-3">
-              <button
-                onClick={() => openLessonForReview(choiceIndex)}
+              <button onClick={() => openLessonForReview(choiceIndex)}
                 className="w-full py-3 rounded-xl text-sm font-bold border-2 transition-all"
-                style={{ borderColor: '#0A2342', color: '#0A2342' }}
-              >
+                style={{ borderColor: '#0A2342', color: '#0A2342' }}>
                 📖 Review my past answer
               </button>
-              <button
-                onClick={() => openLessonForRetake(choiceIndex)}
+              <button onClick={() => openLessonForRetake(choiceIndex)}
                 className="w-full py-3 rounded-xl text-sm font-bold transition-all"
-                style={{ background: '#D4AF37', color: '#0A2342' }}
-              >
+                style={{ background: '#D4AF37', color: '#0A2342' }}>
                 🔁 Take lesson again
               </button>
             </div>
@@ -444,18 +379,16 @@ export default function Lesson() {
 
             {generating ? (
               <div className="text-center py-10">
-                <div className="w-10 h-10 rounded-full border-4 animate-spin mx-auto mb-4"
-                  style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }} />
+                <div className="w-10 h-10 rounded-full border-4 animate-spin mx-auto mb-4" style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }} />
                 <p className="font-medium mb-1" style={{ color: '#0A2342' }}>Crafting your lesson...</p>
-                <p className="text-sm" style={{ color: '#6B7A99' }}>Personalizing this just for you — a few seconds</p>
+                <p className="text-sm" style={{ color: '#6B7A99' }}>This is shared across all learners — once ready, it loads instantly for everyone else too</p>
               </div>
 
             ) : error ? (
               <div>
                 <p className="text-sm mb-4" style={{ color: '#991B1B' }}>{error}</p>
-                <button onClick={() => openLesson(activeIndex)}
-                  className="px-5 py-2 rounded-xl text-sm font-bold"
-                  style={{ background: '#D4AF37', color: '#0A2342' }}>
+                <button onClick={() => loadLessonContent(activeIndex)}
+                  className="px-5 py-2 rounded-xl text-sm font-bold" style={{ background: '#D4AF37', color: '#0A2342' }}>
                   Try again
                 </button>
               </div>
@@ -463,11 +396,8 @@ export default function Lesson() {
             ) : activeContent ? (
               <>
                 <div className="flex items-center gap-3 mb-6">
-                  <button onClick={backToPath}
-                    className="text-sm font-semibold" style={{ color: '#6B7A99' }}>←</button>
-                  <h2 className="text-xl font-bold" style={{ color: '#0A2342' }}>
-                    {lessonTitles[activeIndex]}
-                  </h2>
+                  <button onClick={backToPath} className="text-sm font-semibold" style={{ color: '#6B7A99' }}>←</button>
+                  <h2 className="text-xl font-bold" style={{ color: '#0A2342' }}>{lessonTitles[activeIndex]}</h2>
                   {reviewOnly && (
                     <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: '#F5F7FA', color: '#6B7A99' }}>
                       Reviewing
@@ -487,24 +417,20 @@ export default function Lesson() {
                   <div className="rounded-2xl p-5 mb-6" style={{ background: '#F5F7FA' }}>
                     <p className="text-xs font-bold mb-3" style={{ color: '#0A2342' }}>📌 KEY POINTS</p>
                     <ul className="text-sm space-y-2 list-disc pl-5" style={{ color: '#1E293B' }}>
-                      {activeContent.keyPoints.map((point, i) => (
-                        <li key={i}>{point}</li>
-                      ))}
+                      {activeContent.keyPoints.map((point, i) => <li key={i}>{point}</li>)}
                     </ul>
                   </div>
                 )}
 
                 {activeContent.example && (
-                  <div className="rounded-2xl p-5 mb-6"
-                    style={{ background: '#FFFBEF', border: '1px solid #D4AF37' }}>
+                  <div className="rounded-2xl p-5 mb-6" style={{ background: '#FFFBEF', border: '1px solid #D4AF37' }}>
                     <p className="text-xs font-bold mb-2" style={{ color: '#0A2342' }}>💡 REAL-WORLD EXAMPLE</p>
                     <p className="text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.example}</p>
                   </div>
                 )}
 
                 {activeContent.exercise && (
-                  <div className="rounded-2xl p-5 mb-6"
-                    style={{ background: '#F0F4FF', border: '1px solid #0A2342' }}>
+                  <div className="rounded-2xl p-5 mb-6" style={{ background: '#F0F4FF', border: '1px solid #0A2342' }}>
                     <p className="text-xs font-bold mb-2" style={{ color: '#0A2342' }}>🏋️ TRY IT YOURSELF</p>
                     <p className="text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.exercise}</p>
                   </div>
@@ -513,13 +439,7 @@ export default function Lesson() {
                 {activeContent.practiceTask && (
                   <div className="rounded-2xl p-5 mb-6" style={{ background: '#FFFFFF', border: '2px solid #D4AF37' }}>
                     <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                      <p className="text-xs font-bold" style={{ color: '#0A2342' }}>
-                        ⌨️ HANDS-ON PRACTICE — {
-                          activeContent.practiceTask.practiceType === 'python' ? 'WRITE REAL PYTHON'
-                          : activeContent.practiceTask.practiceType === 'excel' ? 'WRITE THE EXCEL FORMULA'
-                          : 'WRITE REAL SQL'
-                        }
-                      </p>
+                      <p className="text-xs font-bold" style={{ color: '#0A2342' }}>⌨️ HANDS-ON PRACTICE — {practiceLabels.header}</p>
                       {!reviewOnly && !practiceFeedback?.isCorrect && (
                         <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: '#FFFBEF', color: '#D4AF37', border: '1px solid #D4AF37' }}>
                           Required to continue
@@ -529,9 +449,7 @@ export default function Lesson() {
 
                     <div className="rounded-xl p-4 mb-4" style={{ background: '#0A2342' }}>
                       <p className="text-xs font-mono mb-2" style={{ color: '#D4AF37' }}>{activeContent.practiceTask.schemaDescription}</p>
-                      <pre className="text-xs font-mono whitespace-pre-wrap" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {activeContent.practiceTask.sampleRows}
-                      </pre>
+                      <pre className="text-xs font-mono whitespace-pre-wrap" style={{ color: 'rgba(255,255,255,0.8)' }}>{activeContent.practiceTask.sampleRows}</pre>
                     </div>
 
                     <p className="text-sm font-bold mb-3" style={{ color: '#0A2342' }}>{activeContent.practiceTask.task}</p>
@@ -555,9 +473,7 @@ export default function Lesson() {
                             background: practiceFeedback.isCorrect ? '#E8F5E9' : '#FEE2E2',
                             color: practiceFeedback.isCorrect ? '#2E7D32' : '#991B1B'
                           }}>
-                            <p className="font-bold text-sm mb-1">
-                              {practiceFeedback.isCorrect ? '✅ Marked correct' : '❌ Was marked incorrect'}
-                            </p>
+                            <p className="font-bold text-sm mb-1">{practiceFeedback.isCorrect ? '✅ Marked correct' : '❌ Was marked incorrect'}</p>
                             <p className="text-sm leading-relaxed">{practiceFeedback.feedback}</p>
                           </div>
                         )}
@@ -567,69 +483,47 @@ export default function Lesson() {
                         <textarea
                           value={practiceSubmission}
                           onChange={e => setPracticeSubmission(e.target.value)}
-                          placeholder={
-                            activeContent.practiceTask.practiceType === 'python' ? 'Write your Python code here...'
-                            : activeContent.practiceTask.practiceType === 'excel' ? 'Write your formula here... e.g. =SUM(B2:B6)'
-                            : 'Write your SQL query here...'
-                          }
+                          placeholder={practiceLabels.placeholder}
                           rows={6}
                           className="w-full px-4 py-3 rounded-xl border-2 text-sm font-mono outline-none resize-none"
                           style={{ borderColor: '#E2E8F0', color: '#0A2342', background: '#FAFAFA' }}
                         />
-
-                        {practiceError && (
-                          <p className="text-sm mt-2" style={{ color: '#991B1B' }}>{practiceError}</p>
-                        )}
-
+                        {practiceError && <p className="text-sm mt-2" style={{ color: '#991B1B' }}>{practiceError}</p>}
                         <button
                           onClick={submitPractice}
                           disabled={!practiceSubmission.trim() || practiceEvaluating}
                           className="w-full mt-3 py-3 rounded-xl text-sm font-bold transition-all"
-                          style={{
-                            background: practiceSubmission.trim() ? '#D4AF37' : '#E2E8F0',
-                            color: practiceSubmission.trim() ? '#0A2342' : '#6B7A99'
-                          }}
+                          style={{ background: practiceSubmission.trim() ? '#D4AF37' : '#E2E8F0', color: practiceSubmission.trim() ? '#0A2342' : '#6B7A99' }}
                         >
-                          {practiceEvaluating
-                            ? 'Checking...'
-                            : activeContent.practiceTask.practiceType === 'python' ? 'Submit code'
-                            : activeContent.practiceTask.practiceType === 'excel' ? 'Submit formula'
-                            : 'Submit query'}
+                          {practiceEvaluating ? 'Checking...' : practiceLabels.button}
                         </button>
                       </>
                     ) : (
                       <div>
                         <div className="rounded-xl p-4 mb-3" style={{ background: '#F5F7FA' }}>
-                          <p className="text-xs font-mono mb-1" style={{ color: '#6B7A99' }}>Your code:</p>
+                          <p className="text-xs font-mono mb-1" style={{ color: '#6B7A99' }}>Your answer:</p>
                           <pre className="text-sm font-mono whitespace-pre-wrap" style={{ color: '#0A2342' }}>{practiceSubmission}</pre>
                         </div>
-
                         {practiceFeedback.output && (
                           <div className="rounded-xl p-4 mb-3" style={{ background: '#0A2342' }}>
                             <p className="text-xs font-mono mb-1" style={{ color: '#D4AF37' }}>OUTPUT:</p>
                             <pre className="text-sm font-mono whitespace-pre-wrap" style={{ color: 'white' }}>{practiceFeedback.output}</pre>
                           </div>
                         )}
-
                         <div className="rounded-xl p-4" style={{
                           background: practiceFeedback.isCorrect ? '#E8F5E9' : '#FEE2E2',
                           color: practiceFeedback.isCorrect ? '#2E7D32' : '#991B1B'
                         }}>
-                          <p className="font-bold text-sm mb-1">
-                            {practiceFeedback.isCorrect ? '✅ Correct!' : '❌ Not quite right'}
-                          </p>
+                          <p className="font-bold text-sm mb-1">{practiceFeedback.isCorrect ? '✅ Correct!' : '❌ Not quite right'}</p>
                           <p className="text-sm leading-relaxed">{practiceFeedback.feedback}</p>
                           {!practiceFeedback.isCorrect && (
                             <p className="text-xs font-semibold mt-2">You'll need to get this right before you can move on — give it another try below.</p>
                           )}
                         </div>
-
                         {!practiceFeedback.isCorrect && (
-                          <button
-                            onClick={retryPractice}
+                          <button onClick={retryPractice}
                             className="w-full mt-3 py-3 rounded-xl text-sm font-bold border-2 transition-all"
-                            style={{ borderColor: '#0A2342', color: '#0A2342' }}
-                          >
+                            style={{ borderColor: '#0A2342', color: '#0A2342' }}>
                             Try again
                           </button>
                         )}
@@ -640,9 +534,7 @@ export default function Lesson() {
 
                 {reviewOnly ? (
                   <div className="rounded-2xl p-5 text-center" style={{ background: '#F5F7FA' }}>
-                    <p className="text-sm font-semibold" style={{ color: '#0A2342' }}>
-                      ✓ This lesson's quiz was already completed.
-                    </p>
+                    <p className="text-sm font-semibold" style={{ color: '#0A2342' }}>✓ This lesson's quiz was already completed.</p>
                     <p className="text-xs mt-1" style={{ color: '#6B7A99' }}>
                       Individual quiz answers aren't saved — only your hands-on practice answer is kept for review.
                     </p>
@@ -655,20 +547,15 @@ export default function Lesson() {
                 ) : currentQuestion ? (
                   <div className="border-t pt-6" style={{ borderColor: '#E2E8F0' }}>
                     <div className="flex items-center justify-between mb-4">
-                      <p className="text-xs font-semibold" style={{ color: '#6B7A99' }}>
-                        QUIZ — QUESTION {qIndex + 1} OF {questions.length}
-                      </p>
+                      <p className="text-xs font-semibold" style={{ color: '#6B7A99' }}>QUIZ — QUESTION {qIndex + 1} OF {questions.length}</p>
                       <div className="flex gap-1 flex-wrap max-w-50 justify-end">
                         {questions.map((_, i) => (
-                          <div key={i} className="w-6 h-1.5 rounded-full"
-                            style={{ background: i <= qIndex ? '#D4AF37' : '#E2E8F0' }} />
+                          <div key={i} className="w-6 h-1.5 rounded-full" style={{ background: i <= qIndex ? '#D4AF37' : '#E2E8F0' }} />
                         ))}
                       </div>
                     </div>
 
-                    <p className="text-sm font-bold mb-4" style={{ color: '#0A2342' }}>
-                      {currentQuestion.question}
-                    </p>
+                    <p className="text-sm font-bold mb-4" style={{ color: '#0A2342' }}>{currentQuestion.question}</p>
 
                     <div className="space-y-2 mb-4">
                       {currentQuestion.options.map((opt, i) => {
@@ -692,11 +579,10 @@ export default function Lesson() {
 
                     {answered && (
                       <div>
-                        <div className="rounded-xl p-3 mb-4 text-sm"
-                          style={{
-                            background: selectedOption === currentQuestion.correctIndex ? '#E8F5E9' : '#FEE2E2',
-                            color: selectedOption === currentQuestion.correctIndex ? '#2E7D32' : '#991B1B'
-                          }}>
+                        <div className="rounded-xl p-3 mb-4 text-sm" style={{
+                          background: selectedOption === currentQuestion.correctIndex ? '#E8F5E9' : '#FEE2E2',
+                          color: selectedOption === currentQuestion.correctIndex ? '#2E7D32' : '#991B1B'
+                        }}>
                           {selectedOption === currentQuestion.correctIndex
                             ? '✅ Correct! Great work.'
                             : `❌ Not quite. The correct answer is: ${currentQuestion.options[currentQuestion.correctIndex]}`}

@@ -5,8 +5,11 @@ import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import Lesson from './pages/Lesson'
 import Quiz from './pages/Quiz'
-import ProtectedRoute from './components/ProtectedRoute'
 import Remediate from './pages/Remediate'
+import Tracks from './pages/Tracks'
+import TrackOverview from './pages/TrackOverview'
+import TrackLesson from './pages/TrackLesson'
+import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
   return (
@@ -18,8 +21,10 @@ export default function App() {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/lesson/:id" element={<ProtectedRoute><Lesson /></ProtectedRoute>} />
       <Route path="/quiz/:id" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
-      <Route path="/quiz/:id" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
       <Route path="/remediate/:id" element={<ProtectedRoute><Remediate /></ProtectedRoute>} />
+      <Route path="/tracks" element={<ProtectedRoute><Tracks /></ProtectedRoute>} />
+      <Route path="/tracks/:skill" element={<ProtectedRoute><TrackOverview /></ProtectedRoute>} />
+      <Route path="/tracks/:skill/phase/:phaseNumber" element={<ProtectedRoute><TrackLesson /></ProtectedRoute>} />
     </Routes>
   )
 }

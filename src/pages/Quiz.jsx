@@ -141,14 +141,20 @@ export default function Quiz() {
         passed: passed || progressRow?.passed || false,
         attempts: newAttempts,
         completed_at: passed ? new Date().toISOString() : progressRow?.completed_at || null
-      })
+      }, { onConflict: 'user_id,phase_number' })
       .select()
       .single()
 
-    if (!upsertError) setProgressRow(upserted)
+    if (upsertError) {
+      console.error('Phase progress upsert error:', upsertError)
+      setError("Your score was calculated, but we couldn't save your progress. Please try again.")
+    } else {
+      setProgressRow(upserted)
+    }
+
     logEvent(user.id, passed ? 'quiz_passed' : 'quiz_failed', { phase_number: phaseNumber, percentage, attempt: newAttempts })
 
-    if (isFirstPass) {
+    if (isFirstPass && !upsertError) {
       const newXp = await awardXp(user.id, xp, 50)
       setXp(newXp)
     }
@@ -267,6 +273,12 @@ export default function Quiz() {
             <p className="text-sm mb-6" style={{ color: '#6B7A99' }}>
               {correctCount} out of {questions.length} correct
             </p>
+
+            {error && (
+              <div className="rounded-2xl p-4 mb-4 text-sm" style={{ background: '#FEE2E2', color: '#991B1B' }}>
+                {error}
+              </div>
+            )}
 
             {passedThisAttempt ? (
               <div className="rounded-2xl p-5 mb-6" style={{ background: '#E8F5E9', color: '#2E7D32' }}>

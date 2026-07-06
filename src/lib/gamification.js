@@ -2,14 +2,13 @@ import { supabase } from './supabase'
 
 export async function checkInStreak(userId, currentStreak, lastActiveDate) {
   const today = new Date().toISOString().split('T')[0]
+  const yesterdayDate = new Date()
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+  const yesterday = yesterdayDate.toISOString().split('T')[0]
 
   if (lastActiveDate === today) {
     return { streak: currentStreak || 0, last_active_date: today }
   }
-
-  const yesterdayDate = new Date()
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
-  const yesterday = yesterdayDate.toISOString().split('T')[0]
 
   const newStreak = lastActiveDate === yesterday ? (currentStreak || 0) + 1 : 1
 
@@ -24,6 +23,21 @@ export async function checkInStreak(userId, currentStreak, lastActiveDate) {
   }
 
   return { streak: newStreak, last_active_date: today }
+}
+
+export function getDisplayStreak(storedStreak, lastActiveDate) {
+  const today = new Date().toISOString().split('T')[0]
+  const yesterdayDate = new Date()
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+  const yesterday = yesterdayDate.toISOString().split('T')[0]
+
+  const isActiveToday = lastActiveDate === today
+  const isAtRisk = lastActiveDate === yesterday
+  const isBroken = !isActiveToday && !isAtRisk
+
+  const displayStreak = isBroken ? 0 : (storedStreak || 0)
+
+  return { displayStreak, isActiveToday }
 }
 
 export async function awardXp(userId, currentXp, amount) {
@@ -41,17 +55,33 @@ export async function awardXp(userId, currentXp, amount) {
 
   return newXp
 }
-export function getDisplayStreak(storedStreak, lastActiveDate) {
-  const today = new Date().toISOString().split('T')[0]
-  const yesterdayDate = new Date()
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
-  const yesterday = yesterdayDate.toISOString().split('T')[0]
 
-  const isActiveToday = lastActiveDate === today
-  const isAtRisk = lastActiveDate === yesterday
-  const isBroken = !isActiveToday && !isAtRisk
+export async function awardSkillProgress(userId, skill, amount) {
+  if (!skill || skill === 'none') return null
 
-  const displayStreak = isBroken ? 0 : (storedStreak || 0)
+  const { data: profile, error: fetchError } = await supabase
+    .from('profiles')
+    .select('skill_progress')
+    .eq('id', userId)
+    .single()
 
-  return { displayStreak, isActiveToday }
+  if (fetchError) {
+    console.error('Skill progress fetch error:', fetchError)
+    return null
+  }
+
+  const current = profile?.skill_progress || {}
+  const updated = { ...current, [skill]: (current[skill] || 0) + amount }
+
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ skill_progress: updated })
+    .eq('id', userId)
+
+  if (updateError) {
+    console.error('Skill progress update error:', updateError)
+    return null
+  }
+
+  return updated
 }
