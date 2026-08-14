@@ -34,6 +34,7 @@ const skillBattlesClient = await readFile('src/lib/skillBattles.js', 'utf8')
 const marketplace = await readFile('backend/supabase/migrations/0017_marketplace.sql', 'utf8')
 const marketplaceClient = await readFile('src/lib/marketplace.js', 'utf8')
 const richerLiveChallenges = await readFile('backend/supabase/migrations/0018_richer_live_challenges.sql', 'utf8')
+const liveChallengesClient = await readFile('src/lib/liveChallenges.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -379,8 +380,18 @@ test('richer live challenges are timed, private, scored, and dispute-capable', (
   assert.doesNotMatch(richerLiveChallenges, /create policy[\s\S]*for insert[\s\S]*challenge_round_sessions/i)
 })
 
+test('live challenges client uses protected workspace, round, leaderboard, and dispute RPCs', () => {
+  assert.match(liveChallengesClient, /rpc\('get_live_challenge_workspace'/)
+  assert.match(liveChallengesClient, /rpc\('start_live_challenge_round'/)
+  assert.match(liveChallengesClient, /rpc\('submit_live_challenge_round'/)
+  assert.match(liveChallengesClient, /rpc\('get_live_challenge_leaderboard'/)
+  assert.match(liveChallengesClient, /rpc\('report_live_challenge_score'/)
+  assert.doesNotMatch(liveChallengesClient, /from\('challenge_round_sessions'\)/)
+  assert.doesNotMatch(liveChallengesClient, /from\('challenge_checkpoint_submissions'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

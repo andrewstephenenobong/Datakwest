@@ -25,6 +25,7 @@ const Community = lazy(() => import('./pages/Community'))
 const PeerReview = lazy(() => import('./pages/PeerReview'))
 const SkillBattles = lazy(() => import('./pages/SkillBattles'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
+const LiveChallenges = lazy(() => import('./pages/LiveChallenges'))
 
 function RouteLoading() {
   return (
@@ -71,6 +72,7 @@ export default function App() {
         <Route path="/peer-review" element={<Protected><PeerReview /></Protected>} />
         <Route path="/skill-battles" element={<Protected><SkillBattles /></Protected>} />
         <Route path="/marketplace" element={<Protected><Marketplace /></Protected>} />
+        <Route path="/live-challenges" element={<Protected><LiveChallenges /></Protected>} />
       </Routes>
     </Suspense>
   )

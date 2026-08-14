@@ -37,6 +37,7 @@
     { "source": "/community", "destination": "/" },
     { "source": "/peer-review", "destination": "/" },
     { "source": "/skill-battles", "destination": "/" },
-    { "source": "/marketplace", "destination": "/" }
+    { "source": "/marketplace", "destination": "/" },
+    { "source": "/live-challenges", "destination": "/" }
   ]
 }
