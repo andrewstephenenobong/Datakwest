@@ -31,6 +31,8 @@ const peerReview = await readFile('backend/supabase/migrations/0015_peer_review.
 const peerReviewClient = await readFile('src/lib/peerReview.js', 'utf8')
 const skillBattles = await readFile('backend/supabase/migrations/0016_skill_battles.sql', 'utf8')
 const skillBattlesClient = await readFile('src/lib/skillBattles.js', 'utf8')
+const marketplace = await readFile('backend/supabase/migrations/0017_marketplace.sql', 'utf8')
+const marketplaceClient = await readFile('src/lib/marketplace.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -336,8 +338,29 @@ test('skill battles client uses protected lobby, session, answer, and leaderboar
   assert.doesNotMatch(skillBattlesClient, /from\('attempts'\)/)
 })
 
+test('marketplace is published-only, learner-owned, and RPC-mutation-only', () => {
+  assert.match(marketplace, /create or replace function public\.get_marketplace/i)
+  assert.match(marketplace, /create or replace function public\.get_my_applications/i)
+  assert.match(marketplace, /create or replace function public\.apply_to_opportunity/i)
+  assert.match(marketplace, /create or replace function public\.withdraw_application/i)
+  assert.match(marketplace, /status = 'published'/i)
+  assert.match(marketplace, /auth\.uid\(\)/i)
+  assert.match(marketplace, /invalid_application_evidence/i)
+  assert.match(marketplace, /grant execute on function public\.apply_to_opportunity\(uuid, jsonb\) to authenticated/i)
+  assert.doesNotMatch(marketplace, /create policy[\s\S]*for insert[\s\S]*applications/i)
+})
+
+test('marketplace client uses protected listing and application RPCs', () => {
+  assert.match(marketplaceClient, /rpc\('get_marketplace'/)
+  assert.match(marketplaceClient, /rpc\('get_my_applications'/)
+  assert.match(marketplaceClient, /rpc\('apply_to_opportunity'/)
+  assert.match(marketplaceClient, /rpc\('withdraw_application'/)
+  assert.doesNotMatch(marketplaceClient, /from\('opportunities'\)/)
+  assert.doesNotMatch(marketplaceClient, /from\('applications'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

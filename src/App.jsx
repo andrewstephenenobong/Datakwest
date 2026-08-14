@@ -24,6 +24,7 @@ const Practice = lazy(() => import('./pages/Practice'))
 const Community = lazy(() => import('./pages/Community'))
 const PeerReview = lazy(() => import('./pages/PeerReview'))
 const SkillBattles = lazy(() => import('./pages/SkillBattles'))
+const Marketplace = lazy(() => import('./pages/Marketplace'))
 
 function RouteLoading() {
   return (
@@ -69,6 +70,7 @@ export default function App() {
         <Route path="/community" element={<Protected><Community /></Protected>} />
         <Route path="/peer-review" element={<Protected><PeerReview /></Protected>} />
         <Route path="/skill-battles" element={<Protected><SkillBattles /></Protected>} />
+        <Route path="/marketplace" element={<Protected><Marketplace /></Protected>} />
       </Routes>
     </Suspense>
   )
