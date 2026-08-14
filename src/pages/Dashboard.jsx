@@ -256,6 +256,17 @@ export default function Dashboard() {
           </div>
         </Link>
 
+        <Link to="/portfolio" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#EAF7F0', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2E7D32' }}>Portfolio</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>See the evidence behind your progress</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Review project submissions, reflections, and feedback in one place.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open portfolio →</span>
+          </div>
+        </Link>
+
         <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Your skill levels</h3>
           <div className="space-y-4">

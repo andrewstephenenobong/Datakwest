@@ -24,6 +24,9 @@
     { "source": "/remediate/:id", "destination": "/" },
     { "source": "/tracks", "destination": "/" },
     { "source": "/tracks/:skill", "destination": "/" },
-    { "source": "/tracks/:skill/phase/:phaseNumber", "destination": "/" }
+    { "source": "/tracks/:skill/phase/:phaseNumber", "destination": "/" },
+    { "source": "/project", "destination": "/" },
+    { "source": "/tutor", "destination": "/" },
+    { "source": "/portfolio", "destination": "/" }
   ]
 }

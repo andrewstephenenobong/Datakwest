@@ -11,6 +11,7 @@ const projects = await readFile('backend/supabase/migrations/0005_project_submis
 const projectClient = await readFile('src/lib/projects.js', 'utf8')
 const tutorFunction = await readFile('backend/supabase/functions/tutor-chat.ts', 'utf8')
 const tutorClient = await readFile('src/lib/tutor.js', 'utf8')
+const portfolioClient = await readFile('src/lib/portfolio.js', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -106,8 +107,14 @@ test('Tutor client sends only user-safe request data', () => {
   assert.doesNotMatch(tutorClient, /GEMINI_API_KEY|SERVICE_ROLE|apiKey/i)
 })
 
+test('portfolio client reads learner-owned evidence without mutation paths', () => {
+  assert.match(portfolioClient, /from\('submissions'\)/)
+  assert.match(portfolioClient, /eq\('user_id', userId\)/)
+  assert.doesNotMatch(portfolioClient, /insert\(|update\(|delete\(/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, missionClient, readinessClient, projectClient, tutorFunction, tutorClient]
+  const files = [foundation, missions, readiness, projects, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
