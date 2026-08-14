@@ -1,0 +1,623 @@
+{
+  "tables": [
+    {
+      "columns": [
+        {
+          "data_type": "uuid",
+          "format": "uuid",
+          "name": "id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "email",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "boolean",
+          "default_value": "false",
+          "format": "bool",
+          "name": "onboarding_completed",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "format": "jsonb",
+          "name": "assessment",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "format": "jsonb",
+          "name": "roadmap",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "default_value": "0",
+          "format": "int4",
+          "name": "xp",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "default_value": "0",
+          "format": "int4",
+          "name": "streak",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "default_value": "now()",
+          "format": "timestamptz",
+          "name": "created_at",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "date",
+          "format": "date",
+          "name": "last_active_date",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "default_value": "'{}'::jsonb",
+          "format": "jsonb",
+          "name": "skill_progress",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "profiles_id_fkey",
+          "source_columns": [
+            "id"
+          ],
+          "source_table": "public.profiles",
+          "target_columns": [
+            "id"
+          ],
+          "target_table": "auth.users"
+        }
+      ],
+      "name": "public.profiles",
+      "primary_keys": [
+        "id"
+      ],
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "columns": [
+        {
+          "data_type": "uuid",
+          "default_value": "gen_random_uuid()",
+          "format": "uuid",
+          "name": "id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "uuid",
+          "format": "uuid",
+          "name": "user_id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "format": "int4",
+          "name": "phase_number",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "format": "int4",
+          "name": "lesson_index",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "title",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "format": "jsonb",
+          "name": "content",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "boolean",
+          "default_value": "false",
+          "format": "bool",
+          "name": "completed",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "default_value": "now()",
+          "format": "timestamptz",
+          "name": "created_at",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "practice_submission",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "format": "jsonb",
+          "name": "practice_feedback",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "default_value": "0",
+          "format": "int4",
+          "name": "practice_attempts",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "skill",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "lessons_user_id_fkey",
+          "source_columns": [
+            "user_id"
+          ],
+          "source_table": "public.lessons",
+          "target_columns": [
+            "id"
+          ],
+          "target_table": "auth.users"
+        }
+      ],
+      "name": "public.lessons",
+      "primary_keys": [
+        "id"
+      ],
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "columns": [
+        {
+          "data_type": "uuid",
+          "default_value": "gen_random_uuid()",
+          "format": "uuid",
+          "name": "id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "uuid",
+          "format": "uuid",
+          "name": "user_id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "format": "int4",
+          "name": "phase_number",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "default_value": "0",
+          "format": "int4",
+          "name": "best_score",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "boolean",
+          "default_value": "false",
+          "format": "bool",
+          "name": "passed",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "default_value": "0",
+          "format": "int4",
+          "name": "attempts",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "format": "timestamptz",
+          "name": "completed_at",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "default_value": "now()",
+          "format": "timestamptz",
+          "name": "created_at",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "phase_progress_user_id_fkey",
+          "source_columns": [
+            "user_id"
+          ],
+          "source_table": "public.phase_progress",
+          "target_columns": [
+            "id"
+          ],
+          "target_table": "auth.users"
+        }
+      ],
+      "name": "public.phase_progress",
+      "primary_keys": [
+        "id"
+      ],
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "columns": [
+        {
+          "data_type": "uuid",
+          "default_value": "gen_random_uuid()",
+          "format": "uuid",
+          "name": "id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "uuid",
+          "format": "uuid",
+          "name": "user_id",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "event_type",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "default_value": "'{}'::jsonb",
+          "format": "jsonb",
+          "name": "metadata",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "default_value": "now()",
+          "format": "timestamptz",
+          "name": "created_at",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "events_user_id_fkey",
+          "source_columns": [
+            "user_id"
+          ],
+          "source_table": "public.events",
+          "target_columns": [
+            "id"
+          ],
+          "target_table": "auth.users"
+        }
+      ],
+      "name": "public.events",
+      "primary_keys": [
+        "id"
+      ],
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "columns": [
+        {
+          "data_type": "uuid",
+          "default_value": "gen_random_uuid()",
+          "format": "uuid",
+          "name": "id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "uuid",
+          "format": "uuid",
+          "name": "user_id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "date",
+          "default_value": "CURRENT_DATE",
+          "format": "date",
+          "name": "usage_date",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "integer",
+          "default_value": "0",
+          "format": "int4",
+          "name": "call_count",
+          "options": [
+            "updatable"
+          ]
+        }
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "ai_usage_user_id_fkey",
+          "source_columns": [
+            "user_id"
+          ],
+          "source_table": "public.ai_usage",
+          "target_columns": [
+            "id"
+          ],
+          "target_table": "auth.users"
+        }
+      ],
+      "name": "public.ai_usage",
+      "primary_keys": [
+        "id"
+      ],
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "columns": [
+        {
+          "data_type": "uuid",
+          "default_value": "gen_random_uuid()",
+          "format": "uuid",
+          "name": "id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "skill",
+          "options": [
+            "updatable",
+            "unique"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "title",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "description",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "format": "jsonb",
+          "name": "phases",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "default_value": "'{}'::jsonb",
+          "format": "jsonb",
+          "name": "lesson_cache",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "default_value": "now()",
+          "format": "timestamptz",
+          "name": "created_at",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "name": "public.skill_tracks",
+      "primary_keys": [
+        "id"
+      ],
+      "rls_enabled": true,
+      "rows": 0
+    },
+    {
+      "columns": [
+        {
+          "data_type": "uuid",
+          "default_value": "gen_random_uuid()",
+          "format": "uuid",
+          "name": "id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "uuid",
+          "format": "uuid",
+          "name": "user_id",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "text",
+          "format": "text",
+          "name": "skill",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "default_value": "'{}'::jsonb",
+          "format": "jsonb",
+          "name": "lesson_state",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "jsonb",
+          "default_value": "'{}'::jsonb",
+          "format": "jsonb",
+          "name": "phase_state",
+          "options": [
+            "updatable"
+          ]
+        },
+        {
+          "data_type": "timestamp with time zone",
+          "default_value": "now()",
+          "format": "timestamptz",
+          "name": "created_at",
+          "options": [
+            "nullable",
+            "updatable"
+          ]
+        }
+      ],
+      "foreign_key_constraints": [
+        {
+          "name": "user_track_progress_user_id_fkey",
+          "source_columns": [
+            "user_id"
+          ],
+          "source_table": "public.user_track_progress",
+          "target_columns": [
+            "id"
+          ],
+          "target_table": "auth.users"
+        }
+      ],
+      "name": "public.user_track_progress",
+      "primary_keys": [
+        "id"
+      ],
+      "rls_enabled": true,
+      "rows": 0
+    }
+  ]
+}
