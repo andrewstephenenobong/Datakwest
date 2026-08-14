@@ -233,6 +233,17 @@ export default function Dashboard() {
           </div>
         </Link>
 
+        <Link to="/skill-battles" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFF1E8', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#C05621' }}>Skill Battles</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Turn practice into a focused competition</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Join bounded battle rounds and track server-derived rankings.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open battles →</span>
+          </div>
+        </Link>
+
         <Link to="/peer-review" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>

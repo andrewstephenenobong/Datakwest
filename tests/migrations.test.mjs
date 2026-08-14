@@ -30,6 +30,7 @@ const communityDiscussions = await readFile('backend/supabase/migrations/0014_co
 const peerReview = await readFile('backend/supabase/migrations/0015_peer_review.sql', 'utf8')
 const peerReviewClient = await readFile('src/lib/peerReview.js', 'utf8')
 const skillBattles = await readFile('backend/supabase/migrations/0016_skill_battles.sql', 'utf8')
+const skillBattlesClient = await readFile('src/lib/skillBattles.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -326,8 +327,17 @@ test('skill battles are enrollment-gated and leaderboard scores are server-deriv
   assert.doesNotMatch(skillBattles, /create policy[\s\S]*for insert[\s\S]*practice_sessions/i)
 })
 
+test('skill battles client uses protected lobby, session, answer, and leaderboard RPCs', () => {
+  assert.match(skillBattlesClient, /rpc\('get_skill_battle_lobby'/)
+  assert.match(skillBattlesClient, /rpc\('start_skill_battle'/)
+  assert.match(skillBattlesClient, /rpc\('submit_practice_answer'/)
+  assert.match(skillBattlesClient, /rpc\('get_skill_battle_leaderboard'/)
+  assert.doesNotMatch(skillBattlesClient, /from\('challenge_participants'\)/)
+  assert.doesNotMatch(skillBattlesClient, /from\('attempts'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
