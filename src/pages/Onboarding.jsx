@@ -67,6 +67,20 @@ const skillQuestions = {
   ],
 }
 
+const cybersecurityOrientation = {
+  type: 'orientation',
+  key: 'securityOrientation',
+  eyebrow: 'Understand the field',
+  question: 'Cybersecurity is broader than one job title.',
+  helper: 'Before you choose a direction, here is what the main areas mean in everyday work.',
+  areas: [
+    ['Security fundamentals', 'Learn how devices, networks, accounts, and threats fit together. This is the starting point for every cybersecurity path.'],
+    ['Defensive monitoring', 'Watch systems for suspicious activity, investigate alerts, and help organisations respond to incidents.'],
+    ['Web and application security', 'Find and prevent weaknesses in websites, APIs, and software before attackers can use them.'],
+    ['Risk, governance, and compliance', 'Help organisations understand risk, create controls, and meet security responsibilities.'],
+  ],
+}
+
 const finalSteps = [
   { key: 'targetIndustry', eyebrow: 'Career context', question: 'Any specific industry you want to target?', helper: 'We will make examples feel closer to the work you want to do.', options: ['General business (open)', 'Finance', 'Tech', 'Healthcare', 'Marketing'] },
   { key: 'learningStyle', eyebrow: 'Your learning style', question: 'How do you like to learn?', helper: 'Your roadmap balances explanation, practice, and reflection around this preference.', options: ['Theory + practice together', 'Practice-first, theory later', 'Visual and diagram-heavy explanations', 'Reading and documentation'] },
@@ -84,12 +98,15 @@ const optionDescriptions = {
   'Explore a new digital path': 'Try a new direction with a low-pressure first mission.',
 }
 
-function getSteps(targetSkill) {
+function getSteps(targetSkill, currentAnswers = {}) {
   const skillStep = targetSkill ? skillQuestions[targetSkill] || [] : []
+  const cybersecuritySteps = targetSkill === 'Cybersecurity' && currentAnswers.securityExperience === 'New to all of these'
+    ? [skillStep[0], cybersecurityOrientation, skillStep[1]]
+    : skillStep
   return [
     { key: 'targetSkill', eyebrow: 'Choose your direction', question: 'What do you want to learn?', helper: 'Your choice determines the baseline questions, examples, projects, and pace we recommend.', options: skillOptions.map(([label]) => label) },
     ...commonSteps,
-    ...skillStep,
+    ...cybersecuritySteps,
     ...finalSteps,
   ]
 }
@@ -104,7 +121,7 @@ export default function Onboarding() {
   const [showOtherInput, setShowOtherInput] = useState(false)
   const [otherText, setOtherText] = useState('')
 
-  const steps = useMemo(() => getSteps(answers.targetSkill), [answers.targetSkill])
+  const steps = useMemo(() => getSteps(answers.targetSkill, answers), [answers])
   const step = steps[Math.min(stepIndex, steps.length - 1)]
   const isLastStep = stepIndex === steps.length - 1
   const progress = ((stepIndex + 1) / steps.length) * 100
@@ -118,6 +135,11 @@ export default function Onboarding() {
     setOtherText('')
     if (isLastStep) await generateRoadmap(updatedAnswers)
     else setStepIndex(stepIndex + 1)
+  }
+
+  function handleContinue() {
+    setError('')
+    setStepIndex(stepIndex + 1)
   }
 
   function handleOtherSubmit() {
@@ -164,7 +186,7 @@ export default function Onboarding() {
           <div className="mb-6 flex items-center gap-4"><div className="h-2 flex-1 overflow-hidden rounded-full" style={{ background: '#E1E8F1' }}><div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #D4AF37, #E6C65C)' }} /></div><span className="text-xs font-bold" style={{ color: '#6B7A99' }}>{Math.round(progress)}%</span></div>
           <div className="rounded-[2rem] p-6 sm:p-10" style={{ background: 'white', boxShadow: '0 18px 60px rgba(10,35,66,0.10)' }}><div className="mb-8"><span className="inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]" style={{ background: '#EEF3FA', color: '#416181' }}>Question {stepIndex + 1} of {steps.length}</span><h2 className="mt-5 text-3xl font-bold leading-tight sm:text-[2.15rem]" style={{ color: '#0A2342' }}>{step.question}</h2><p className="mt-3 max-w-xl text-sm leading-6" style={{ color: '#6B7A99' }}>{step.helper}</p></div>
             {error && <div role="alert" className="mb-5 flex gap-3 rounded-xl p-4 text-sm" style={{ background: '#FFF4F2', color: '#9C3F31' }}><span className="font-bold">!</span><span>{error}</span></div>}
-            {!showOtherInput ? <div className="grid auto-rows-[minmax(156px,1fr)] gap-3 sm:grid-cols-2" role="listbox" aria-label={step.question}>{step.options.map((option, index) => <button type="button" key={option} onClick={() => handleSelect(option)} aria-selected={selectedAnswer === option} className="group flex h-full min-h-[156px] items-start rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5" style={{ borderColor: selectedAnswer === option ? '#D4AF37' : '#E6ECF4', background: selectedAnswer === option ? '#FFF9E8' : '#FBFCFE', color: '#0A2342', boxShadow: selectedAnswer === option ? '0 8px 22px rgba(212,175,55,0.14)' : 'none' }}><span className="flex items-start gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: selectedAnswer === option ? '#D4AF37' : '#EAF0F7', color: selectedAnswer === option ? '#0A2342' : '#416181' }}>{String.fromCharCode(65 + index)}</span><span><span className="block text-sm font-bold leading-5">{option}</span><span className="mt-2 block text-xs leading-5" style={{ color: '#7B8AA0' }}>{optionDescriptions[option] || skillOptions.find(([label]) => label === option)?.[1] || 'We will use this to tailor your learning experience.'}</span></span></span></button>)}<button type="button" onClick={() => setShowOtherInput(true)} className="flex h-full min-h-[156px] items-start rounded-2xl border-2 border-dashed p-4 text-left text-sm font-bold" style={{ borderColor: '#D8E1EC', color: '#6B7A99', background: '#FCFDFE' }}><span className="flex items-center gap-3"><span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: '#EEF3FA', color: '#416181' }}>＋</span><span>Something else<span className="mt-1 block text-xs font-normal" style={{ color: '#8A98AA' }}>Tell us in your own words</span></span></span></button></div> : <div className="rounded-2xl p-5" style={{ background: '#F7F9FC' }}><label className="text-sm font-bold" style={{ color: '#0A2342' }} htmlFor="other-answer">Your answer</label><input id="other-answer" type="text" value={otherText} onChange={(event) => setOtherText(event.target.value)} placeholder="Type your answer…" autoFocus className="mt-3 w-full rounded-xl border-2 bg-white px-4 py-3 text-sm outline-none" style={{ borderColor: '#D8E1EC', color: '#0A2342' }} onKeyDown={(event) => { if (event.key === 'Enter') handleOtherSubmit() }} /><div className="mt-4 flex gap-3"><button type="button" onClick={handleOtherSubmit} disabled={!otherText.trim()} className="rounded-xl px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50" style={{ background: '#D4AF37', color: '#0A2342' }}>Continue</button><button type="button" onClick={() => { setShowOtherInput(false); setOtherText('') }} className="rounded-xl px-5 py-3 text-sm font-bold" style={{ color: '#6B7A99' }}>Cancel</button></div></div>}
+            {step.type === 'orientation' ? <div><div className="grid gap-3 sm:grid-cols-2">{step.areas.map(([title, description], index) => <article key={title} className="rounded-2xl border p-5" style={{ borderColor: '#E2EAF3', background: '#FBFCFE' }}><div className="flex items-start gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: '#EEF3FA', color: '#416181' }}>{String.fromCharCode(65 + index)}</span><div><h3 className="text-sm font-bold" style={{ color: '#0A2342' }}>{title}</h3><p className="mt-2 text-xs leading-5" style={{ color: '#6B7A99' }}>{description}</p></div></div></article>)}</div><div className="mt-6 rounded-2xl p-5" style={{ background: '#FFF9E8' }}><p className="text-sm font-bold" style={{ color: '#0A2342' }}>You do not need to choose a specialism yet.</p><p className="mt-2 text-sm leading-6" style={{ color: '#6B7A99' }}>Use this overview to notice what sounds interesting. Your first cybersecurity missions will still cover the fundamentals before moving deeper.</p></div><button type="button" onClick={handleContinue} className="mt-6 rounded-xl px-5 py-3 text-sm font-bold" style={{ background: '#D4AF37', color: '#0A2342' }}>Continue to choose an area</button></div> : !showOtherInput ? <div className="grid auto-rows-[minmax(156px,1fr)] gap-3 sm:grid-cols-2" role="listbox" aria-label={step.question}>{step.options.map((option, index) => <button type="button" key={option} onClick={() => handleSelect(option)} aria-selected={selectedAnswer === option} className="group flex h-full min-h-[156px] items-start rounded-2xl border-2 p-4 text-left transition-all hover:-translate-y-0.5" style={{ borderColor: selectedAnswer === option ? '#D4AF37' : '#E6ECF4', background: selectedAnswer === option ? '#FFF9E8' : '#FBFCFE', color: '#0A2342', boxShadow: selectedAnswer === option ? '0 8px 22px rgba(212,175,55,0.14)' : 'none' }}><span className="flex items-start gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: selectedAnswer === option ? '#D4AF37' : '#EAF0F7', color: selectedAnswer === option ? '#0A2342' : '#416181' }}>{String.fromCharCode(65 + index)}</span><span><span className="block text-sm font-bold leading-5">{option}</span><span className="mt-2 block text-xs leading-5" style={{ color: '#7B8AA0' }}>{optionDescriptions[option] || skillOptions.find(([label]) => label === option)?.[1] || 'We will use this to tailor your learning experience.'}</span></span></span></button>)}<button type="button" onClick={() => setShowOtherInput(true)} className="flex h-full min-h-[156px] items-start rounded-2xl border-2 border-dashed p-4 text-left text-sm font-bold" style={{ borderColor: '#D8E1EC', color: '#6B7A99', background: '#FCFDFE' }}><span className="flex items-center gap-3"><span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: '#EEF3FA', color: '#416181' }}>＋</span><span>Something else<span className="mt-1 block text-xs font-normal" style={{ color: '#8A98AA' }}>Tell us in your own words</span></span></span></button></div> : <div className="rounded-2xl p-5" style={{ background: '#F7F9FC' }}><label className="text-sm font-bold" style={{ color: '#0A2342' }} htmlFor="other-answer">Your answer</label><input id="other-answer" type="text" value={otherText} onChange={(event) => setOtherText(event.target.value)} placeholder="Type your answer…" autoFocus className="mt-3 w-full rounded-xl border-2 bg-white px-4 py-3 text-sm outline-none" style={{ borderColor: '#D8E1EC', color: '#0A2342' }} onKeyDown={(event) => { if (event.key === 'Enter') handleOtherSubmit() }} /><div className="mt-4 flex gap-3"><button type="button" onClick={handleOtherSubmit} disabled={!otherText.trim()} className="rounded-xl px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50" style={{ background: '#D4AF37', color: '#0A2342' }}>Continue</button><button type="button" onClick={() => { setShowOtherInput(false); setOtherText('') }} className="rounded-xl px-5 py-3 text-sm font-bold" style={{ color: '#6B7A99' }}>Cancel</button></div></div>}
             <div className="mt-8 flex items-center justify-between border-t pt-5" style={{ borderColor: '#EDF1F6' }}><p className="text-xs" style={{ color: '#8A98AA' }}>You can go back and change any answer.</p><span className="text-xs font-bold" style={{ color: '#9A7610' }}>{isLastStep ? 'Ready to build your path' : 'Choose one to continue'}</span></div>
           </div>
         </section>
