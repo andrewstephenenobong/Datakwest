@@ -52,15 +52,45 @@ Return only valid JSON in this exact structure:
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { response_mime_type: 'application/json', temperature: 0.55, maxOutputTokens: 500 } }),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              answer: { type: 'STRING' },
+              next_action: { type: 'STRING' },
+              recommended_path: { type: 'STRING', nullable: true },
+              why_datakwest: { type: 'STRING' },
+            },
+            required: ['answer', 'next_action', 'recommended_path', 'why_datakwest'],
+          },
+          temperature: 0.55,
+          maxOutputTokens: 500,
+        },
+      }),
     })
     const data = await response.json()
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text
     if (!response.ok || !rawText) return responseJson({ error: 'The public AI preview could not answer just now. Try a shorter question or explore a path below.', remaining: quota.remaining }, 502)
-    const result = JSON.parse(rawText.replace(/```json|```/g, '').trim())
+    const normalizedText = rawText.replace(/```json|```/g, '').trim()
+    let result: Record<string, unknown>
+    try {
+      result = JSON.parse(normalizedText)
+    } catch {
+      const firstBrace = normalizedText.indexOf('{')
+      const lastBrace = normalizedText.lastIndexOf('}')
+      if (firstBrace < 0 || lastBrace <= firstBrace) return responseJson({ error: 'The public AI preview could not format its answer. Try a shorter question or explore a path below.', remaining: quota.remaining }, 502)
+      try {
+        result = JSON.parse(normalizedText.slice(firstBrace, lastBrace + 1))
+      } catch {
+        return responseJson({ error: 'The public AI preview could not format its answer. Try a shorter question or explore a path below.', remaining: quota.remaining }, 502)
+      }
+    }
     const answer = typeof result.answer === 'string' ? result.answer.replace(/\\n/g, '\n').slice(0, 2400) : 'Start with one small, practical question and we will turn it into a useful next step.'
     return responseJson({ answer, next_action: String(result.next_action || '').slice(0, 300), recommended_path: result.recommended_path || null, why_datakwest: String(result.why_datakwest || '').slice(0, 300), remaining: quota.remaining, limit: quota.limit })
-  } catch (error) {
-    return responseJson({ error: error instanceof Error ? error.message : 'The public AI preview could not answer just now.' }, 500)
+  } catch {
+    return responseJson({ error: 'The public AI preview could not answer just now. Try again in a moment.' }, 500)
   }
 })
