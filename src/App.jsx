@@ -21,6 +21,7 @@ const SkillTree = lazy(() => import('./pages/SkillTree'))
 const Assessments = lazy(() => import('./pages/Assessments'))
 const Challenges = lazy(() => import('./pages/Challenges'))
 const Practice = lazy(() => import('./pages/Practice'))
+const Community = lazy(() => import('./pages/Community'))
 
 function RouteLoading() {
   return (
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="/assessments" element={<Protected><Assessments /></Protected>} />
         <Route path="/challenges" element={<Protected><Challenges /></Protected>} />
         <Route path="/practice" element={<Protected><Practice /></Protected>} />
+        <Route path="/community" element={<Protected><Community /></Protected>} />
       </Routes>
     </Suspense>
   )

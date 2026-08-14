@@ -24,6 +24,8 @@ const challenges = await readFile('backend/supabase/migrations/0010_challenge_ce
 const challengeParticipation = await readFile('backend/supabase/migrations/0011_challenge_participation.sql', 'utf8')
 const practiceEngine = await readFile('backend/supabase/migrations/0012_practice_engine.sql', 'utf8')
 const practiceClient = await readFile('src/lib/practice.js', 'utf8')
+const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
+const communityClient = await readFile('src/lib/community.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -247,8 +249,28 @@ test('practice client uses protected RPCs for session, answers, and history', ()
   assert.doesNotMatch(practiceClient, /from\('attempts'\)/)
 })
 
+test('community hub is authenticated, published-only, and membership is server-authoritative', () => {
+  assert.match(communityHub, /create table if not exists public\.community_memberships/i)
+  assert.match(communityHub, /create or replace function public\.get_community_hub/i)
+  assert.match(communityHub, /create or replace function public\.join_community/i)
+  assert.match(communityHub, /create or replace function public\.leave_community/i)
+  assert.match(communityHub, /auth\.uid\(\)/i)
+  assert.match(communityHub, /status = 'active'/i)
+  assert.match(communityHub, /visibility in \('public', 'organisation'\)/i)
+  assert.match(communityHub, /grant execute on function public\.join_community\(uuid\) to authenticated/i)
+  assert.match(communityHub, /grant execute on function public\.leave_community\(uuid\) to authenticated/i)
+  assert.doesNotMatch(communityHub, /create policy[\s\S]*for insert[\s\S]*community_memberships/i)
+})
+
+test('community client uses protected discovery and membership RPCs', () => {
+  assert.match(communityClient, /rpc\('get_community_hub'/)
+  assert.match(communityClient, /rpc\('join_community'/)
+  assert.match(communityClient, /rpc\('leave_community'/)
+  assert.doesNotMatch(communityClient, /from\('community_memberships'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

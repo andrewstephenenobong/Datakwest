@@ -33,6 +33,7 @@
     { "source": "/skill-tree", "destination": "/" },
     { "source": "/assessments", "destination": "/" },
     { "source": "/challenges", "destination": "/" },
-    { "source": "/practice", "destination": "/" }
+    { "source": "/practice", "destination": "/" },
+    { "source": "/community", "destination": "/" }
   ]
 }
