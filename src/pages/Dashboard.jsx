@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import { getDisplayStreak } from '../lib/gamification'
 import { completeDailyMission, getTodaysMission } from '../lib/missions'
+import { getReadinessScore } from '../lib/readiness'
 
 const skillLabels = {
   excel: 'Excel', sql: 'SQL', python: 'Python',
@@ -22,6 +23,8 @@ export default function Dashboard() {
   const [mission, setMission] = useState(null)
   const [missionLoading, setMissionLoading] = useState(false)
   const [missionError, setMissionError] = useState('')
+  const [readiness, setReadiness] = useState(null)
+  const [readinessError, setReadinessError] = useState('')
 
   useEffect(() => {
     async function loadProfile() {
@@ -50,12 +53,15 @@ export default function Dashboard() {
         .eq('user_id', user.id)
 
       const { mission: todaysMission, error: missionLoadError } = await getTodaysMission(user.id)
+      const { readiness: readinessScore, error: readinessLoadError } = await getReadinessScore()
 
       setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
       setSkillProgress(data.skill_progress || {})
       setProgress(progressRows || [])
       setMission(todaysMission)
       setMissionError(missionLoadError?.message || '')
+      setReadiness(readinessScore)
+      setReadinessError(readinessLoadError?.message || '')
       setLoading(false)
     }
 
@@ -151,6 +157,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
+            { label: 'Readiness', value: readiness ? `${readiness.score}%` : '—' },
             { label: 'Mastery Score', value: `${masteryScore}%` },
             { label: 'Phases', value: totalPhases },
             { label: 'Current Phase', value: `${Math.min(currentPhase, totalPhases)} / ${totalPhases}` },
@@ -162,6 +169,36 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        <section className="rounded-2xl p-6 mb-8" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="readiness-title">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6B7A99' }}>Career readiness</p>
+              <h2 id="readiness-title" className="text-xl font-bold mt-1" style={{ color: '#0A2342' }}>
+                {readiness ? `${readiness.score}% — ${readiness.band === 'ready' ? 'Ready to apply' : readiness.band === 'building' ? 'Building confidence' : 'Start building evidence'}` : 'Readiness is being calculated'}
+              </h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>
+                This score is calculated from verified practice, completed missions, and reviewed project evidence.
+              </p>
+            </div>
+            {readiness && <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#E8F0FE', color: '#1E3A5F' }}>Rubric v{readiness.rubric_version}</span>}
+          </div>
+          {readiness && (
+            <div className="grid grid-cols-3 gap-3 mt-5 text-center">
+              {[
+                ['Practice', readiness.factors?.practice_average],
+                ['Missions', readiness.factors?.mission_completion],
+                ['Projects', readiness.factors?.reviewed_projects],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-xl p-3" style={{ background: '#F5F7FA' }}>
+                  <p className="text-xs" style={{ color: '#6B7A99' }}>{label}</p>
+                  <p className="font-bold mt-1" style={{ color: '#0A2342' }}>{value ?? 0}%</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {readinessError && <p className="text-xs mt-4" style={{ color: '#991B1B' }}>{readinessError}</p>}
+        </section>
 
         <section className="rounded-2xl p-6 mb-8" style={{ background: '#0A2342', boxShadow: '0 2px 12px rgba(10,35,66,0.12)' }} aria-labelledby="daily-mission-title">
           <div className="flex items-start justify-between gap-4 flex-wrap">
