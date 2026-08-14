@@ -39,6 +39,12 @@ const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 const platformGovernance = await readFile('backend/supabase/migrations/0019_platform_governance.sql', 'utf8')
 const adminGovernanceClient = await readFile('src/lib/adminGovernance.js', 'utf8')
 const adminGovernancePage = await readFile('src/pages/AdminGovernance.jsx', 'utf8')
+const app = await readFile('src/App.jsx', 'utf8')
+const landingPage = await readFile('src/pages/Landing.jsx', 'utf8')
+const onboardingPage = await readFile('src/pages/Onboarding.jsx', 'utf8')
+const loginPage = await readFile('src/pages/Login.jsx', 'utf8')
+const signupPage = await readFile('src/pages/Signup.jsx', 'utf8')
+const passwordField = await readFile('src/components/PasswordField.jsx', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -425,6 +431,22 @@ test('admin governance client and console use protected RPCs', () => {
   assert.match(adminGovernancePage, /claimModerationCase/)
   assert.match(adminGovernancePage, /getAdminAuditEvents/)
   assert.doesNotMatch(adminGovernancePage, /from\(['\"]moderation_/)
+})
+
+test('public product demo and auth UX are wired for the broader digital-skills product', () => {
+  assert.match(app, /path="\/" element={<Landing \/>}/)
+  assert.match(landingPage, /Try the AI/)
+  assert.match(landingPage, /Explore your directions/)
+  assert.match(landingPage, /Learn by making/)
+  assert.match(landingPage, /limited public demo/i)
+  assert.doesNotMatch(onboardingPage, /Get hired as a Data Analyst/)
+  assert.match(onboardingPage, /Start a career in digital skills/)
+  assert.match(onboardingPage, /grid auto-rows-fr/)
+  assert.match(onboardingPage, /h-full min-h-\[128px\]/)
+  assert.match(loginPage, /PasswordField/)
+  assert.match(signupPage, /PasswordField/)
+  assert.match(passwordField, /Show password/)
+  assert.match(passwordField, /type={visible \? 'text' : 'password'}/)
 })
 
 test('backend source contains no obvious secret material', () => {
