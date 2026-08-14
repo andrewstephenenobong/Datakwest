@@ -27,6 +27,11 @@
     { "source": "/tracks/:skill/phase/:phaseNumber", "destination": "/" },
     { "source": "/project", "destination": "/" },
     { "source": "/tutor", "destination": "/" },
-    { "source": "/portfolio", "destination": "/" }
+    { "source": "/portfolio", "destination": "/" },
+    { "source": "/achievements", "destination": "/" },
+    { "source": "/notifications", "destination": "/" },
+    { "source": "/skill-tree", "destination": "/" },
+    { "source": "/assessments", "destination": "/" },
+    { "source": "/challenges", "destination": "/" }
   ]
 }
