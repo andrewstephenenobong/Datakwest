@@ -349,7 +349,6 @@ export default function Lesson() {
     ? lessonRows.find(r => r.lesson_index === activeIndex)?.content
     : null
   const activeContentRef = activeContent || {}
-  const activeLessonRow = activeIndex !== null ? lessonRows.find(r => r.lesson_index === activeIndex) : null
   const questions = activeContent?.checkQuestions || []
   const currentQuestion = questions[qIndex]
   const showPracticeReadOnly = reviewOnly && activeContentRef.practiceTask

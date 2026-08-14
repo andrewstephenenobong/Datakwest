@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -12,7 +12,6 @@ export default function Quiz() {
   const { id } = useParams()
   const phaseNumber = parseInt(id, 10)
   const { user } = useAuth()
-  const navigate = useNavigate()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
