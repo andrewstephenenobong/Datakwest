@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /lesson/
+Disallow: /quiz/
+Disallow: /remediate/
+Disallow: /tracks
+
+Sitemap: https://datakwest.vercel.app/sitemap.xml

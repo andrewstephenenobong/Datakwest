@@ -52,7 +52,7 @@ export default function Dashboard() {
     }
 
     if (user) loadProfile()
-  }, [user])
+  }, [user, navigate])
 
   if (loading) {
     return (
