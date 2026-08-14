@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Navbar from '../components/Navbar'
-import { getInterviewWorkspace, startInterviewSession, submitInterviewResponse, submitInterviewSession } from '../lib/interviews'
+import { getInterviewWorkspace, startInterviewSession, submitInterviewResponse, submitInterviewSession, evaluateInterview, getInterviewEvaluation } from '../lib/interviews'
 
 const interviewTypes = [
   { value: 'technical', label: 'Technical', description: 'Explain concepts and decisions clearly.' },
@@ -17,6 +17,7 @@ function getPromptText(prompt) {
 
 export default function Interviews() {
   const [selectedType, setSelectedType] = useState('technical')
+  const [selectedLocale, setSelectedLocale] = useState('en')
   const [workspace, setWorkspace] = useState(null)
   const [session, setSession] = useState(null)
   const [answer, setAnswer] = useState('')
@@ -24,6 +25,7 @@ export default function Interviews() {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [latestEvaluation, setLatestEvaluation] = useState(null)
 
   async function loadWorkspace(type = selectedType) {
     setLoading(true)
@@ -47,7 +49,22 @@ export default function Interviews() {
     return () => { active = false }
   }, [selectedType])
 
+  const latestCompletedSessionId = useMemo(() => workspace?.history?.find((item) => item.status === 'completed' && item.session_id)?.session_id || null, [workspace])
+
+  useEffect(() => {
+    let active = true
+    if (!latestCompletedSessionId) return () => { active = false }
+    getInterviewEvaluation(latestCompletedSessionId).then(({ evaluation, error: evaluationError }) => {
+      if (active && !evaluationError && evaluation?.status === 'completed') setLatestEvaluation(evaluation)
+    })
+    return () => { active = false }
+  }, [latestCompletedSessionId])
+
   const template = useMemo(() => workspace?.templates?.[0] || null, [workspace])
+  const supportedLocales = useMemo(() => {
+    const locales = Array.isArray(template?.supported_locales) ? template.supported_locales : ['en']
+    return locales.length ? locales : ['en']
+  }, [template])
   const prompt = session?.prompts?.[session.currentPromptIndex || 0]
   const promptCount = session?.prompts?.length || 0
   const answeredCount = session?.answered_count || 0
@@ -57,7 +74,7 @@ export default function Interviews() {
     setWorking(true)
     setError('')
     setNotice('')
-    const { session: nextSession, error: startError } = await startInterviewSession(template.id)
+    const { session: nextSession, error: startError } = await startInterviewSession(template.id, selectedLocale)
     if (startError) {
       setError(startError.message)
     } else {
@@ -93,11 +110,13 @@ export default function Interviews() {
     if (!session) return
     setWorking(true)
     setError('')
-    const { result, error: submitError } = await submitInterviewSession(session.session_id)
+    const { error: submitError } = await submitInterviewSession(session.session_id)
     if (submitError) setError(submitError.message)
     else {
       setSession(null)
-      setNotice(result?.evaluation_status === 'pending' ? 'Your responses are saved. Evaluation will be generated from the versioned rubric.' : 'Interview submitted.')
+      setNotice('Your responses are saved. Datakwest is evaluating them against the versioned rubric.')
+      const { error: evaluationError } = await evaluateInterview(session.session_id)
+      if (evaluationError) setNotice('Your responses are saved. Evaluation is pending and will appear here when ready.')
       await loadWorkspace()
     }
     setWorking(false)
@@ -122,7 +141,9 @@ export default function Interviews() {
         <section className="grid lg:grid-cols-[280px_1fr] gap-5 mb-8" aria-labelledby="interview-modes-title">
           <div className="rounded-2xl p-5" style={{ background: '#0A2342' }}>
             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>Choose a mode</p>
-            <h2 id="interview-modes-title" className="text-xl font-bold text-white mt-2">Build career confidence</h2>
+                          <h2 id="interview-modes-title" className="text-xl font-bold text-white mt-2">Build career confidence</h2>
+              <label className="block text-xs font-semibold mt-5" style={{ color: 'rgba(255,255,255,0.75)' }}>Practice language<select value={selectedLocale} onChange={(event) => setSelectedLocale(event.target.value)} className="block w-full rounded-lg px-3 py-2 mt-2 text-sm" style={{ color: '#0A2342' }} aria-label="Interview practice language">{supportedLocales.map((locale) => <option key={locale} value={locale}>{locale === 'en' ? 'English' : locale.toUpperCase()}</option>)}</select></label>
+
             <p className="text-sm leading-6 mt-3" style={{ color: 'rgba(255,255,255,0.7)' }}>Start with one interview type. You can build breadth after you understand where your evidence is strongest.</p>
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
@@ -137,6 +158,15 @@ export default function Interviews() {
 
         {error && <div role="alert" className="rounded-xl px-4 py-3 mb-5 text-sm" style={{ background: '#FDECEC', color: '#991B1B' }}>{error}</div>}
         {notice && <div role="status" className="rounded-xl px-4 py-3 mb-5 text-sm" style={{ background: '#E8F5E9', color: '#246B36' }}>{notice}</div>}
+
+        {latestEvaluation && latestEvaluation.session_id === latestCompletedSessionId && !session && (
+          <section className="rounded-2xl p-6 mb-6" style={{ background: 'white', boxShadow: '0 12px 32px rgba(10,35,66,0.08)' }} aria-labelledby="evaluation-title">
+            <div className="flex items-start justify-between gap-4 flex-wrap"><div><p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#B28A12' }}>Latest evaluated evidence · {latestEvaluation.locale}</p><h2 id="evaluation-title" className="text-2xl font-bold mt-2" style={{ color: '#0A2342' }}>Interview score: {latestEvaluation.total_score}/100</h2></div><span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: '#E8F5E9', color: '#246B36' }}>Rubric v{latestEvaluation.evaluation_version}</span></div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">{Object.entries(latestEvaluation.rubric_scores || {}).slice(0, 4).map(([key, value]) => <div key={key} className="rounded-xl p-3" style={{ background: '#F5F7FA' }}><p className="text-xs capitalize" style={{ color: '#6B7A99' }}>{key.replaceAll('_', ' ')}</p><p className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>{value}/100</p></div>)}</div>
+            <div className="grid md:grid-cols-2 gap-5 mt-5"><div><p className="text-sm font-bold" style={{ color: '#0A2342' }}>What is working</p><ul className="mt-2 space-y-1 text-sm" style={{ color: '#6B7A99' }}>{(latestEvaluation.strengths || []).map((item, index) => <li key={`${item}-${index}`}>• {item}</li>)}</ul></div><div><p className="text-sm font-bold" style={{ color: '#0A2342' }}>Next improvements</p><ul className="mt-2 space-y-1 text-sm" style={{ color: '#6B7A99' }}>{(latestEvaluation.improvements || []).map((item, index) => <li key={`${item}-${index}`}>• {item}</li>)}</ul></div></div>
+            <p className="text-xs mt-5" style={{ color: '#6B7A99' }}>This evidence remains current until {new Date(latestEvaluation.evidence_fresh_until).toLocaleDateString()} and contributes to your explainable readiness profile.</p>
+          </section>
+        )}
 
         {loading ? (
           <div className="rounded-2xl p-10 text-center" style={{ background: 'white' }}>Loading interview practice…</div>

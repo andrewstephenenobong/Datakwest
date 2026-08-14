@@ -7,9 +7,10 @@ export async function getInterviewWorkspace(interviewType = null) {
   return { workspace: data, error }
 }
 
-export async function startInterviewSession(templateId) {
+export async function startInterviewSession(templateId, locale = 'en') {
   const { data, error } = await supabase.rpc('start_interview_session', {
     p_template_id: templateId,
+    p_locale: locale,
   })
   return { session: data, error }
 }
@@ -22,6 +23,20 @@ export async function submitInterviewResponse(sessionId, promptIndex, response, 
     p_duration_seconds: durationSeconds,
   })
   return { result: data, error }
+}
+
+export async function evaluateInterview(sessionId) {
+  const { data, error } = await supabase.functions.invoke('evaluate-interview', {
+    body: { sessionId },
+  })
+  return { result: data, error }
+}
+
+export async function getInterviewEvaluation(sessionId) {
+  const { data, error } = await supabase.rpc('get_interview_evaluation', {
+    p_session_id: sessionId,
+  })
+  return { evaluation: data, error }
 }
 
 export async function submitInterviewSession(sessionId) {
