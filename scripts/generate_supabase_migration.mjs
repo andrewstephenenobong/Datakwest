@@ -21,6 +21,10 @@ function sqlString(value) {
   return `'${String(value).replaceAll("'", "''")}'`
 }
 
+function sqlIdentifier(value) {
+  return `"${String(value).replaceAll('"', '""')}"`
+}
+
 function sqlType(column) {
   if (column.data_type === 'USER-DEFINED') return column.format || 'text'
   return column.data_type
@@ -69,7 +73,7 @@ for (const fn of catalog.functions || []) {
 
 for (const policy of catalog.policies || []) {
   const tableName = policy.tablename.replaceAll(/[^a-zA-Z0-9_]/g, '_')
-  const policyName = sqlString(policy.policyname)
+  const policyName = sqlIdentifier(policy.policyname)
   const roles = (policy.roles || ['public']).map(role => role === 'public' ? 'public' : JSON.stringify(role)).join(', ')
   const using = policy.qual ? ` using (${policy.qual})` : ''
   const check = policy.with_check ? ` with check (${policy.with_check})` : ''
