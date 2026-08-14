@@ -32,16 +32,23 @@ export default function Dashboard() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (error) {
-        setError(error.message)
+        setError('We could not load your learner profile. Please refresh and try again.')
         setLoading(false)
         return
       }
 
+      if (!data) {
+        setLoading(false)
+        navigate('/onboarding', { replace: true })
+        return
+      }
+
       if (!data.onboarding_completed) {
-        navigate('/onboarding')
+        setLoading(false)
+        navigate('/onboarding', { replace: true })
         return
       }
 
@@ -80,7 +87,16 @@ export default function Dashboard() {
   if (error || !profile?.roadmap) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#F5F7FA' }}>
-        <p style={{ color: '#991B1B' }}>{error || 'No roadmap found.'}</p>
+        <div className="w-full max-w-md rounded-2xl p-8 text-center" style={{ background: 'white', boxShadow: '0 18px 50px rgba(10,35,66,0.10)' }}>
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: '#E8F0FE', color: '#2456A6' }} aria-hidden="true">!</div>
+          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Dashboard recovery</p>
+          <h1 className="mt-2 text-2xl font-bold" style={{ color: '#0A2342' }}>Your workspace is almost ready</h1>
+          <p className="mt-3 text-sm leading-6" style={{ color: '#6B7A99' }}>{error || 'Complete onboarding to generate your roadmap and daily mission.'}</p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button type="button" onClick={() => window.location.reload()} className="rounded-lg px-4 py-3 text-sm font-bold" style={{ background: '#0A2342', color: 'white' }}>Refresh workspace</button>
+            <button type="button" onClick={() => navigate('/onboarding')} className="rounded-lg px-4 py-3 text-sm font-bold" style={{ background: '#F5F7FA', color: '#0A2342' }}>Open onboarding</button>
+          </div>
+        </div>
       </div>
     )
   }
