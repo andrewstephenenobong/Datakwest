@@ -263,11 +263,15 @@ test('community hub is authenticated, published-only, and membership is server-a
   assert.doesNotMatch(communityHub, /create policy[\s\S]*for insert[\s\S]*community_memberships/i)
 })
 
-test('community client uses protected discovery and membership RPCs', () => {
+test('community client uses protected discovery, membership, feed, post, and report RPCs', () => {
   assert.match(communityClient, /rpc\('get_community_hub'/)
   assert.match(communityClient, /rpc\('join_community'/)
   assert.match(communityClient, /rpc\('leave_community'/)
+  assert.match(communityClient, /rpc\('get_community_feed'/)
+  assert.match(communityClient, /rpc\('create_community_post'/)
+  assert.match(communityClient, /rpc\('report_community_post'/)
   assert.doesNotMatch(communityClient, /from\('community_memberships'\)/)
+  assert.doesNotMatch(communityClient, /from\('community_posts'\)/)
 })
 
 test('community discussions are moderated, membership-gated, and server-authoritative', () => {
