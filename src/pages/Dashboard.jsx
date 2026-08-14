@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import { getDisplayStreak } from '../lib/gamification'
+import { completeDailyMission, getTodaysMission } from '../lib/missions'
 
 const skillLabels = {
   excel: 'Excel', sql: 'SQL', python: 'Python',
@@ -18,6 +19,9 @@ export default function Dashboard() {
   const [skillProgress, setSkillProgress] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [mission, setMission] = useState(null)
+  const [missionLoading, setMissionLoading] = useState(false)
+  const [missionError, setMissionError] = useState('')
 
   useEffect(() => {
     async function loadProfile() {
@@ -45,9 +49,13 @@ export default function Dashboard() {
         .select('*')
         .eq('user_id', user.id)
 
+      const { mission: todaysMission, error: missionLoadError } = await getTodaysMission(user.id)
+
       setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
       setSkillProgress(data.skill_progress || {})
       setProgress(progressRows || [])
+      setMission(todaysMission)
+      setMissionError(missionLoadError?.message || '')
       setLoading(false)
     }
 
@@ -82,6 +90,33 @@ export default function Dashboard() {
   const sortedPhaseNumbers = (roadmap.phases || []).map(p => p.number).sort((a, b) => a - b)
   const currentPhase = sortedPhaseNumbers.find(n => !passedPhaseNumbers.has(n)) || sortedPhaseNumbers[sortedPhaseNumbers.length - 1] || 1
   const allPhasesPassed = totalPhases > 0 && passedPhaseNumbers.size === totalPhases
+  const missionPayload = mission?.payload || {}
+
+  async function handleMissionComplete() {
+    if (!mission || mission.status === 'completed') return
+    setMissionLoading(true)
+    setMissionError('')
+
+    const { result, error: completionError } = await completeDailyMission(mission.id)
+    if (completionError) {
+      setMissionError(completionError.message)
+      setMissionLoading(false)
+      return
+    }
+
+    setMission((current) => ({
+      ...current,
+      status: result?.status || 'completed',
+      completed_at: new Date().toISOString(),
+    }))
+    setProfile((current) => current ? {
+      ...current,
+      xp: (current.xp || 0) + (result?.xp_awarded || 0),
+      streak: result?.streak ?? current.streak,
+      streakActiveToday: true,
+    } : current)
+    setMissionLoading(false)
+  }
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
@@ -127,6 +162,40 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        <section className="rounded-2xl p-6 mb-8" style={{ background: '#0A2342', boxShadow: '0 2px 12px rgba(10,35,66,0.12)' }} aria-labelledby="daily-mission-title">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#D4AF37' }}>Today’s mission</p>
+              <h2 id="daily-mission-title" className="text-xl font-bold text-white mt-1">
+                {mission ? (missionPayload.title || 'Complete your next learning action') : 'Your next learning action is being prepared'}
+              </h2>
+              <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                {mission ? (missionPayload.description || 'Make measurable progress with one focused task today.') : 'Return soon for a personalised mission aligned to your roadmap.'}
+              </p>
+            </div>
+            {mission && (
+              <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: mission.status === 'completed' ? '#DDF5E3' : '#FFFBEF', color: mission.status === 'completed' ? '#2E7D32' : '#8A6500' }}>
+                {mission.status === 'completed' ? 'Completed' : 'Ready'}
+              </span>
+            )}
+          </div>
+          {missionError && <p className="text-xs mt-4" style={{ color: '#FECACA' }}>{missionError}</p>}
+          {mission && mission.status !== 'completed' && (
+            <button
+              type="button"
+              onClick={handleMissionComplete}
+              disabled={missionLoading}
+              className="mt-5 px-5 py-3 rounded-xl text-sm font-bold transition-opacity disabled:opacity-60"
+              style={{ background: '#D4AF37', color: '#0A2342' }}
+            >
+              {missionLoading ? 'Saving progress…' : 'Mark mission complete'}
+            </button>
+          )}
+          {mission?.status === 'completed' && (
+            <p className="text-sm font-semibold mt-5" style={{ color: '#CDEFD5' }}>Progress recorded. Your XP and streak have been updated.</p>
+          )}
+        </section>
 
         <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Your skill levels</h3>
