@@ -7,6 +7,8 @@ const missions = await readFile('backend/supabase/migrations/0003_daily_mission_
 const readiness = await readFile('backend/supabase/migrations/0004_readiness_scoring.sql', 'utf8')
 const missionClient = await readFile('src/lib/missions.js', 'utf8')
 const readinessClient = await readFile('src/lib/readiness.js', 'utf8')
+const projects = await readFile('backend/supabase/migrations/0005_project_submission_workflow.sql', 'utf8')
+const projectClient = await readFile('src/lib/projects.js', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -69,8 +71,24 @@ test('readiness client does not accept a client-supplied score', () => {
   assert.doesNotMatch(readinessClient, /score:/)
 })
 
+test('project submission workflow controls status transitions server-side', () => {
+  assert.match(projects, /create or replace function public\.submit_project_evidence/i)
+  assert.match(projects, /security definer/i)
+  assert.match(projects, /auth\.uid\(\)/i)
+  assert.match(projects, /status = 'published'/i)
+  assert.match(projects, /status = 'submitted'/i)
+  assert.match(projects, /grant execute on function public\.submit_project_evidence\(uuid, jsonb, text\) to authenticated/i)
+  assert.doesNotMatch(projects, /create policy[\s\S]*for update[\s\S]*on public\.submissions/i)
+})
+
+test('project client submits evidence through the protected RPC', () => {
+  assert.match(projectClient, /from\('projects'\)/)
+  assert.match(projectClient, /rpc\('submit_project_evidence'/)
+  assert.doesNotMatch(projectClient, /from\('submissions'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, missionClient, readinessClient]
+  const files = [foundation, missions, readiness, projects, missionClient, readinessClient, projectClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
