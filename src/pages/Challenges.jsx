@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
-import { getChallengeCenter } from '../lib/challenges'
+import { getChallengeCenter, joinChallenge } from '../lib/challenges'
 
 const typeLabels = {
   weekly: 'Weekly challenge',
@@ -23,6 +23,7 @@ export default function Challenges() {
   const [challenges, setChallenges] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [joiningId, setJoiningId] = useState(null)
 
   useEffect(() => {
     async function loadChallenges() {
@@ -34,6 +35,20 @@ export default function Challenges() {
 
     if (user) loadChallenges()
   }, [user])
+
+  async function handleJoin(challengeId) {
+    setJoiningId(challengeId)
+    setError('')
+    const { participation, error: joinError } = await joinChallenge(challengeId)
+    if (joinError) {
+      setError(joinError.message)
+    } else {
+      setChallenges((current) => current.map((challenge) => challenge.id === challengeId
+        ? { ...challenge, participation_status: participation?.participation_status || 'enrolled' }
+        : challenge))
+    }
+    setJoiningId(null)
+  }
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
@@ -77,6 +92,21 @@ export default function Challenges() {
                     <p className="text-xs" style={{ color: '#6B7A99' }}>Ends</p>
                     <p className="font-semibold mt-1" style={{ color: '#0A2342' }}>{formatDate(challenge.ends_at)}</p>
                   </div>
+                </div>
+                <div className="mt-5 flex items-center justify-between gap-3 flex-wrap">
+                  {challenge.participation_status ? (
+                    <span className="text-sm font-semibold" style={{ color: '#2E7D32' }}>You are enrolled</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleJoin(challenge.id)}
+                      disabled={joiningId === challenge.id || challenge.status !== 'active'}
+                      className="px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-60"
+                      style={{ background: '#0A2342', color: 'white' }}
+                    >
+                      {joiningId === challenge.id ? 'Enrolling…' : challenge.status === 'active' ? 'Join challenge' : 'Enrollment opens soon'}
+                    </button>
+                  )}
                 </div>
               </article>
             ))}

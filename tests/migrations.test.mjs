@@ -21,6 +21,7 @@ const skillTreeClient = await readFile('src/lib/skillTree.js', 'utf8')
 const assessments = await readFile('backend/supabase/migrations/0009_assessment_center.sql', 'utf8')
 const assessmentsClient = await readFile('src/lib/assessments.js', 'utf8')
 const challenges = await readFile('backend/supabase/migrations/0010_challenge_center.sql', 'utf8')
+const challengeParticipation = await readFile('backend/supabase/migrations/0011_challenge_participation.sql', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -191,13 +192,24 @@ test('challenge center is authenticated and exposes only active or scheduled cha
   assert.match(challenges, /challenges_status_schedule_idx/i)
 })
 
-test('challenge client reads through the protected RPC', () => {
+test('challenge client reads and enrolls through protected RPCs', () => {
   assert.match(challengesClient, /rpc\('get_challenge_center'/)
-  assert.doesNotMatch(challengesClient, /insert\(|update\(|delete\(/)
+  assert.match(challengesClient, /rpc\('join_challenge'/)
+  assert.doesNotMatch(challengesClient, /from\('challenge_participants'\)/)
+})
+
+test('challenge participation is owner-scoped and server-authoritative', () => {
+  assert.match(challengeParticipation, /create table if not exists public\.challenge_participants/i)
+  assert.match(challengeParticipation, /auth\.uid\(\)/i)
+  assert.match(challengeParticipation, /create or replace function public\.join_challenge\(p_challenge_id uuid\)/i)
+  assert.match(challengeParticipation, /status in \('active', 'scheduled'\)/i)
+  assert.match(challengeParticipation, /on conflict \(challenge_id, user_id\)/i)
+  assert.match(challengeParticipation, /grant execute on function public\.join_challenge\(uuid\) to authenticated/i)
+  assert.doesNotMatch(challengeParticipation, /create policy[\s\S]*for insert[\s\S]*challenge_participants/i)
 })
 
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
