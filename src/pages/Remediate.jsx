@@ -54,6 +54,8 @@ export default function Remediate() {
     }
 
     if (user) load()
+    // The generator is intentionally called once per authenticated phase load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, phaseNumber])
 
   async function generateRemediation(foundPhase, assessmentData) {
