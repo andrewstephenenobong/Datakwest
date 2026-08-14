@@ -12,6 +12,8 @@ const projectClient = await readFile('src/lib/projects.js', 'utf8')
 const tutorFunction = await readFile('backend/supabase/functions/tutor-chat.ts', 'utf8')
 const tutorClient = await readFile('src/lib/tutor.js', 'utf8')
 const portfolioClient = await readFile('src/lib/portfolio.js', 'utf8')
+const achievements = await readFile('backend/supabase/migrations/0006_achievements.sql', 'utf8')
+const achievementsClient = await readFile('src/lib/achievements.js', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -113,8 +115,22 @@ test('portfolio client reads learner-owned evidence without mutation paths', () 
   assert.doesNotMatch(portfolioClient, /insert\(|update\(|delete\(/)
 })
 
+test('achievements are awarded from server-verified evidence', () => {
+  assert.match(achievements, /create or replace function public\.get_learner_achievements/i)
+  assert.match(achievements, /security definer/i)
+  assert.match(achievements, /auth\.uid\(\)/i)
+  assert.match(achievements, /insert into public\.user_badges/i)
+  assert.match(achievements, /on conflict \(user_id, badge_id\) do nothing/i)
+  assert.match(achievements, /grant execute on function public\.get_learner_achievements\(\) to authenticated/i)
+})
+
+test('achievements client uses the protected RPC', () => {
+  assert.match(achievementsClient, /rpc\('get_learner_achievements'\)/)
+  assert.doesNotMatch(achievementsClient, /from\('user_badges'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient]
+  const files = [foundation, missions, readiness, projects, achievements, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
