@@ -4,7 +4,7 @@ export default function AuthShell({ eyebrow, title, subtitle, children, footer, 
   return (
     <div className="min-h-screen" style={{ background: '#F4F7FB' }}>
       <header className="flex items-center justify-between px-6 py-5 sm:px-10">
-        <Link to="/" className="flex items-center gap-3" aria-label="Go to DataKwest home"><img src="/datakwest_icon_bg3.png" alt="DataKwest logo" className="h-10 w-10 rounded-xl object-contain" /><div><p className="text-sm font-black tracking-tight" style={{ color: '#0A2342' }}>DATAKWEST</p><p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#8391A7' }}>Digital skills, one mission at a time</p></div></Link>
+        <Link to="/" className="flex items-center gap-3" aria-label="Go to DataKwest home"><img src="/datakwest_logo_lockup.png" alt="DataKwest logo" className="h-12 w-48 object-contain object-left" /><div><p className="text-sm font-black tracking-tight" style={{ color: '#0A2342' }}>DATAKWEST</p><p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#8391A7' }}>Digital skills, one mission at a time</p></div></Link>
         <Link to="/" className="hidden text-sm font-bold sm:block" style={{ color: '#2456A6' }}>Explore Datakwest</Link>
       </header>
       <main className="mx-auto grid max-w-6xl gap-8 px-6 pb-12 pt-4 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-10 lg:pt-10">
