@@ -33,6 +33,7 @@ const skillBattles = await readFile('backend/supabase/migrations/0016_skill_batt
 const skillBattlesClient = await readFile('src/lib/skillBattles.js', 'utf8')
 const marketplace = await readFile('backend/supabase/migrations/0017_marketplace.sql', 'utf8')
 const marketplaceClient = await readFile('src/lib/marketplace.js', 'utf8')
+const richerLiveChallenges = await readFile('backend/supabase/migrations/0018_richer_live_challenges.sql', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -359,8 +360,27 @@ test('marketplace client uses protected listing and application RPCs', () => {
   assert.doesNotMatch(marketplaceClient, /from\('applications'\)/)
 })
 
+test('richer live challenges are timed, private, scored, and dispute-capable', () => {
+  assert.match(richerLiveChallenges, /create table if not exists public\.challenge_rounds/i)
+  assert.match(richerLiveChallenges, /answer_key jsonb/i)
+  assert.match(richerLiveChallenges, /create table if not exists public\.challenge_round_sessions/i)
+  assert.match(richerLiveChallenges, /create table if not exists public\.challenge_checkpoint_submissions/i)
+  assert.match(richerLiveChallenges, /create table if not exists public\.challenge_score_disputes/i)
+  assert.match(richerLiveChallenges, /create or replace function public\.get_live_challenge_workspace/i)
+  assert.match(richerLiveChallenges, /create or replace function public\.start_live_challenge_round/i)
+  assert.match(richerLiveChallenges, /create or replace function public\.submit_live_challenge_round/i)
+  assert.match(richerLiveChallenges, /create or replace function public\.get_live_challenge_leaderboard/i)
+  assert.match(richerLiveChallenges, /create or replace function public\.report_live_challenge_score/i)
+  assert.match(richerLiveChallenges, /challenge_enrollment_required/i)
+  assert.match(richerLiveChallenges, /now\(\) between r\.starts_at and r\.ends_at/i)
+  assert.match(richerLiveChallenges, /answer_key/i)
+  assert.match(richerLiveChallenges, /row_number\(\) over/i)
+  assert.match(richerLiveChallenges, /grant execute on function public\.submit_live_challenge_round\(uuid, jsonb\) to authenticated/i)
+  assert.doesNotMatch(richerLiveChallenges, /create policy[\s\S]*for insert[\s\S]*challenge_round_sessions/i)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
