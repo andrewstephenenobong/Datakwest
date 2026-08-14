@@ -94,7 +94,7 @@ export default function Onboarding() {
       <div className="min-h-screen flex items-center justify-center px-6 py-10" style={{ background: '#F4F7FB' }}>
         <div className="w-full max-w-4xl grid lg:grid-cols-[0.8fr_1.2fr] overflow-hidden rounded-[2rem]" style={{ background: 'white', boxShadow: '0 24px 80px rgba(10,35,66,0.14)' }}>
           <div className="hidden lg:flex flex-col justify-between p-10" style={{ background: '#0A2342' }}>
-            <div><div className="h-11 w-11 rounded-2xl flex items-center justify-center text-lg font-black" style={{ background: '#D4AF37', color: '#0A2342' }}>D</div><p className="mt-8 text-xs font-bold uppercase tracking-[0.24em]" style={{ color: '#D4AF37' }}>Datakwest AI</p><h2 className="mt-3 text-3xl font-bold leading-tight text-white">Your next chapter is taking shape.</h2></div>
+            <div><img src="/datakwest_icon_bg3.png" alt="DataKwest logo" className="h-11 w-11 rounded-2xl object-contain" /><p className="mt-8 text-xs font-bold uppercase tracking-[0.24em]" style={{ color: '#D4AF37' }}>Datakwest AI</p><h2 className="mt-3 text-3xl font-bold leading-tight text-white">Your next chapter is taking shape.</h2></div>
             <p className="text-sm leading-6" style={{ color: 'rgba(255,255,255,0.68)' }}>We are turning your goals, time, and experience into a practical path you can follow.</p>
           </div>
           <div className="flex min-h-[440px] flex-col items-center justify-center p-8 sm:p-12 text-center">
@@ -112,7 +112,7 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen" style={{ background: '#F4F7FB' }}>
       <header className="flex items-center justify-between px-6 py-5 sm:px-10">
-        <div className="flex items-center gap-3"><div className="h-10 w-10 rounded-xl flex items-center justify-center font-black" style={{ background: '#0A2342', color: '#D4AF37' }}>D</div><div><p className="text-sm font-black tracking-tight" style={{ color: '#0A2342' }}>DATAKWEST</p><p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#8391A7' }}>Career operating system</p></div></div>
+        <div className="flex items-center gap-3"><img src="/datakwest_icon_bg3.png" alt="DataKwest logo" className="h-10 w-10 rounded-xl object-contain" /><div><p className="text-sm font-black tracking-tight" style={{ color: '#0A2342' }}>DATAKWEST</p><p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#8391A7' }}>Career operating system</p></div></div>
         <div className="hidden sm:flex items-center gap-3 text-xs font-semibold" style={{ color: '#6B7A99' }}><span className="h-2 w-2 rounded-full" style={{ background: '#37A169' }} />Saved automatically <span className="mx-1" style={{ color: '#D6DEE9' }}>|</span><span>{stepIndex + 1} / {steps.length}</span></div>
       </header>
 
