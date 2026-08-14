@@ -37,6 +37,9 @@ const richerLiveChallenges = await readFile('backend/supabase/migrations/0018_ri
 const liveChallengesClient = await readFile('src/lib/liveChallenges.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 const platformGovernance = await readFile('backend/supabase/migrations/0019_platform_governance.sql', 'utf8')
+const interviewSimulator = await readFile('backend/supabase/migrations/0020_interview_simulator.sql', 'utf8')
+const interviewClient = await readFile('src/lib/interviews.js', 'utf8')
+const interviewsPage = await readFile('src/pages/Interviews.jsx', 'utf8')
 const adminGovernanceClient = await readFile('src/lib/adminGovernance.js', 'utf8')
 const adminGovernancePage = await readFile('src/pages/AdminGovernance.jsx', 'utf8')
 const app = await readFile('src/App.jsx', 'utf8')
@@ -399,6 +402,39 @@ test('live challenges client uses protected workspace, round, leaderboard, and d
   assert.doesNotMatch(liveChallengesClient, /from\('challenge_checkpoint_submissions'\)/)
 })
 
+test('interview simulator client and route use protected RPCs', () => {
+  assert.match(interviewClient, /rpc\('get_interview_workspace'/)
+  assert.match(interviewClient, /rpc\('start_interview_session'/)
+  assert.match(interviewClient, /rpc\('submit_interview_response'/)
+  assert.match(interviewClient, /rpc\('submit_interview_session'/)
+  assert.doesNotMatch(interviewClient, /from\(['"]interview_(sessions|responses|templates)/)
+  assert.match(interviewsPage, /getInterviewWorkspace/)
+  assert.match(interviewsPage, /startInterviewSession/)
+  assert.match(interviewsPage, /submitInterviewResponse/)
+  assert.match(interviewsPage, /submitInterviewSession/)
+  assert.match(app, /path="\/interviews" element={<Protected><Interviews \/><\/Protected>}/)
+})
+
+test('interview simulator is private, versioned, and server-authoritative', () => {
+  for (const table of ['interview_templates', 'interview_sessions', 'interview_responses']) {
+    assert.match(interviewSimulator, new RegExp(`create table if not exists public\\.${table}\\b`, 'i'), `missing interview table: ${table}`)
+  }
+  for (const rpc of ['get_interview_workspace', 'start_interview_session', 'submit_interview_response', 'submit_interview_session']) {
+    assert.match(interviewSimulator, new RegExp(`create or replace function public\\.${rpc}`, 'i'), `missing interview RPC: ${rpc}`)
+    assert.match(interviewSimulator, new RegExp(`grant execute on function public\\.${rpc}`, 'i'))
+  }
+  assert.match(interviewSimulator, /security definer/i)
+  assert.match(interviewSimulator, /set search_path = public/i)
+  assert.match(interviewSimulator, /auth\.uid\(\)/i)
+  assert.match(interviewSimulator, /evaluation_status text not null default 'pending'/i)
+  assert.match(interviewSimulator, /total_score numeric\(5,2\)/i)
+  assert.match(interviewSimulator, /prompt_snapshot jsonb/i)
+  assert.match(interviewSimulator, /status = 'published'/i)
+  assert.match(interviewSimulator, /revoke all on table public\.interview_sessions from anon, authenticated/i)
+  assert.match(interviewSimulator, /revoke all on table public\.interview_responses from anon, authenticated/i)
+  assert.doesNotMatch(interviewSimulator, /create policy[\\s\\S]*for insert[\\s\\S]*interview_sessions/i)
+  assert.doesNotMatch(interviewSimulator, /create policy[\\s\\S]*for insert[\\s\\S]*interview_responses/i)
+})
 test('platform governance is scoped, auditable, and RPC-only', () => {
   for (const table of ['platform_policies', 'admin_assignments', 'admin_access_reviews', 'moderation_cases', 'moderation_reports', 'moderation_evidence', 'moderation_actions', 'moderation_appeals', 'moderation_notes', 'admin_audit_log', 'domain_events', 'outbox_jobs']) {
     assert.match(platformGovernance, new RegExp(`create table if not exists public\\.${table}\\b`, 'i'), `missing governance table: ${table}`)

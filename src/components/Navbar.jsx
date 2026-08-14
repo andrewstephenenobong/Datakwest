@@ -24,6 +24,7 @@ export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
     </div>
 
       <div className="flex items-center gap-5">
+        <button type="button" onClick={() => navigate('/interviews')} className="hidden sm:inline-flex text-sm font-bold px-3 py-2 rounded-xl" style={{ background: '#FFF8DE', color: '#8A6C0B' }}>Interview practice</button>
         <div className="hidden sm:flex items-center gap-4 text-sm font-semibold" style={{ color: '#6B7A99' }}>
         <span style={{ opacity: streakActive ? 1 : 0.4 }} title={streakActive ? 'Active today' : 'Complete a lesson today to keep your streak!'}>
          🔥 {streak} day streak
