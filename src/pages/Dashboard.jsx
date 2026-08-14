@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import { getDisplayStreak } from '../lib/gamification'
+import { completeDailyMission, getTodaysMission } from '../lib/missions'
+import { getReadinessScore } from '../lib/readiness'
 
 const skillLabels = {
   excel: 'Excel', sql: 'SQL', python: 'Python',
@@ -18,6 +20,11 @@ export default function Dashboard() {
   const [skillProgress, setSkillProgress] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [mission, setMission] = useState(null)
+  const [missionLoading, setMissionLoading] = useState(false)
+  const [missionError, setMissionError] = useState('')
+  const [readiness, setReadiness] = useState(null)
+  const [readinessError, setReadinessError] = useState('')
 
   useEffect(() => {
     async function loadProfile() {
@@ -45,14 +52,21 @@ export default function Dashboard() {
         .select('*')
         .eq('user_id', user.id)
 
+      const { mission: todaysMission, error: missionLoadError } = await getTodaysMission(user.id)
+      const { readiness: readinessScore, error: readinessLoadError } = await getReadinessScore()
+
       setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
       setSkillProgress(data.skill_progress || {})
       setProgress(progressRows || [])
+      setMission(todaysMission)
+      setMissionError(missionLoadError?.message || '')
+      setReadiness(readinessScore)
+      setReadinessError(readinessLoadError?.message || '')
       setLoading(false)
     }
 
     if (user) loadProfile()
-  }, [user])
+  }, [user, navigate])
 
   if (loading) {
     return (
@@ -82,6 +96,33 @@ export default function Dashboard() {
   const sortedPhaseNumbers = (roadmap.phases || []).map(p => p.number).sort((a, b) => a - b)
   const currentPhase = sortedPhaseNumbers.find(n => !passedPhaseNumbers.has(n)) || sortedPhaseNumbers[sortedPhaseNumbers.length - 1] || 1
   const allPhasesPassed = totalPhases > 0 && passedPhaseNumbers.size === totalPhases
+  const missionPayload = mission?.payload || {}
+
+  async function handleMissionComplete() {
+    if (!mission || mission.status === 'completed') return
+    setMissionLoading(true)
+    setMissionError('')
+
+    const { result, error: completionError } = await completeDailyMission(mission.id)
+    if (completionError) {
+      setMissionError(completionError.message)
+      setMissionLoading(false)
+      return
+    }
+
+    setMission((current) => ({
+      ...current,
+      status: result?.status || 'completed',
+      completed_at: new Date().toISOString(),
+    }))
+    setProfile((current) => current ? {
+      ...current,
+      xp: (current.xp || 0) + (result?.xp_awarded || 0),
+      streak: result?.streak ?? current.streak,
+      streakActiveToday: true,
+    } : current)
+    setMissionLoading(false)
+  }
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
@@ -116,6 +157,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
+            { label: 'Readiness', value: readiness ? `${readiness.score}%` : '—' },
             { label: 'Mastery Score', value: `${masteryScore}%` },
             { label: 'Phases', value: totalPhases },
             { label: 'Current Phase', value: `${Math.min(currentPhase, totalPhases)} / ${totalPhases}` },
@@ -127,6 +169,114 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        <section className="rounded-2xl p-6 mb-8" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="readiness-title">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6B7A99' }}>Career readiness</p>
+              <h2 id="readiness-title" className="text-xl font-bold mt-1" style={{ color: '#0A2342' }}>
+                {readiness ? `${readiness.score}% — ${readiness.band === 'ready' ? 'Ready to apply' : readiness.band === 'building' ? 'Building confidence' : 'Start building evidence'}` : 'Readiness is being calculated'}
+              </h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>
+                This score is calculated from verified practice, completed missions, and reviewed project evidence.
+              </p>
+            </div>
+            {readiness && <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#E8F0FE', color: '#1E3A5F' }}>Rubric v{readiness.rubric_version}</span>}
+          </div>
+          {readiness && (
+            <div className="grid grid-cols-3 gap-3 mt-5 text-center">
+              {[
+                ['Practice', readiness.factors?.practice_average],
+                ['Missions', readiness.factors?.mission_completion],
+                ['Projects', readiness.factors?.reviewed_projects],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-xl p-3" style={{ background: '#F5F7FA' }}>
+                  <p className="text-xs" style={{ color: '#6B7A99' }}>{label}</p>
+                  <p className="font-bold mt-1" style={{ color: '#0A2342' }}>{value ?? 0}%</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {readinessError && <p className="text-xs mt-4" style={{ color: '#991B1B' }}>{readinessError}</p>}
+        </section>
+
+        <section className="rounded-2xl p-6 mb-8" style={{ background: '#0A2342', boxShadow: '0 2px 12px rgba(10,35,66,0.12)' }} aria-labelledby="daily-mission-title">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#D4AF37' }}>Today’s mission</p>
+              <h2 id="daily-mission-title" className="text-xl font-bold text-white mt-1">
+                {mission ? (missionPayload.title || 'Complete your next learning action') : 'Your next learning action is being prepared'}
+              </h2>
+              <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                {mission ? (missionPayload.description || 'Make measurable progress with one focused task today.') : 'Return soon for a personalised mission aligned to your roadmap.'}
+              </p>
+            </div>
+            {mission && (
+              <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: mission.status === 'completed' ? '#DDF5E3' : '#FFFBEF', color: mission.status === 'completed' ? '#2E7D32' : '#8A6500' }}>
+                {mission.status === 'completed' ? 'Completed' : 'Ready'}
+              </span>
+            )}
+          </div>
+          {missionError && <p className="text-xs mt-4" style={{ color: '#FECACA' }}>{missionError}</p>}
+          {mission && mission.status !== 'completed' && (
+            <button
+              type="button"
+              onClick={handleMissionComplete}
+              disabled={missionLoading}
+              className="mt-5 px-5 py-3 rounded-xl text-sm font-bold transition-opacity disabled:opacity-60"
+              style={{ background: '#D4AF37', color: '#0A2342' }}
+            >
+              {missionLoading ? 'Saving progress…' : 'Mark mission complete'}
+            </button>
+          )}
+          {mission?.status === 'completed' && (
+            <p className="text-sm font-semibold mt-5" style={{ color: '#CDEFD5' }}>Progress recorded. Your XP and streak have been updated.</p>
+          )}
+        </section>
+
+        <Link to="/project" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#1E3A5F' }}>Build your portfolio</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Submit a project when you are ready</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Capture what you built, what you learned, and the evidence behind your progress.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open project →</span>
+          </div>
+        </Link>
+
+        <Link to="/tutor" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFFBEF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#8A6500' }}>Tutor AI</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Get unstuck without skipping the work</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Ask questions, explore examples, and build independent confidence.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Ask Tutor →</span>
+          </div>
+        </Link>
+
+        <Link to="/portfolio" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#EAF7F0', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2E7D32' }}>Portfolio</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>See the evidence behind your progress</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Review project submissions, reflections, and feedback in one place.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open portfolio →</span>
+          </div>
+        </Link>
+
+        <Link to="/achievements" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#F2ECFF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6D4CB3' }}>Achievements</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Turn momentum into milestones</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>See verified XP, streak progress, and badges earned from your work.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>View achievements →</span>
+          </div>
+        </Link>
 
         <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Your skill levels</h3>

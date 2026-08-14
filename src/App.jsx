@@ -1,30 +1,59 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import Onboarding from './pages/Onboarding'
-import Dashboard from './pages/Dashboard'
-import Lesson from './pages/Lesson'
-import Quiz from './pages/Quiz'
-import Remediate from './pages/Remediate'
-import Tracks from './pages/Tracks'
-import TrackOverview from './pages/TrackOverview'
-import TrackLesson from './pages/TrackLesson'
+import { lazy, Suspense } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+
+const Login = lazy(() => import('./pages/Login'))
+const Signup = lazy(() => import('./pages/Signup'))
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Lesson = lazy(() => import('./pages/Lesson'))
+const Quiz = lazy(() => import('./pages/Quiz'))
+const Remediate = lazy(() => import('./pages/Remediate'))
+const Tracks = lazy(() => import('./pages/Tracks'))
+const TrackOverview = lazy(() => import('./pages/TrackOverview'))
+const TrackLesson = lazy(() => import('./pages/TrackLesson'))
+const Project = lazy(() => import('./pages/Project'))
+const Tutor = lazy(() => import('./pages/Tutor'))
+const Portfolio = lazy(() => import('./pages/Portfolio'))
+const Achievements = lazy(() => import('./pages/Achievements'))
+
+function RouteLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F7FA' }}>
+      <div
+        className="w-10 h-10 rounded-full border-4 animate-spin"
+        style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }}
+        role="status"
+        aria-label="Loading"
+      />
+    </div>
+  )
+}
+
+function Protected({ children }) {
+  return <ProtectedRoute>{children}</ProtectedRoute>
+}
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/lesson/:id" element={<ProtectedRoute><Lesson /></ProtectedRoute>} />
-      <Route path="/quiz/:id" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
-      <Route path="/remediate/:id" element={<ProtectedRoute><Remediate /></ProtectedRoute>} />
-      <Route path="/tracks" element={<ProtectedRoute><Tracks /></ProtectedRoute>} />
-      <Route path="/tracks/:skill" element={<ProtectedRoute><TrackOverview /></ProtectedRoute>} />
-      <Route path="/tracks/:skill/phase/:phaseNumber" element={<ProtectedRoute><TrackLesson /></ProtectedRoute>} />
-    </Routes>
+    <Suspense fallback={<RouteLoading />}>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/onboarding" element={<Protected><Onboarding /></Protected>} />
+        <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+        <Route path="/lesson/:id" element={<Protected><Lesson /></Protected>} />
+        <Route path="/quiz/:id" element={<Protected><Quiz /></Protected>} />
+        <Route path="/remediate/:id" element={<Protected><Remediate /></Protected>} />
+        <Route path="/tracks" element={<Protected><Tracks /></Protected>} />
+        <Route path="/tracks/:skill" element={<Protected><TrackOverview /></Protected>} />
+        <Route path="/tracks/:skill/phase/:phaseNumber" element={<Protected><TrackLesson /></Protected>} />
+        <Route path="/project" element={<Protected><Project /></Protected>} />
+        <Route path="/tutor" element={<Protected><Tutor /></Protected>} />
+        <Route path="/portfolio" element={<Protected><Portfolio /></Protected>} />
+        <Route path="/achievements" element={<Protected><Achievements /></Protected>} />
+      </Routes>
+    </Suspense>
   )
 }

@@ -1,5 +1,32 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src 'self' https://*.supabase.co" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=()" },
+        { "key": "Access-Control-Allow-Origin", "value": "https://datakwest.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, HEAD, OPTIONS" }
+      ]
+    }
+  ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/", "destination": "/" },
+    { "source": "/login", "destination": "/" },
+    { "source": "/signup", "destination": "/" },
+    { "source": "/onboarding", "destination": "/" },
+    { "source": "/dashboard", "destination": "/" },
+    { "source": "/lesson/:id", "destination": "/" },
+    { "source": "/quiz/:id", "destination": "/" },
+    { "source": "/remediate/:id", "destination": "/" },
+    { "source": "/tracks", "destination": "/" },
+    { "source": "/tracks/:skill", "destination": "/" },
+    { "source": "/tracks/:skill/phase/:phaseNumber", "destination": "/" },
+    { "source": "/project", "destination": "/" },
+    { "source": "/tutor", "destination": "/" },
+    { "source": "/portfolio", "destination": "/" }
   ]
 }

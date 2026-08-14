@@ -1,0 +1,9 @@
+{
+  "projectRef": "jdpseeenhqdvvqguibof",
+  "region": "eu-central-1",
+  "exportedAt": "2026-08-14T01:49:45.869Z",
+  "migrationCount": 0,
+  "tableCount": 7,
+  "edgeFunctionCount": 7,
+  "note": "This export contains the accessible schema inventory and deployed Edge Function source. Secrets, auth configuration, storage objects, and production data are intentionally excluded."
+}
