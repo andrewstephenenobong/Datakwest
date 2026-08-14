@@ -97,6 +97,20 @@
       "updated_at": 1783325621646,
       "verify_jwt": true,
       "version": 3
+    },
+    {
+      "created_at": 1786675666433,
+      "entrypoint_path": "file:///tmp/user_fn_jdpseeenhqdvvqguibof_3a789a8a-78ad-4f22-ac11-b7a4a0e7c9a5_1/source/index.ts",
+      "ezbr_sha256": "e3551ef9213da4852d8c53575e9f3162d19f587402fb164bbfc55fb45429b25b",
+      "id": "3a789a8a-78ad-4f22-ac11-b7a4a0e7c9a5",
+      "import_map": false,
+      "import_map_path": null,
+      "name": "tutor-chat",
+      "slug": "tutor-chat",
+      "status": "ACTIVE",
+      "updated_at": 1786675666433,
+      "verify_jwt": true,
+      "version": 1
     }
   ]
 }

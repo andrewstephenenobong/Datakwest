@@ -13,6 +13,7 @@ const Tracks = lazy(() => import('./pages/Tracks'))
 const TrackOverview = lazy(() => import('./pages/TrackOverview'))
 const TrackLesson = lazy(() => import('./pages/TrackLesson'))
 const Project = lazy(() => import('./pages/Project'))
+const Tutor = lazy(() => import('./pages/Tutor'))
 
 function RouteLoading() {
   return (
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/tracks/:skill" element={<Protected><TrackOverview /></Protected>} />
         <Route path="/tracks/:skill/phase/:phaseNumber" element={<Protected><TrackLesson /></Protected>} />
         <Route path="/project" element={<Protected><Project /></Protected>} />
+        <Route path="/tutor" element={<Protected><Tutor /></Protected>} />
       </Routes>
     </Suspense>
   )

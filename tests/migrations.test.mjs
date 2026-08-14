@@ -9,6 +9,8 @@ const missionClient = await readFile('src/lib/missions.js', 'utf8')
 const readinessClient = await readFile('src/lib/readiness.js', 'utf8')
 const projects = await readFile('backend/supabase/migrations/0005_project_submission_workflow.sql', 'utf8')
 const projectClient = await readFile('src/lib/projects.js', 'utf8')
+const tutorFunction = await readFile('backend/supabase/functions/tutor-chat.ts', 'utf8')
+const tutorClient = await readFile('src/lib/tutor.js', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -87,8 +89,25 @@ test('project client submits evidence through the protected RPC', () => {
   assert.doesNotMatch(projectClient, /from\('submissions'\)/)
 })
 
+test('Tutor AI function enforces authenticated, bounded, usage-limited requests', () => {
+  assert.match(tutorFunction, /auth\.getUser\(\)/)
+  assert.match(tutorFunction, /MAX_MESSAGE_LENGTH = 4000/)
+  assert.match(tutorFunction, /DAILY_LIMIT = 60/)
+  assert.match(tutorFunction, /ai_usage/)
+  assert.match(tutorFunction, /GEMINI_API_KEY/)
+  assert.match(tutorFunction, /conversation_id/)
+  assert.match(tutorFunction, /role: 'assistant'/)
+  assert.doesNotMatch(tutorFunction, /console\.log\(/)
+  assert.doesNotMatch(tutorFunction, /Access-Control-Allow-Origin': '\*'/)
+})
+
+test('Tutor client sends only user-safe request data', () => {
+  assert.match(tutorClient, /functions\.invoke\('tutor-chat'/)
+  assert.doesNotMatch(tutorClient, /GEMINI_API_KEY|SERVICE_ROLE|apiKey/i)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, missionClient, readinessClient, projectClient]
+  const files = [foundation, missions, readiness, projects, missionClient, readinessClient, projectClient, tutorFunction, tutorClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

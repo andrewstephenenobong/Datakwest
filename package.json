@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage",
     "check": "npm run lint && npm run test && npm run build",
     "audit": "npm audit --audit-level=high",
     "preview": "vite preview"

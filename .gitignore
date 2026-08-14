@@ -19,6 +19,7 @@ service-account*.json
 
 # Local temporary payloads and generated request files
 .tmp/
+coverage/
 
 # Logs
 logs/
