@@ -22,6 +22,8 @@ const assessments = await readFile('backend/supabase/migrations/0009_assessment_
 const assessmentsClient = await readFile('src/lib/assessments.js', 'utf8')
 const challenges = await readFile('backend/supabase/migrations/0010_challenge_center.sql', 'utf8')
 const challengeParticipation = await readFile('backend/supabase/migrations/0011_challenge_participation.sql', 'utf8')
+const practiceEngine = await readFile('backend/supabase/migrations/0012_practice_engine.sql', 'utf8')
+const practiceClient = await readFile('src/lib/practice.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -208,8 +210,45 @@ test('challenge participation is owner-scoped and server-authoritative', () => {
   assert.doesNotMatch(challengeParticipation, /create policy[\s\S]*for insert[\s\S]*challenge_participants/i)
 })
 
+test('practice engine creates protected sessions and selects learner-safe items', () => {
+  assert.match(practiceEngine, /create table if not exists public\.practice_sessions/i)
+  assert.match(practiceEngine, /create table if not exists public\.practice_session_items/i)
+  assert.match(practiceEngine, /create or replace function public\.start_practice_session/i)
+  assert.match(practiceEngine, /auth\.uid\(\)/i)
+  assert.match(practiceEngine, /'prompt', pi\.prompt/i)
+  assert.match(practiceEngine, /'metadata', pi\.metadata/i)
+  assert.doesNotMatch(practiceEngine, /'answer', pi\.answer/i)
+  assert.match(practiceEngine, /grant execute on function public\.start_practice_session\(uuid, text, integer, integer\) to authenticated/i)
+})
+
+test('practice answer submission scores server-side and prevents duplicate answers', () => {
+  assert.match(practiceEngine, /create or replace function public\.submit_practice_answer/i)
+  assert.match(practiceEngine, /v_expected := v_item\.answer/i)
+  assert.match(practiceEngine, /v_correct boolean/i)
+  assert.match(practiceEngine, /insert into public\.attempts/i)
+  assert.match(practiceEngine, /practice_item_already_answered/i)
+  assert.match(practiceEngine, /update public\.practice_session_items/i)
+  assert.match(practiceEngine, /grant execute on function public\.submit_practice_answer\(uuid, uuid, jsonb, integer\) to authenticated/i)
+  assert.doesNotMatch(practiceEngine, /create policy[\s\S]*for insert[\s\S]*practice_session_items/i)
+})
+
+test('practice history is authenticated, bounded, and learner-scoped', () => {
+  assert.match(practiceEngine, /create or replace function public\.get_practice_history/i)
+  assert.match(practiceEngine, /user_id = v_user_id AND practice_item_id IS NOT NULL/i)
+  assert.match(practiceEngine, /p_limit < 1 OR p_limit > 100/i)
+  assert.match(practiceEngine, /grant execute on function public\.get_practice_history\(integer\) to authenticated/i)
+})
+
+test('practice client uses protected RPCs for session, answers, and history', () => {
+  assert.match(practiceClient, /rpc\('start_practice_session'/)
+  assert.match(practiceClient, /rpc\('submit_practice_answer'/)
+  assert.match(practiceClient, /rpc\('get_practice_history'/)
+  assert.doesNotMatch(practiceClient, /from\('practice_items'\)/)
+  assert.doesNotMatch(practiceClient, /from\('attempts'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

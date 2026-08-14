@@ -211,6 +211,17 @@ export default function Dashboard() {
           </div>
         </Link>
 
+        <Link to="/practice" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#EAF7F0', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2E7D32' }}>Practice Engine</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Build mastery through deliberate practice</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Use adaptive, timed, spaced, and weak-topic practice sessions.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Start practice →</span>
+          </div>
+        </Link>
+
         <Link to="/challenges" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFFBEF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
