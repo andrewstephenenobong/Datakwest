@@ -40,6 +40,7 @@
     { "source": "/marketplace", "destination": "/" },
     { "source": "/live-challenges", "destination": "/" },
     { "source": "/admin/governance", "destination": "/" },
-    { "source": "/interviews", "destination": "/" }
+    { "source": "/interviews", "destination": "/" },
+    { "source": "/career-centre", "destination": "/" }
   ]
 }

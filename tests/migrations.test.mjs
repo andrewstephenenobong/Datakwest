@@ -51,6 +51,12 @@ const onboardingPage = await readFile('src/pages/Onboarding.jsx', 'utf8')
 const loginPage = await readFile('src/pages/Login.jsx', 'utf8')
 const signupPage = await readFile('src/pages/Signup.jsx', 'utf8')
 const passwordField = await readFile('src/components/PasswordField.jsx', 'utf8')
+const publicAiMigration = await readFile('backend/supabase/migrations/0023_public_ai_preview.sql', 'utf8')
+const publicAiFunction = await readFile('backend/supabase/functions/public-ai-preview.ts', 'utf8')
+const publicAiClient = await readFile('src/lib/publicAi.js', 'utf8')
+const careerCentreMigration = await readFile('backend/supabase/migrations/0024_career_centre.sql', 'utf8')
+const careerCentreClient = await readFile('src/lib/careerCentre.js', 'utf8')
+const careerCentrePage = await readFile('src/pages/CareerCentre.jsx', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -531,4 +537,32 @@ test('backend source contains no obvious secret material', () => {
   const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
+})
+
+test('public AI preview is anonymous-limited, structured, and non-mutating', () => {
+  assert.match(publicAiMigration, /create table if not exists public\.public_ai_preview_usage/i)
+  assert.match(publicAiMigration, /call_count integer/i)
+  assert.match(publicAiMigration, /consume_public_ai_preview/i)
+  assert.match(publicAiMigration, /grant execute on function public\.consume_public_ai_preview\(text\) to service_role/i)
+  assert.match(publicAiFunction, /visitorToken/i)
+  assert.match(publicAiFunction, /consume_public_ai_preview/i)
+  assert.match(publicAiFunction, /response_mime_type: 'application\/json'/i)
+  assert.match(publicAiFunction, /never guarantee employment/i)
+  assert.doesNotMatch(publicAiFunction, /auth\.getUser\(\)/i)
+  assert.match(publicAiClient, /functions\.invoke\('public-ai-preview'/i)
+})
+
+test('Career Centre aggregates protected readiness and career evidence', () => {
+  assert.match(careerCentreMigration, /create or replace function public\.get_career_centre\(\)/i)
+  assert.match(careerCentreMigration, /auth\.uid\(\)/i)
+  assert.match(careerCentreMigration, /get_readiness_score\(\)/i)
+  assert.match(careerCentreMigration, /from public\.submissions/i)
+  assert.match(careerCentreMigration, /from public\.interview_sessions/i)
+  assert.match(careerCentreMigration, /from public\.applications/i)
+  assert.match(careerCentreMigration, /from public\.opportunities/i)
+  assert.match(careerCentreMigration, /grant execute on function public\.get_career_centre\(\) to authenticated/i)
+  assert.match(careerCentreClient, /rpc\('get_career_centre'\)/i)
+  assert.match(careerCentrePage, /Career Centre/i)
+  assert.match(app, /path="\/career-centre"/i)
+  assert.match(landingPage, /replace\(\/\\\\\\\\n\/g/i)
 })

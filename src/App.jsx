@@ -29,6 +29,7 @@ const Marketplace = lazy(() => import('./pages/Marketplace'))
 const LiveChallenges = lazy(() => import('./pages/LiveChallenges'))
 const AdminGovernance = lazy(() => import('./pages/AdminGovernance'))
 const Interviews = lazy(() => import('./pages/Interviews'))
+const CareerCentre = lazy(() => import('./pages/CareerCentre'))
 
 function RouteLoading() {
   return (
@@ -78,6 +79,7 @@ export default function App() {
         <Route path="/live-challenges" element={<Protected><LiveChallenges /></Protected>} />
         <Route path="/admin/governance" element={<Protected><AdminGovernance /></Protected>} />
         <Route path="/interviews" element={<Protected><Interviews /></Protected>} />
+        <Route path="/career-centre" element={<Protected><CareerCentre /></Protected>} />
       </Routes>
     </Suspense>
   )
