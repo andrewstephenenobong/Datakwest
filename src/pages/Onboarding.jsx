@@ -67,18 +67,17 @@ const skillQuestions = {
   ],
 }
 
-const cybersecurityOrientation = {
-  type: 'orientation',
-  key: 'securityOrientation',
-  eyebrow: 'Understand the field',
-  question: 'Cybersecurity is broader than one job title.',
-  helper: 'Before you choose a direction, here is what the main areas mean in everyday work.',
-  areas: [
-    ['Security fundamentals', 'Learn how devices, networks, accounts, and threats fit together. This is the starting point for every cybersecurity path.'],
-    ['Defensive monitoring', 'Watch systems for suspicious activity, investigate alerts, and help organisations respond to incidents.'],
-    ['Web and application security', 'Find and prevent weaknesses in websites, APIs, and software before attackers can use them.'],
-    ['Risk, governance, and compliance', 'Help organisations understand risk, create controls, and meet security responsibilities.'],
-  ],
+const skillOrientations = {
+  'Frontend Development': { eyebrow: 'Understand the field', question: 'Frontend development has more than one starting point.', helper: 'Before you choose a project direction, here is what the main areas mean in everyday work.', areas: [['Responsive websites', 'Create pages that work clearly across phones, tablets, and computers.'], ['React applications', 'Build interactive products with reusable components, state, and user flows.'], ['Design systems and UI components', 'Create consistent buttons, layouts, and interface patterns that teams can reuse.'], ['Interactive web experiences', 'Use motion, interaction, and richer browser capabilities to make experiences feel alive.']] },
+  'Backend Development': { eyebrow: 'Understand the field', question: 'Backend development powers what users do not always see.', helper: 'Learn the main areas before choosing which type of service you want to build.', areas: [['APIs and services', 'Create the reliable connections that let apps send, receive, and process information.'], ['Databases', 'Organise data so it can be stored safely, found quickly, and changed correctly.'], ['Secure systems', 'Protect accounts, data, permissions, and services from misuse.'], ['Deployment and reliability', 'Run backend software in production and keep it available as usage grows.']] },
+  'Full-Stack Development': { eyebrow: 'Understand the field', question: 'Full-stack development connects the whole product.', helper: 'See the major parts of an end-to-end product before choosing what you want to make.', areas: [['User interfaces', 'Shape what people see, click, read, and experience in the browser.'], ['APIs and application logic', 'Define the rules that make a product behave correctly behind the interface.'], ['Data and persistence', 'Store user and business information in a way the product can trust.'], ['Shipping and operations', 'Connect the pieces, deploy them, and keep the working product healthy.']] },
+  'Data Analytics': { eyebrow: 'Understand the field', question: 'Data analytics turns information into better decisions.', helper: 'Here are the main ways analysts work with data before you choose a direction.', areas: [['Dashboards and reporting', 'Make important trends and measures easy for people to understand and monitor.'], ['Business questions', 'Use evidence to explain what is happening and support better decisions.'], ['Data preparation', 'Clean, combine, and organise information so the analysis can be trusted.'], ['Patterns and forecasting', 'Explore relationships and changes to help teams plan what may happen next.']] },
+  'UI/UX Design': { eyebrow: 'Understand the field', question: 'Product design combines empathy, structure, and visual clarity.', helper: 'Learn what designers do across the product journey before choosing where to begin.', areas: [['User research', 'Understand people, their needs, and the problems a product should solve.'], ['Wireframes and prototypes', 'Sketch and test possible flows before building the final interface.'], ['Visual interface design', 'Use layout, type, colour, and components to make products clear and usable.'], ['Usability and product strategy', 'Improve the experience by testing decisions and connecting them to outcomes.']] },
+  'Cybersecurity': { eyebrow: 'Understand the field', question: 'Cybersecurity is broader than one job title.', helper: 'Before you choose a direction, here is what the main areas mean in everyday work.', areas: [['Security fundamentals', 'Learn how devices, networks, accounts, and threats fit together.'], ['Defensive monitoring', 'Watch systems for suspicious activity, investigate alerts, and help respond to incidents.'], ['Web and application security', 'Find and prevent weaknesses in websites, APIs, and software.'], ['Risk, governance, and compliance', 'Help organisations understand risk, create controls, and meet responsibilities.']] },
+  'Cloud & DevOps': { eyebrow: 'Understand the field', question: 'Cloud and DevOps is about shipping and operating software well.', helper: 'Understand the major parts of the work before choosing the area you want to practise.', areas: [['Cloud foundations', 'Understand the services, networks, storage, and permissions that modern apps use.'], ['Deployment and CI/CD', 'Move tested code into production through repeatable delivery pipelines.'], ['Automation', 'Replace repetitive manual work with scripts, configuration, and reliable workflows.'], ['Reliability and monitoring', 'Observe systems, find problems, and keep services dependable for users.']] },
+  'AI & Automation': { eyebrow: 'Understand the field', question: 'AI and automation can improve many kinds of work.', helper: 'See the main ways people use AI before choosing the kind of workflow you want to build.', areas: [['AI-assisted learning and work', 'Use AI to understand information, draft ideas, and learn more effectively.'], ['Business automation', 'Connect tools and remove repetitive steps from everyday processes.'], ['AI-powered products', 'Build features that use models to help people search, decide, create, or communicate.'], ['Data and insight workflows', 'Use AI to organise, analyse, and explain information while checking its quality.']] },
+  'Digital Marketing': { eyebrow: 'Understand the field', question: 'Digital marketing connects messages to measurable outcomes.', helper: 'Understand the main channels before choosing the kind of growth work you want to explore.', areas: [['Content and social media', 'Create useful messages and conversations that earn attention over time.'], ['SEO and discoverability', 'Help the right people find useful information through search and clear content.'], ['Paid campaigns', 'Use targeted advertising, budgets, and experiments to reach specific audiences.'], ['Marketing analytics and growth', 'Measure what is working and improve the journey from attention to action.']] },
+  'Business & Productivity': { eyebrow: 'Understand the field', question: 'Digital productivity is more than using a collection of tools.', helper: 'See the main ways digital skills can improve how work gets organised and delivered.', areas: [['Organising work', 'Create clear systems for priorities, tasks, time, and follow-through.'], ['Communication and collaboration', 'Use digital tools to share context, make decisions, and work well with others.'], ['Automation', 'Reduce repetitive work by connecting tools and creating dependable routines.'], ['Information and decisions', 'Turn scattered information into useful summaries, reports, and actions.']] },
 }
 
 const finalSteps = [
@@ -100,13 +99,16 @@ const optionDescriptions = {
 
 function getSteps(targetSkill, currentAnswers = {}) {
   const skillStep = targetSkill ? skillQuestions[targetSkill] || [] : []
-  const cybersecuritySteps = targetSkill === 'Cybersecurity' && currentAnswers.securityExperience === 'New to all of these'
-    ? [skillStep[0], cybersecurityOrientation, skillStep[1]]
+  const experienceStep = skillStep[0]
+  const beginner = experienceStep && currentAnswers[experienceStep.key] === experienceStep.options[0]
+  const orientation = skillOrientations[targetSkill]
+  const adaptiveSkillSteps = beginner && orientation
+    ? [{ ...orientation, type: 'orientation', key: `${targetSkill}-orientation` }, skillStep[1]]
     : skillStep
   return [
     { key: 'targetSkill', eyebrow: 'Choose your direction', question: 'What do you want to learn?', helper: 'Your choice determines the baseline questions, examples, projects, and pace we recommend.', options: skillOptions.map(([label]) => label) },
     ...commonSteps,
-    ...cybersecuritySteps,
+    ...adaptiveSkillSteps,
     ...finalSteps,
   ]
 }
