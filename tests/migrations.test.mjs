@@ -16,6 +16,8 @@ const achievements = await readFile('backend/supabase/migrations/0006_achievemen
 const achievementsClient = await readFile('src/lib/achievements.js', 'utf8')
 const notifications = await readFile('backend/supabase/migrations/0007_notifications.sql', 'utf8')
 const notificationsClient = await readFile('src/lib/notifications.js', 'utf8')
+const skillTree = await readFile('backend/supabase/migrations/0008_skill_tree.sql', 'utf8')
+const skillTreeClient = await readFile('src/lib/skillTree.js', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -147,8 +149,21 @@ test('notifications client reads own items and marks them through the RPC', () =
   assert.doesNotMatch(notificationsClient, /update\('notifications'\)/)
 })
 
+test('skill tree is published-only and authenticated', () => {
+  assert.match(skillTree, /create or replace function public\.get_learner_skill_tree/i)
+  assert.match(skillTree, /auth\.uid\(\)/i)
+  assert.match(skillTree, /cp\.status = 'published'/i)
+  assert.match(skillTree, /cl\.status = 'published'/i)
+  assert.match(skillTree, /grant execute on function public\.get_learner_skill_tree\(text\) to authenticated/i)
+})
+
+test('skill tree client uses the protected read RPC', () => {
+  assert.match(skillTreeClient, /rpc\('get_learner_skill_tree'/)
+  assert.doesNotMatch(skillTreeClient, /insert\(|update\(|delete\(/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

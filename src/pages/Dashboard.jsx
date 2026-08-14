@@ -289,6 +289,17 @@ export default function Dashboard() {
           </div>
         </Link>
 
+        <Link to="/skill-tree" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFF8E6', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#8A6500' }}>Skill tree</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>See how your skills connect</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Explore published concepts, practice nodes, and what comes next.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open skill tree →</span>
+          </div>
+        </Link>
+
         <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Your skill levels</h3>
           <div className="space-y-4">
