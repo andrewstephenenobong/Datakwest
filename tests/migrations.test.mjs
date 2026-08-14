@@ -14,6 +14,8 @@ const tutorClient = await readFile('src/lib/tutor.js', 'utf8')
 const portfolioClient = await readFile('src/lib/portfolio.js', 'utf8')
 const achievements = await readFile('backend/supabase/migrations/0006_achievements.sql', 'utf8')
 const achievementsClient = await readFile('src/lib/achievements.js', 'utf8')
+const notifications = await readFile('backend/supabase/migrations/0007_notifications.sql', 'utf8')
+const notificationsClient = await readFile('src/lib/notifications.js', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -129,8 +131,24 @@ test('achievements client uses the protected RPC', () => {
   assert.doesNotMatch(achievementsClient, /from\('user_badges'\)/)
 })
 
+test('notification read state is protected and owner-scoped', () => {
+  assert.match(notifications, /create or replace function public\.mark_notification_read/i)
+  assert.match(notifications, /security definer/i)
+  assert.match(notifications, /auth\.uid\(\)/i)
+  assert.match(notifications, /user_id = v_user_id/i)
+  assert.match(notifications, /grant execute on function public\.mark_notification_read\(uuid\) to authenticated/i)
+  assert.doesNotMatch(notifications, /create policy[\s\S]*for update[\s\S]*on public\.notifications/i)
+})
+
+test('notifications client reads own items and marks them through the RPC', () => {
+  assert.match(notificationsClient, /from\('notifications'\)/)
+  assert.match(notificationsClient, /eq\('user_id', userId\)/)
+  assert.match(notificationsClient, /rpc\('mark_notification_read'/)
+  assert.doesNotMatch(notificationsClient, /update\('notifications'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
