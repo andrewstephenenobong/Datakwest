@@ -26,6 +26,12 @@ export async function createCommunityPost(communityId, body) {
 }
 
 export async function reportCommunityPost(postId, reason, details = '') {
-  const { data, error } = await supabase.rpc('report_community_post', { p_post_id: postId, p_reason: reason, p_details: details })
+  const { data, error } = await supabase.rpc('create_moderation_report', {
+    p_subject_type: 'post',
+    p_subject_id: postId,
+    p_category: reason,
+    p_details: details,
+    p_idempotency_key: `community-post:${postId}:${reason}`,
+  })
   return { report: data, error }
 }

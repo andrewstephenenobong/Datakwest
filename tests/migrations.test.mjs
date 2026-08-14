@@ -36,6 +36,9 @@ const marketplaceClient = await readFile('src/lib/marketplace.js', 'utf8')
 const richerLiveChallenges = await readFile('backend/supabase/migrations/0018_richer_live_challenges.sql', 'utf8')
 const liveChallengesClient = await readFile('src/lib/liveChallenges.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
+const platformGovernance = await readFile('backend/supabase/migrations/0019_platform_governance.sql', 'utf8')
+const adminGovernanceClient = await readFile('src/lib/adminGovernance.js', 'utf8')
+const adminGovernancePage = await readFile('src/pages/AdminGovernance.jsx', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -277,7 +280,7 @@ test('community client uses protected discovery, membership, feed, post, and rep
   assert.match(communityClient, /rpc\('leave_community'/)
   assert.match(communityClient, /rpc\('get_community_feed'/)
   assert.match(communityClient, /rpc\('create_community_post'/)
-  assert.match(communityClient, /rpc\('report_community_post'/)
+  assert.match(communityClient, /rpc\('create_moderation_report'/)
   assert.doesNotMatch(communityClient, /from\('community_memberships'\)/)
   assert.doesNotMatch(communityClient, /from\('community_posts'\)/)
 })
@@ -390,7 +393,41 @@ test('live challenges client uses protected workspace, round, leaderboard, and d
   assert.doesNotMatch(liveChallengesClient, /from\('challenge_checkpoint_submissions'\)/)
 })
 
-test('backend source contains no obvious secret material', async () => {
+test('platform governance is scoped, auditable, and RPC-only', () => {
+  for (const table of ['platform_policies', 'admin_assignments', 'admin_access_reviews', 'moderation_cases', 'moderation_reports', 'moderation_evidence', 'moderation_actions', 'moderation_appeals', 'moderation_notes', 'admin_audit_log', 'domain_events', 'outbox_jobs']) {
+    assert.match(platformGovernance, new RegExp(`create table if not exists public\\.${table}\\b`, 'i'), `missing governance table: ${table}`)
+  }
+  assert.match(platformGovernance, /create or replace function public\.has_admin_permission/i)
+  assert.match(platformGovernance, /create or replace function public\.create_moderation_report/i)
+  assert.match(platformGovernance, /create or replace function public\.get_moderation_queue/i)
+  assert.match(platformGovernance, /create or replace function public\.claim_moderation_case/i)
+  assert.match(platformGovernance, /create or replace function public\.apply_moderation_action/i)
+  assert.match(platformGovernance, /create or replace function public\.submit_moderation_appeal/i)
+  assert.match(platformGovernance, /create or replace function public\.get_admin_audit_events/i)
+  assert.match(platformGovernance, /security definer/i)
+  assert.match(platformGovernance, /set search_path = public/i)
+  assert.match(platformGovernance, /admin_permission_required/i)
+  assert.match(platformGovernance, /insert into public\.admin_audit_log/i)
+  assert.match(platformGovernance, /insert into public\.domain_events/i)
+  assert.match(platformGovernance, /insert into public\.outbox_jobs/i)
+  assert.match(platformGovernance, /revoke all on function public\.apply_moderation_action/i)
+  assert.doesNotMatch(platformGovernance, /create policy[\s\S]*for insert[\s\S]*moderation_cases/i)
+  assert.doesNotMatch(platformGovernance, /create policy[\s\S]*for insert[\s\S]*admin_audit_log/i)
+})
+
+test('admin governance client and console use protected RPCs', () => {
+  assert.match(adminGovernanceClient, /supabase\.rpc\(name, args\)/)
+  for (const rpc of ['create_moderation_report', 'get_moderation_queue', 'claim_moderation_case', 'apply_moderation_action', 'submit_moderation_appeal', 'get_admin_audit_events']) {
+    assert.match(adminGovernanceClient, new RegExp(`['\"]${rpc}['\"]`))
+  }
+  assert.match(adminGovernancePage, /getModerationQueue/)
+  assert.match(adminGovernancePage, /applyModerationAction/)
+  assert.match(adminGovernancePage, /claimModerationCase/)
+  assert.match(adminGovernancePage, /getAdminAuditEvents/)
+  assert.doesNotMatch(adminGovernancePage, /from\(['\"]moderation_/)
+})
+
+test('backend source contains no obvious secret material', () => {
   const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)

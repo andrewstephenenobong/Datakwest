@@ -38,6 +38,7 @@
     { "source": "/peer-review", "destination": "/" },
     { "source": "/skill-battles", "destination": "/" },
     { "source": "/marketplace", "destination": "/" },
-    { "source": "/live-challenges", "destination": "/" }
+    { "source": "/live-challenges", "destination": "/" },
+    { "source": "/admin/governance", "destination": "/" }
   ]
 }
