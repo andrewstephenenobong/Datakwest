@@ -27,6 +27,8 @@ const practiceClient = await readFile('src/lib/practice.js', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
+const peerReview = await readFile('backend/supabase/migrations/0015_peer_review.sql', 'utf8')
+const peerReviewClient = await readFile('src/lib/peerReview.js', 'utf8')
 const challengesClient = await readFile('src/lib/challenges.js', 'utf8')
 
 const requiredFoundationTables = [
@@ -288,8 +290,29 @@ test('community discussions are moderated, membership-gated, and server-authorit
   assert.doesNotMatch(communityDiscussions, /create policy[\s\S]*for insert[\s\S]*community_reports/i)
 })
 
+test('peer review is private, reviewer-scoped, and server-authoritative', () => {
+  assert.match(peerReview, /create table if not exists public\.peer_review_requests/i)
+  assert.match(peerReview, /create or replace function public\.create_peer_review_request/i)
+  assert.match(peerReview, /create or replace function public\.get_peer_review_workspace/i)
+  assert.match(peerReview, /create or replace function public\.accept_peer_review/i)
+  assert.match(peerReview, /create or replace function public\.submit_peer_review/i)
+  assert.match(peerReview, /reviewer_id = v_user_id/i)
+  assert.match(peerReview, /p_score < 0 OR p_score > 100/i)
+  assert.match(peerReview, /insert into public\.reviews/i)
+  assert.match(peerReview, /grant execute on function public\.submit_peer_review\(uuid, numeric, jsonb\) to authenticated/i)
+  assert.doesNotMatch(peerReview, /create policy[\s\S]*for insert[\s\S]*peer_review_requests/i)
+})
+
+test('peer review client uses protected workspace and submission RPCs', () => {
+  assert.match(peerReviewClient, /rpc\('get_peer_review_workspace'/)
+  assert.match(peerReviewClient, /rpc\('accept_peer_review'/)
+  assert.match(peerReviewClient, /rpc\('submit_peer_review'/)
+  assert.doesNotMatch(peerReviewClient, /from\('peer_review_requests'\)/)
+  assert.doesNotMatch(peerReviewClient, /from\('reviews'\)/)
+})
+
 test('backend source contains no obvious secret material', async () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

@@ -34,6 +34,7 @@
     { "source": "/assessments", "destination": "/" },
     { "source": "/challenges", "destination": "/" },
     { "source": "/practice", "destination": "/" },
-    { "source": "/community", "destination": "/" }
+    { "source": "/community", "destination": "/" },
+    { "source": "/peer-review", "destination": "/" }
   ]
 }

@@ -233,6 +233,17 @@ export default function Dashboard() {
           </div>
         </Link>
 
+        <Link to="/peer-review" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Peer Review</p>
+              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Help learners improve through useful feedback</h2>
+              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Accept assigned reviews and submit rubric-scoped feedback.</p>
+            </div>
+            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open peer review →</span>
+          </div>
+        </Link>
+
         <Link to="/challenges" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFFBEF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
