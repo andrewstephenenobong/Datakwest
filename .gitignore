@@ -17,6 +17,9 @@ service-account*.json
 *.pem
 *.key
 
+# Local temporary payloads and generated request files
+.tmp/
+
 # Logs
 logs/
 *.log
