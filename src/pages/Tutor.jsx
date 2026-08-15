@@ -141,7 +141,7 @@ export default function Tutor() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4" aria-live="polite" aria-atomic="false">
+                <div className="space-y-4" role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false">
                   {messages.map((item, index) => (
                     <article key={`${item.role}-${index}`} className={`rounded-2xl p-4 sm:p-5 ${item.role === 'user' ? 'ml-4 sm:ml-16' : 'mr-4 sm:mr-16'}`} style={{ background: item.role === 'user' ? '#E8F0FE' : 'white', color: '#0A2342', border: item.role === 'assistant' ? '1px solid #E2EAF3' : 'none' }}>
                       <div className="flex items-center justify-between gap-3">
