@@ -10,6 +10,7 @@ const readinessClient = await readFile('src/lib/readiness.js', 'utf8')
 const projects = await readFile('backend/supabase/migrations/0005_project_submission_workflow.sql', 'utf8')
 const projectClient = await readFile('src/lib/projects.js', 'utf8')
 const tutorFunction = await readFile('backend/supabase/functions/tutor-chat.ts', 'utf8')
+const tutorOrchestrator = await readFile('backend/supabase/functions/tutor-orchestrator.ts', 'utf8')
 const tutorClient = await readFile('src/lib/tutor.js', 'utf8')
 const portfolioClient = await readFile('src/lib/portfolio.js', 'utf8')
 const achievements = await readFile('backend/supabase/migrations/0006_achievements.sql', 'utf8')
@@ -170,9 +171,22 @@ test('Tutor AI function enforces authenticated, bounded, usage-limited requests'
   assert.doesNotMatch(tutorFunction, /Access-Control-Allow-Origin': '\*'/)
 })
 
-test('Tutor client sends only user-safe request data', () => {
-  assert.match(tutorClient, /functions\.invoke\('tutor-chat'/)
+test('Tutor client sends only user-safe request data to the canonical orchestrator', () => {
+  assert.match(tutorClient, /functions\.invoke\('tutor-orchestrator'/)
   assert.doesNotMatch(tutorClient, /GEMINI_API_KEY|SERVICE_ROLE|apiKey/i)
+})
+
+test('Tutor Orchestrator retrieves learner context and returns verifier-safe structured actions', () => {
+  assert.match(tutorOrchestrator, /auth\.getUser\(\)/)
+  assert.match(tutorOrchestrator, /learner_skill_enrolments/)
+  assert.match(tutorOrchestrator, /learner_evidence/)
+  assert.match(tutorOrchestrator, /skill_graph_node_sources/)
+  assert.match(tutorOrchestrator, /responseMimeType: 'application\/json'/)
+  assert.match(tutorOrchestrator, /evidence_request/)
+  assert.match(tutorOrchestrator, /The model may recommend an action but cannot set mastery or verify evidence/)
+  assert.match(tutorOrchestrator, /prompt_version: PROMPT_VERSION/)
+  assert.match(tutorOrchestrator, /ai_usage/)
+  assert.doesNotMatch(tutorOrchestrator, /learner_node_mastery.*insert|learner_skill_state.*update/s)
 })
 
 test('portfolio client reads learner-owned evidence without mutation paths', () => {
@@ -659,7 +673,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

@@ -29,7 +29,7 @@ export default function Tutor() {
       setError(requestError?.message || 'The Tutor is unavailable right now. Please try again.')
     } else if (response?.reply) {
       setConversationId(response.conversationId || conversationId)
-      setMessages(current => [...current, { role: 'assistant', text: response.reply }])
+      setMessages(current => [...current, { role: 'assistant', text: response.reply, nextAction: response.nextAction, evidenceRequest: response.evidenceRequest }])
     }
     setSending(false)
   }
@@ -57,6 +57,7 @@ export default function Tutor() {
                 <div key={`${item.role}-${index}`} className={`rounded-2xl p-4 ${item.role === 'user' ? 'ml-8' : 'mr-8'}`} style={{ background: item.role === 'user' ? '#E8F0FE' : '#F5F7FA', color: '#0A2342' }}>
                   <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: '#6B7A99' }}>{item.role === 'user' ? 'You' : 'Tutor'}</p>
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{item.text}</p>
+                  {item.role === 'assistant' && item.nextAction?.label && <div className="mt-4 rounded-xl p-3" style={{ background: '#FFF9E8' }}><p className="text-[11px] font-black uppercase tracking-wide" style={{ color: '#967414' }}>Next best action</p><p className="mt-1 text-sm font-bold" style={{ color: '#0A2342' }}>{item.nextAction.label}</p>{item.nextAction.reason && <p className="mt-1 text-xs leading-5" style={{ color: '#6B7A99' }}>{item.nextAction.reason}</p>}</div>}
                 </div>
               ))}
               {sending && <p className="text-sm" style={{ color: '#6B7A99' }}>Tutor is thinking…</p>}
