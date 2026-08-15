@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 
-export default function OwlLoading({ message = 'Preparing your learning space…' }) {
+export default function OwlLoading({ message = 'Preparing your learning space…', onRetry = null }) {
   const [step, setStep] = useState(0)
+  const [slow, setSlow] = useState(false)
   const steps = [message, 'Checking your learning path…', 'Getting your next step ready…']
 
   useEffect(() => {
     const timer = window.setInterval(() => setStep((current) => (current + 1) % steps.length), 1900)
-    return () => window.clearInterval(timer)
+    const slowTimer = window.setTimeout(() => setSlow(true), 9000)
+    return () => {
+      window.clearInterval(timer)
+      window.clearTimeout(slowTimer)
+    }
   }, [steps.length])
 
   return (
@@ -26,6 +31,7 @@ export default function OwlLoading({ message = 'Preparing your learning space…
         <p aria-live="polite" className="mt-3 text-sm font-semibold" style={{ color: '#6B7A99' }}>{steps[step]}</p>
         <div className="mx-auto mt-7 h-2 w-full max-w-xs overflow-hidden rounded-full" style={{ background: 'rgba(36,86,166,.12)' }}><div className="h-full rounded-full" style={{ width: `${Math.max(30, ((step + 1) / steps.length) * 100)}%`, background: 'linear-gradient(90deg, #2456A6, #8BC6B5)' }} /></div>
         <p className="mt-4 text-xs" style={{ color: '#8290A5' }}>Your progress is safe while we get things ready.</p>
+        {slow && <div className="mt-5 rounded-2xl border p-4 text-left" style={{ borderColor: '#DCE5F0', background: 'rgba(255,255,255,.78)' }} role="status"><p className="text-xs font-bold" style={{ color: '#0A2342' }}>This is taking longer than usual.</p><p className="mt-1 text-xs leading-5" style={{ color: '#6B7A99' }}>Your answers are safe. You can retry the connection without losing your progress.</p><button type="button" onClick={() => onRetry ? onRetry() : window.location.reload()} className="mt-3 min-h-10 rounded-xl px-4 py-2 text-xs font-black" style={{ background: '#0A2342', color: 'white' }}>Try again</button></div>}
       </section>
     </main>
   )
