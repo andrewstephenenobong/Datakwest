@@ -37,6 +37,10 @@ const sourceEmbeddingFunction = await readFile('backend/supabase/functions/embed
 const mlShadowMigration = await readFile('backend/supabase/migrations/0040_ml_shadow_mode_foundation.sql', 'utf8')
 const aiControlsMigration = await readFile('backend/supabase/migrations/0041_ai_evaluation_runtime_controls.sql', 'utf8')
 const cyberRagCorpusMigration = await readFile('backend/supabase/migrations/0042_cybersecurity_rag_corpus.sql', 'utf8')
+const mlTrainingScript = await readFile('ml/train_mastery_model.py', 'utf8')
+const mlRetrainingScript = await readFile('ml/retrain_mastery_model.py', 'utf8')
+const mlExportQuery = await readFile('ml/export_mastery_features.sql', 'utf8')
+const mlReadme = await readFile('ml/README.md', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -631,6 +635,20 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.match(evidenceVerificationMastery, /recompute_mastery_after_verified_attempt/)
   assert.doesNotMatch(evidenceVerificationMastery, /grant execute on function public\.verify_learning_evidence[^\n]*authenticated/)
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
+})
+
+test('ML training workflow is real-data-only, grouped, and shadow-only', () => {
+  assert.match(mlTrainingScript, /no_training_rows/)
+  assert.match(mlTrainingScript, /MIN_ROWS = 50/)
+  assert.match(mlTrainingScript, /MIN_LEARNERS = 10/)
+  assert.match(mlTrainingScript, /grouped_by.*learner_id/)
+  assert.match(mlTrainingScript, /beats_baseline/)
+  assert.match(mlTrainingScript, /serving_mode.*shadow/)
+  assert.match(mlTrainingScript, /promotion_status.*not_promoted/)
+  assert.match(mlRetrainingScript, /promotion_required.*True/)
+  assert.match(mlExportQuery, /target_mastery_30d/)
+  assert.match(mlExportQuery, /interval '30 days'/)
+  assert.match(mlReadme, /No synthetic rows are created/)
 })
 
 test('Cybersecurity RAG corpus uses approved primary sources and waits for embeddings', () => {
