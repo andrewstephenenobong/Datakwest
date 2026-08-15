@@ -58,6 +58,7 @@ const publicAiClient = await readFile('src/lib/publicAi.js', 'utf8')
 const careerCentreMigration = await readFile('backend/supabase/migrations/0024_career_centre.sql', 'utf8')
 const careerCentreClient = await readFile('src/lib/careerCentre.js', 'utf8')
 const careerCentrePage = await readFile('src/pages/CareerCentre.jsx', 'utf8')
+const profileIdentityMigration = await readFile('backend/supabase/migrations/0026_profile_identity.sql', 'utf8')
 
 const requiredFoundationTables = [
   'career_paths',
@@ -529,6 +530,10 @@ test('public product demo and auth UX are wired for the broader digital-skills p
   assert.match(onboardingPage, /grid auto-rows-\[minmax\(156px,1fr\)\]/)
   assert.match(onboardingPage, /h-full min-h-\[156px\]/)
   assert.match(onboardingPage, /What do you want to learn\?/)
+  assert.match(onboardingPage, /data-onboarding-step/)
+  assert.match(onboardingPage, /Learn the landscape/)
+  assert.match(onboardingPage, /Quick fit check/)
+  assert.match(onboardingPage, /full_name: user\.user_metadata/)
   assert.match(onboardingPage, /skillQuestions/)
   assert.match(onboardingPage, /customDiscoveryOrientation/)
   assert.match(onboardingPage, /customDiscoveryQuiz/)
@@ -546,6 +551,16 @@ test('backend source contains no obvious secret material', () => {
   const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
+})
+
+test('signup captures learner identity and profile identity is protected', () => {
+  assert.match(signupPage, /signup-full-name/)
+  assert.match(signupPage, /signup-username/)
+  assert.match(signupPage, /options: \{ data: \{ full_name: fullName\.trim\(\), username: normalizedUsername/)
+  assert.match(profileIdentityMigration, /ADD COLUMN IF NOT EXISTS full_name text/i)
+  assert.match(profileIdentityMigration, /ADD COLUMN IF NOT EXISTS username text/i)
+  assert.match(profileIdentityMigration, /raw_user_meta_data/)
+  assert.match(profileIdentityMigration, /CREATE UNIQUE INDEX IF NOT EXISTS profiles_username_lower_key/i)
 })
 
 test('public AI preview is anonymous-limited, structured, and non-mutating', () => {
