@@ -36,6 +36,7 @@ const ragVectorMigration = await readFile('backend/supabase/migrations/0039_rag_
 const sourceEmbeddingFunction = await readFile('backend/supabase/functions/embed-source-chunks.ts', 'utf8')
 const mlShadowMigration = await readFile('backend/supabase/migrations/0040_ml_shadow_mode_foundation.sql', 'utf8')
 const aiControlsMigration = await readFile('backend/supabase/migrations/0041_ai_evaluation_runtime_controls.sql', 'utf8')
+const cyberRagCorpusMigration = await readFile('backend/supabase/migrations/0042_cybersecurity_rag_corpus.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -632,6 +633,17 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
 })
 
+test('Cybersecurity RAG corpus uses approved primary sources and waits for embeddings', () => {
+  assert.match(cyberRagCorpusMigration, /www\.nist\.gov\/cyberframework/)
+  assert.match(cyberRagCorpusMigration, /cisa\.gov\/resources-tools\/resources\/cyber-essentials/)
+  assert.match(cyberRagCorpusMigration, /owasp\.org\/www-project-top-ten/)
+  assert.match(cyberRagCorpusMigration, /review_status = 'approved'/)
+  assert.match(cyberRagCorpusMigration, /md5\(s\.canonical_url \|\| ':v1:en'\)/)
+  assert.match(cyberRagCorpusMigration, /embedding_status, metadata/)
+  assert.match(cyberRagCorpusMigration, /'pending'/)
+  assert.match(cyberRagCorpusMigration, /source_chunk_graph_nodes/)
+})
+
 test('AI evaluation and runtime controls are versioned and server-authoritative', () => {
   assert.match(aiControlsMigration, /create table if not exists public\.ai_evaluation_suites/)
   assert.match(aiControlsMigration, /create table if not exists public\.ai_evaluation_cases/)
@@ -811,7 +823,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, ragVectorMigration, sourceEmbeddingFunction, mlShadowMigration, aiControlsMigration, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, ragVectorMigration, sourceEmbeddingFunction, mlShadowMigration, aiControlsMigration, cyberRagCorpusMigration, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE_KEY\s*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
