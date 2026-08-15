@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import { getDisplayStreak } from '../lib/gamification'
 import { completeDailyMission, getTodaysMission } from '../lib/missions'
+import OwlLoading from '../components/OwlLoading'
 import { getReadinessScore } from '../lib/readiness'
 
 const skillLabels = {
@@ -75,14 +76,7 @@ export default function Dashboard() {
     if (user) loadProfile()
   }, [user, navigate])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F7FA' }}>
-        <div className="w-10 h-10 rounded-full border-4 animate-spin"
-          style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }} />
-      </div>
-    )
-  }
+  if (loading) return <OwlLoading message="Building your personalised workspace…" />
 
   if (error || !profile?.roadmap) {
     return (

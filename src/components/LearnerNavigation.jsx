@@ -21,6 +21,7 @@ const moreItems = [
   { label: 'Notifications', path: '/notifications', icon: 'notification', tone: '#1E5AA8' },
   { label: 'Skill tree', path: '/skill-tree', icon: 'tree', tone: '#2E7D32' },
   { label: 'Tutor AI', path: '/tutor', icon: 'tutor', tone: '#8A6500' },
+  { label: 'Settings', path: '/settings', icon: 'settings', tone: '#6B7A99' },
 ]
 
 function Icon({ name, active = false }) {
@@ -43,6 +44,7 @@ function Icon({ name, active = false }) {
     notification: <><path d="M4.5 10.5h7l-1-1.5V6a2.5 2.5 0 0 0-5 0v3z" {...common} /><path d="M7 12h2" {...common} /></>,
     tree: <><path d="M8 12V7M8 7 5.5 5M8 7l2.5-2M5.5 5V3.5M10.5 5V3.5" {...common} /><circle cx="5.5" cy="3" r="1" {...common} /><circle cx="10.5" cy="3" r="1" {...common} /><circle cx="8" cy="6.8" r="1" {...common} /></>,
     tutor: <><path d="M3.5 4.5h9v6h-5l-2.5 2v-2h-1.5z" {...common} /><path d="M6 7.5h4" {...common} /></>,
+    settings: <><circle cx="8" cy="8" r="2.2" {...common} /><path d="M8 3.2v1.1M8 11.7v1.1M3.2 8h1.1M11.7 8h1.1M4.6 4.6l.8.8M10.6 10.6l.8.8M11.4 4.6l-.8.8M5.4 10.6l-.8.8" {...common} /></>,
   }
   return <svg viewBox="0 0 16 16" aria-hidden="true" className="h-5 w-5 shrink-0">{paths[name]}</svg>
 }

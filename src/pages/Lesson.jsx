@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import DiagramRenderer from '../components/DiagramRenderer'
+import OwlLoading from '../components/OwlLoading'
 import { awardXp, checkInStreak, awardSkillProgress } from '../lib/gamification'
 import { logEvent } from '../lib/analytics'
 
@@ -325,14 +326,7 @@ export default function Lesson() {
     resetPracticeState()
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F7FA' }}>
-        <div className="w-10 h-10 rounded-full border-4 animate-spin"
-          style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }} />
-      </div>
-    )
-  }
+  if (loading) return <OwlLoading message="Opening your lesson…" />
 
   if (error && !phase) {
     return (

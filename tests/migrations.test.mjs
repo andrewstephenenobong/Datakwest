@@ -66,6 +66,10 @@ const owlAudioClient = await readFile('src/lib/owlAudio.js', 'utf8')
 const errorBoundary = await readFile('src/components/ErrorBoundary.jsx', 'utf8')
 const appSource = await readFile('src/App.jsx', 'utf8')
 const learnerNavigation = await readFile('src/components/LearnerNavigation.jsx', 'utf8')
+const owlLoading = await readFile('src/components/OwlLoading.jsx', 'utf8')
+const protectedRoute = await readFile('src/components/ProtectedRoute.jsx', 'utf8')
+const navbar = await readFile('src/components/Navbar.jsx', 'utf8')
+const settingsPage = await readFile('src/pages/Settings.jsx', 'utf8')
 const dashboardPage = await readFile('src/pages/Dashboard.jsx', 'utf8')
 const vercelConfig = await readFile('vercel.json', 'utf8')
 
@@ -598,6 +602,15 @@ test('branded recovery states cover 404 and application errors', () => {
   assert.match(recoveryState, /Go back/)
 })
 
+test('owl loading and profile settings keep the authenticated shell consistent', () => {
+  assert.match(owlLoading, /datakwest-owl-3d\.webp/)
+  assert.match(protectedRoute, /OwlLoading/)
+  assert.match(navbar, /navigate\('\/settings'\)/)
+  assert.doesNotMatch(navbar, /Sign out/)
+  assert.match(settingsPage, /Sign out of DataKwest/)
+  assert.match(appSource, /Route path="\/settings"/)
+})
+
 test('learner navigation keeps the workspace focused and routes all product areas intentionally', () => {
   for (const label of ['Home', 'Learn', 'Practice', 'Community', 'Career', 'More']) assert.match(learnerNavigation, new RegExp(label))
   for (const path of ['/dashboard', '/tracks', '/practice', '/community', '/career-centre', '/assessments', '/project', '/portfolio', '/marketplace', '/skill-battles', '/interviews', '/achievements', '/notifications', '/skill-tree', '/tutor']) assert.match(learnerNavigation, new RegExp(path.replaceAll('/', '\\/')))
@@ -608,14 +621,12 @@ test('learner navigation keeps the workspace focused and routes all product area
   assert.doesNotMatch(dashboardPage, /Build your portfolio.*Submit a project/s)
 })
 
-test('route loading experience is branded, progressive, and recoverable', () => {
-  assert.match(appSource, /Preparing your learning space/)
-  assert.match(appSource, /Warming up your workspace/)
-  assert.match(appSource, /Checking your learning path/)
-  assert.match(appSource, /This is taking longer than usual/)
-  assert.match(appSource, /Retry connection/)
-  assert.match(appSource, /datakwest-owl-3d\.webp/)
-  assert.match(appSource, /prefers-reduced-motion/)
+test('route loading experience is branded and delegated to the owl loader', () => {
+  assert.match(appSource, /RouteLoading/)
+  assert.match(appSource, /<OwlLoading \/>/)
+  assert.match(owlLoading, /Your learning space is opening/)
+  assert.match(owlLoading, /datakwest-owl-3d\.webp/)
+  assert.match(owlLoading, /prefers-reduced-motion/)
 })
 
 test('error boundary and SPA fallback keep recovery routes available', () => {
