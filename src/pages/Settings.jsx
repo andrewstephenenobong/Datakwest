@@ -52,10 +52,11 @@ export default function Settings() {
   async function submitFeedback(event) {
     event.preventDefault()
     if (!feedbackRating && !feedbackText.trim()) return
-    await logEvent(user?.id, 'pilot_feedback_submitted', { rating: feedbackRating || null, message: feedbackText.trim().slice(0, 1200), source: 'settings' })
+    const reference = (globalThis.crypto?.randomUUID?.() || `feedback-${Date.now()}`).slice(-8).toUpperCase()
+    await logEvent(user?.id, 'pilot_feedback_submitted', { reference, rating: feedbackRating || null, message: feedbackText.trim().slice(0, 1200), source: 'settings' })
     setFeedbackText('')
     setFeedbackRating('')
-    setFeedbackStatus('Thanks—your feedback has been recorded for the Datakwest pilot team.')
+    setFeedbackStatus(`Thanks—your feedback was recorded. Reference ${reference}. We will use it in the pilot review queue.`)
   }
 
   async function openPrivacyCentre() {
