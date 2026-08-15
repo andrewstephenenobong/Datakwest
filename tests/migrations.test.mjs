@@ -967,8 +967,8 @@ test('public AI preview is anonymous-limited, structured, and non-mutating', () 
   assert.doesNotMatch(publicAiFunction, /auth\.getUser\(\)/i)
   assert.match(publicAiClient, /functions\.invoke\('public-ai-preview'/i)
   assert.match(landingPage, /DEMO_REMAINING_KEY/)
-  assert.match(landingPage, /complimentary AI coaching/)
-  assert.match(landingPage, /Ask Datakwest AI/)
+  assert.match(landingPage, /complimentary owl coaching/)
+  assert.match(landingPage, /Ask the Datakwest owl/)
 })
 
 test('Career Centre aggregates protected readiness and career evidence', () => {

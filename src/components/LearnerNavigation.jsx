@@ -58,6 +58,7 @@ export default function LearnerNavigation() {
   const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const [destinationQuery, setDestinationQuery] = useState('')
   const panelRef = useRef(null)
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function LearnerNavigation() {
   }, [open])
 
   const moreActive = moreItems.some((item) => isActive(location.pathname, item.path))
+  const filteredMoreItems = moreItems.filter((item) => item.label.toLowerCase().includes(destinationQuery.trim().toLowerCase()))
   const go = (path, action = 'learn') => {
     playNavigationSound(action)
     navigate(path)
@@ -129,9 +131,10 @@ export default function LearnerNavigation() {
       </div>
       {open && <>
         <button type="button" aria-label="Close navigation menu" className="fixed inset-0 z-40 bg-[#0A2342]/20 lg:absolute" onClick={() => setOpen(false)} />
-        <div id="learner-more-menu" ref={panelRef} role="dialog" aria-label="More learner destinations" className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+86px)] z-50 max-h-[70vh] overflow-y-auto rounded-[1.5rem] border bg-white p-4 shadow-[0_16px_50px_rgba(10,35,66,.2)] lg:absolute lg:inset-auto lg:right-6 lg:top-12 lg:w-[27rem]" style={{ borderColor: '#DCE5F0' }}>
+        <div id="learner-more-menu" ref={panelRef} role="dialog" aria-modal="true" aria-label="More learner destinations" className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+86px)] z-50 max-h-[70vh] overflow-y-auto rounded-[1.5rem] border bg-white p-4 shadow-[0_16px_50px_rgba(10,35,66,.2)] lg:absolute lg:inset-auto lg:right-6 lg:top-12 lg:w-[27rem]" style={{ borderColor: '#DCE5F0' }}>
           <div className="mb-3 flex items-center justify-between"><div><p className="text-xs font-black uppercase tracking-[.16em]" style={{ color: '#9A7610' }}>Your toolkit</p><h2 className="mt-1 text-lg font-black" style={{ color: '#0A2342' }}>Explore more of DataKwest</h2></div><button type="button" onClick={() => setOpen(false)} className="rounded-full px-3 py-1 text-lg leading-none" style={{ color: '#6B7A99', background: '#F5F7FA' }} aria-label="Close more destinations">×</button></div>
-          <div className="grid grid-cols-2 gap-2">{moreItems.map((item) => <button key={item.path} type="button" onClick={() => go(item.path, 'more')} className="flex min-h-14 items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-[#F5F7FA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ background: isActive(location.pathname, item.path) ? '#F5F7FA' : 'white' }}><span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${item.tone}18` }}><Icon name={item.icon} /></span><span className="min-w-0"><span className="block truncate text-xs font-bold" style={{ color: '#0A2342' }}>{item.label}</span><span className="mt-0.5 block text-[10px]" style={{ color: '#8A98AA' }}>{isActive(location.pathname, item.path) ? 'You are here' : 'Open area'}</span></span></button>)}</div>
+          <label htmlFor="destination-search" className="sr-only">Search learner destinations</label><input id="destination-search" value={destinationQuery} onChange={(event) => setDestinationQuery(event.target.value)} placeholder="Find a lesson, project, or tool…" className="mb-3 w-full rounded-xl border px-3 py-3 text-sm outline-none focus:border-[#2456A6]" style={{ borderColor: '#DCE5F0', color: '#0A2342' }} />
+          {filteredMoreItems.length ? <div className="grid grid-cols-2 gap-2">{filteredMoreItems.map((item) => <button key={item.path} type="button" onClick={() => go(item.path, 'more')} className="flex min-h-14 items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-[#F5F7FA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ background: isActive(location.pathname, item.path) ? '#F5F7FA' : 'white' }}><span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${item.tone}18` }}><Icon name={item.icon} /></span><span className="min-w-0"><span className="block truncate text-xs font-bold" style={{ color: '#0A2342' }}>{item.label}</span><span className="mt-0.5 block text-[10px]" style={{ color: '#8A98AA' }}>{isActive(location.pathname, item.path) ? 'You are here' : 'Open area'}</span></span></button>)}</div> : <p className="rounded-xl p-4 text-sm" style={{ background: '#F5F7FA', color: '#6B7A99' }}>No destination matches that search yet.</p>}
         </div>
       </>}
     </>

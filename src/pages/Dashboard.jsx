@@ -132,6 +132,15 @@ export default function Dashboard() {
   const allPhasesPassed = totalPhases > 0 && passedPhaseNumbers.size === totalPhases
   const missionPayload = mission?.payload || {}
 
+  function openNextAction() {
+    if (!nextAction) return
+    if (nextAction.action_type === 'submit_project') return navigate('/project')
+    if (nextAction.action_type === 'practice' || nextAction.action_type === 'review_misconception' || nextAction.action_type === 'review_prerequisite') return navigate('/practice')
+    if (nextAction.action_type === 'reflect' || nextAction.action_type === 'complete_path_reflection') return navigate('/portfolio')
+    if (nextAction.action_type === 'continue_learning' && nextAction.node_id) return navigate(`/lesson/${nextAction.node_id}`)
+    return navigate('/tracks')
+  }
+
   async function handleMissionComplete() {
     if (!mission || mission.status === 'completed') return
     setMissionLoading(true)
@@ -262,6 +271,14 @@ export default function Dashboard() {
               <p className="text-sm mt-2" style={{ color: '#4B6385' }}>{nextAction?.instruction || 'Complete a focused step and submit evidence. Your mastery is updated by the server after verification.'}</p>
             </div>
             {nextAction?.evidence_kind && <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#FFFFFF', color: '#2456A6' }}>{nextAction.evidence_kind}</span>}
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div className="rounded-xl p-4" style={{ background: '#FFFFFF' }}>
+              <p className="text-xs font-bold" style={{ color: '#2456A6' }}>Why this is recommended</p>
+              <p className="mt-1 text-sm leading-6" style={{ color: '#4B6385' }}>{nextAction?.instruction || 'The server will choose the next step after it verifies your learning evidence.'}</p>
+              {nextAction && <p className="mt-2 text-xs" style={{ color: '#8290A5' }}>{nextAction.evidence_count || 0} verified evidence item{nextAction.evidence_count === 1 ? '' : 's'} · {nextAction.confidence_score != null ? `${Math.round(Number(nextAction.confidence_score) * 100)}% confidence` : 'confidence pending'}</p>}
+            </div>
+            {nextAction && <button type="button" onClick={openNextAction} className="min-h-12 rounded-xl px-5 py-3 text-sm font-bold" style={{ background: '#2456A6', color: 'white' }}>Start next action →</button>}
           </div>
           {nextAction?.node_key && <p className="mt-4 text-xs font-semibold" style={{ color: '#2456A6' }}>Recommended node: {nextAction.node_key}</p>}
           {nextActionError && <p className="mt-4 text-xs" style={{ color: '#991B1B' }}>{nextActionError}</p>}
