@@ -32,6 +32,8 @@ const evidenceVerificationMastery = await readFile('backend/supabase/migrations/
 const deterministicNextAction = await readFile('backend/supabase/migrations/0037_deterministic_next_learning_action.sql', 'utf8')
 const dashboard = await readFile('src/pages/Dashboard.jsx', 'utf8')
 const learningEventsFeatures = await readFile('backend/supabase/migrations/0038_learning_events_feature_snapshots.sql', 'utf8')
+const ragVectorMigration = await readFile('backend/supabase/migrations/0039_rag_vector_source_chunks.sql', 'utf8')
+const sourceEmbeddingFunction = await readFile('backend/supabase/functions/embed-source-chunks.ts', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -628,6 +630,39 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
 })
 
+test('source embedding worker is service-role-only and batches governed documents', () => {
+  assert.match(sourceEmbeddingFunction, /SUPABASE_SERVICE_ROLE_KEY/)
+  assert.match(sourceEmbeddingFunction, /authorization !== `Bearer \$\{serviceRoleKey\}`/)
+  assert.match(sourceEmbeddingFunction, /source_document_not_approved/)
+  assert.match(sourceEmbeddingFunction, /batchEmbedContents/)
+  assert.match(sourceEmbeddingFunction, /RETRIEVAL_DOCUMENT/)
+  assert.match(sourceEmbeddingFunction, /outputDimensionality: 768/)
+  assert.match(sourceEmbeddingFunction, /embedding_status: 'ready'/)
+  assert.doesNotMatch(sourceEmbeddingFunction, /SUPABASE_ANON_KEY/)
+})
+
+test('Tutor Orchestrator grounds responses with optional vector retrieval', () => {
+  assert.match(tutorOrchestrator, /gemini-embedding-001:embedContent/)
+  assert.match(tutorOrchestrator, /RETRIEVAL_QUERY/)
+  assert.match(tutorOrchestrator, /outputDimensionality: 768/)
+  assert.match(tutorOrchestrator, /retrieve_knowledge_chunks/)
+  assert.match(tutorOrchestrator, /retrievedKnowledge/)
+  assert.match(tutorOrchestrator, /state uncertainty rather than fabricate citations/)
+})
+
+test('RAG vector foundation is approved-source-only and bounded', () => {
+  assert.match(ragVectorMigration, /create extension if not exists vector/)
+  assert.match(ragVectorMigration, /create table if not exists public\.source_documents/)
+  assert.match(ragVectorMigration, /create table if not exists public\.source_chunks/)
+  assert.match(ragVectorMigration, /embedding extensions\.vector\(768\)/)
+  assert.match(ragVectorMigration, /embedding_status = 'ready'/)
+  assert.match(ragVectorMigration, /publication_status = 'approved'/)
+  assert.match(ragVectorMigration, /retrieve_knowledge_chunks/)
+  assert.match(ragVectorMigration, /least\(greatest\(coalesce\(p_limit, 6\), 1\), 12\)/)
+  assert.match(ragVectorMigration, /grant execute on function public\.retrieve_knowledge_chunks[^\n]*authenticated/)
+  assert.doesNotMatch(ragVectorMigration, /grant execute on function public\.retrieve_knowledge_chunks[^\n]*anon/)
+})
+
 test('learning events and feature snapshots are versioned and server-authoritative', () => {
   assert.match(learningEventsFeatures, /create table if not exists public\.learning_event_registry/)
   assert.match(learningEventsFeatures, /create table if not exists public\.learning_feature_definitions/)
@@ -742,7 +777,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, ragVectorMigration, sourceEmbeddingFunction, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE_KEY\s*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
