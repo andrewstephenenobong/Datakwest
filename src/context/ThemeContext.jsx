@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 const ThemeContext = createContext(null)
 const STORAGE_KEY = 'datakwest-theme'
@@ -21,13 +21,20 @@ function resolveTheme(preference) {
 export function ThemeProvider({ children }) {
   const [preference, setPreference] = useState(readTheme)
   const [resolvedTheme, setResolvedTheme] = useState(() => resolveTheme(readTheme()))
+  const hasMounted = useRef(false)
 
   useEffect(() => {
     const applyTheme = () => {
       const nextTheme = resolveTheme(preference)
+      const root = document.documentElement
+      if (hasMounted.current) {
+        root.classList.add('theme-transition')
+        window.setTimeout(() => root.classList.remove('theme-transition'), 240)
+      }
       setResolvedTheme(nextTheme)
-      document.documentElement.dataset.theme = nextTheme
-      document.documentElement.style.colorScheme = nextTheme
+      root.dataset.theme = nextTheme
+      root.style.colorScheme = nextTheme
+      hasMounted.current = true
     }
     applyTheme()
     try { localStorage.setItem(STORAGE_KEY, preference) } catch { /* device storage may be unavailable */ }
