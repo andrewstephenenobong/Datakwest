@@ -900,7 +900,7 @@ test('branded recovery states cover 404 and application errors', () => {
 test('owl loading and profile settings keep the authenticated shell consistent', () => {
   assert.match(owlLoading, /datakwest-owl-3d\.webp/)
   assert.match(protectedRoute, /OwlLoading/)
-  assert.match(navbar, /navigate\('\/settings'\)/)
+  assert.match(navbar, /navigate\('\/profile'\)/)
   assert.doesNotMatch(navbar, /Sign out/)
   assert.match(settingsPage, /Sign out of DataKwest/)
   assert.match(settingsPage, /Are you sure you want to sign out/)
@@ -912,6 +912,7 @@ test('owl loading and profile settings keep the authenticated shell consistent',
   for (const action of ['home', 'learn', 'practice', 'community', 'career', 'more']) assert.match(navigationSounds, new RegExp(action))
   assert.match(navigationSounds, /AudioContext/)
   assert.match(appSource, /Route path="\/settings"/)
+  assert.match(appSource, /Route path="\/profile"/)
 })
 
 test('learner navigation keeps the workspace focused and routes all product areas intentionally', () => {

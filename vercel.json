@@ -43,6 +43,7 @@
     { "source": "/interviews", "destination": "/" },
     { "source": "/career-centre", "destination": "/" },
     { "source": "/settings", "destination": "/" },
+    { "source": "/profile", "destination": "/" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
