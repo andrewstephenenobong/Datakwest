@@ -77,6 +77,7 @@ export default function Project() {
               <h2 className="text-xl font-bold" style={{ color: '#0A2342' }}>{project.title}</h2>
               <p className="text-sm leading-relaxed mt-3 whitespace-pre-wrap" style={{ color: '#6B7A99' }}>{project.brief}</p>
               {project.rubric?.criteria && <p className="text-sm font-semibold mt-4" style={{ color: '#0A2342' }}>Review criteria: {project.rubric.criteria}</p>}
+              <div className="mt-5 rounded-xl border p-4" style={{ borderColor: '#F0D58A', background: '#FFF9E8' }} role="note"><p className="text-sm font-bold" style={{ color: '#7A5A00' }}>Use an authorised learning environment</p><p className="mt-1 text-xs leading-5" style={{ color: '#806F45' }}>Only test systems, code, or datasets that you own or have explicit permission to use. Do not include passwords, API keys, personal data, or live-target details in your submission.</p></div>
             </section>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
