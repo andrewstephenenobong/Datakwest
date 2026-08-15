@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey)
     const { data: quota, error: quotaError } = await adminClient.rpc('consume_public_ai_preview', { p_visitor_token: visitorToken })
-    if (quotaError || !quota?.allowed) return responseJson({ error: 'You have used the three-message public preview. Create a free account to unlock your personalised Datakwest AI mentor.', remaining: 0, limit: 3 }, 429)
+    if (quotaError || !quota?.allowed) return responseJson({ error: 'You have used your ten-message public preview allowance. Create a free account to unlock your personalised Datakwest AI mentor.', remaining: 0, limit: 10 }, 429)
 
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) return responseJson({ error: 'The public AI preview is temporarily unavailable. You can still explore paths and lessons below.' }, 503)
@@ -73,7 +73,7 @@ Return only valid JSON in this exact structure:
     })
     const data = await response.json()
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!response.ok || !rawText) return responseJson({ error: 'The public AI preview could not answer just now. Try a shorter question or explore a path below.', remaining: quota.remaining }, 502)
+    if (!response.ok || !rawText) return responseJson({ error: 'The public AI preview could not answer just now. Try a shorter question or explore a path below.', remaining: quota.remaining, limit: quota.limit }, 502)
     const normalizedText = rawText.replace(/```json|```/g, '').trim()
     let result: Record<string, unknown>
     try {
@@ -81,11 +81,11 @@ Return only valid JSON in this exact structure:
     } catch {
       const firstBrace = normalizedText.indexOf('{')
       const lastBrace = normalizedText.lastIndexOf('}')
-      if (firstBrace < 0 || lastBrace <= firstBrace) return responseJson({ error: 'The public AI preview could not format its answer. Try a shorter question or explore a path below.', remaining: quota.remaining }, 502)
+      if (firstBrace < 0 || lastBrace <= firstBrace) return responseJson({ error: 'The public AI preview could not format its answer. Try a shorter question or explore a path below.', remaining: quota.remaining, limit: quota.limit }, 502)
       try {
         result = JSON.parse(normalizedText.slice(firstBrace, lastBrace + 1))
       } catch {
-        return responseJson({ error: 'The public AI preview could not format its answer. Try a shorter question or explore a path below.', remaining: quota.remaining }, 502)
+        return responseJson({ error: 'The public AI preview could not format its answer. Try a shorter question or explore a path below.', remaining: quota.remaining, limit: quota.limit }, 502)
       }
     }
     const answer = typeof result.answer === 'string' ? result.answer.replace(/\\n/g, '\n').slice(0, 2400) : 'Start with one small, practical question and we will turn it into a useful next step.'
