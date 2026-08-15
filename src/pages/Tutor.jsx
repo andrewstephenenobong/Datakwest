@@ -27,6 +27,7 @@ export default function Tutor() {
   const [lastRequest, setLastRequest] = useState(null)
   const [copiedIndex, setCopiedIndex] = useState(null)
   const [reportedIndex, setReportedIndex] = useState(null)
+  const [savedIndex, setSavedIndex] = useState(null)
   const { user } = useAuth()
 
   const activeMode = useMemo(() => MODES.find((item) => item.id === mode) || MODES[0], [mode])
@@ -83,6 +84,12 @@ export default function Tutor() {
     setLastRequest(null)
     setCopiedIndex(null)
     setReportedIndex(null)
+    setSavedIndex(null)
+  }
+
+  async function saveExplanation(index) {
+    await logEvent(user?.id, 'tutor_explanation_saved', { message_index: index, source: 'tutor' })
+    setSavedIndex(index)
   }
 
   async function copyMessage(text, index) {
@@ -146,7 +153,7 @@ export default function Tutor() {
                     <article key={`${item.role}-${index}`} className={`rounded-2xl p-4 sm:p-5 ${item.role === 'user' ? 'ml-4 sm:ml-16' : 'mr-4 sm:mr-16'}`} style={{ background: item.role === 'user' ? '#E8F0FE' : 'white', color: '#0A2342', border: item.role === 'assistant' ? '1px solid #E2EAF3' : 'none' }}>
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-xs font-black uppercase tracking-wide" style={{ color: item.role === 'user' ? '#2456A6' : '#9A7610' }}>{item.role === 'user' ? 'You' : 'Datakwest owl'}</p>
-                        {item.role === 'assistant' && <div className="flex items-center gap-3"><button type="button" onClick={() => copyMessage(item.text, index)} className="text-xs font-bold" style={{ color: '#6B7A99' }}>{copiedIndex === index ? 'Copied' : 'Copy'}</button><button type="button" onClick={() => reportAnswer(index)} className="text-xs font-bold" style={{ color: reportedIndex === index ? '#2D8A5A' : '#6B7A99' }}>{reportedIndex === index ? 'Reported' : 'Report answer'}</button></div>}
+                        {item.role === 'assistant' && <div className="flex items-center gap-3"><button type="button" onClick={() => saveExplanation(index)} className="text-xs font-bold" style={{ color: savedIndex === index ? '#2D8A5A' : '#6B7A99' }}>{savedIndex === index ? 'Saved' : 'Save'}</button><button type="button" onClick={() => copyMessage(item.text, index)} className="text-xs font-bold" style={{ color: '#6B7A99' }}>{copiedIndex === index ? 'Copied' : 'Copy'}</button><button type="button" onClick={() => reportAnswer(index)} className="text-xs font-bold" style={{ color: reportedIndex === index ? '#2D8A5A' : '#6B7A99' }}>{reportedIndex === index ? 'Reported' : 'Report answer'}</button></div>}
                       </div>
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-7">{item.text}</p>
                       {item.role === 'assistant' && item.confidence != null && <p className="mt-3 text-xs font-semibold" style={{ color: '#8290A5' }}>Response confidence: {Math.round(Number(item.confidence) * 100)}%. Verify important decisions with the cited evidence.</p>}
