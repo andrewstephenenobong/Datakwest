@@ -5,15 +5,76 @@ export default function RecoveryState({ type = 'error', onRetry }) {
   const navigate = useNavigate()
   const [owlMessage, setOwlMessage] = useState('Tap the owl to say hello.')
   const [owlReaction, setOwlReaction] = useState(false)
+  const [interactionCount, setInteractionCount] = useState(0)
+  const [soundStyle, setSoundStyle] = useState(() => {
+    if (typeof window === 'undefined') return 'chime'
+    return window.localStorage.getItem('datakwest-owl-sound') || 'chime'
+  })
   const soundContextRef = useRef(null)
   const isNotFound = type === 'not-found'
 
+  function chooseOwlPhrase(action = 'tap', nextCount = interactionCount + 1) {
+    const phrasePools = {
+      tap: [
+        'Hoo! The best journeys start with one small step.',
+        'Even the best learners take a wrong turn. You are still moving forward.',
+        'I found a detour. Let’s get you back to your learning path.',
+        'Your next chapter is waiting at home base.',
+      ],
+      retry: [
+        'Let’s give that page another try. I’m rooting for you.',
+        'A fresh attempt is a learning skill too. Ready?',
+        'I’ve dusted off the path. Try loading it again.',
+      ],
+      back: [
+        'Good call. Let’s return to the last place you were learning.',
+        'Backtracking is sometimes how we find the right route.',
+        'I’ll guide you to familiar ground.',
+      ],
+      home: [
+        'Home base is ready. Choose a skill and keep building.',
+        'Let’s start from the map and find your next challenge.',
+        'Your learning path is waiting at home.',
+      ],
+    }
+    const pool = phrasePools[action] || phrasePools.tap
+    if (action === 'tap' && nextCount > 1 && nextCount % 3 === 0) return 'You came back! That is exactly how progress is made.'
+    return pool[Math.floor(Math.random() * pool.length)]
+  }
+
+  function respondToOwl(action = 'tap') {
+    const nextCount = interactionCount + 1
+    setInteractionCount(nextCount)
+    setOwlMessage(chooseOwlPhrase(action, nextCount))
+    playOwlSound(soundStyle)
+    setOwlReaction(true)
+    window.setTimeout(() => setOwlReaction(false), 700)
+  }
+
   function handleBack() {
+    respondToOwl('back')
     if (window.history.length > 1) navigate(-1)
     else navigate('/')
   }
 
-  function playOwlSound() {
+  function handleReturnHome() {
+    respondToOwl('home')
+    navigate('/')
+  }
+
+  function handleRetry() {
+    respondToOwl('retry')
+    if (onRetry) onRetry()
+    else window.location.reload()
+  }
+
+  function updateSoundStyle(nextStyle) {
+    setSoundStyle(nextStyle)
+    window.localStorage.setItem('datakwest-owl-sound', nextStyle)
+    if (nextStyle !== 'off') playOwlSound(nextStyle)
+  }
+
+  function playOwlSound(style = soundStyle) {
     if (typeof window === 'undefined') return
     const AudioContext = window.AudioContext || window.webkitAudioContext
     if (!AudioContext) return
@@ -23,6 +84,7 @@ export default function RecoveryState({ type = 'error', onRetry }) {
       soundContextRef.current = audioContext
       if (audioContext.state === 'suspended') audioContext.resume()
 
+      if (style === 'off') return
       const now = audioContext.currentTime
       const master = audioContext.createGain()
       master.gain.setValueAtTime(0.0001, now)
@@ -30,12 +92,13 @@ export default function RecoveryState({ type = 'error', onRetry }) {
       master.gain.exponentialRampToValueAtTime(0.0001, now + 0.22)
       master.connect(audioContext.destination)
 
-      ;[440, 660].forEach((frequency, index) => {
+      const tones = style === 'pop' ? [280, 520] : style === 'soft' ? [360, 430] : [440, 660]
+      tones.forEach((frequency, index) => {
         const oscillator = audioContext.createOscillator()
-        oscillator.type = 'sine'
-        oscillator.frequency.setValueAtTime(frequency, now + index * 0.045)
+        oscillator.type = style === 'pop' ? 'triangle' : 'sine'
+        oscillator.frequency.setValueAtTime(frequency, now + index * (style === 'pop' ? 0.025 : 0.045))
         oscillator.connect(master)
-        oscillator.start(now + index * 0.045)
+        oscillator.start(now + index * (style === 'pop' ? 0.025 : 0.045))
         oscillator.stop(now + 0.24)
       })
     } catch {
@@ -44,17 +107,7 @@ export default function RecoveryState({ type = 'error', onRetry }) {
   }
 
   function interactWithOwl() {
-    const responses = [
-      'Hoo! The best journeys start with one small step.',
-      'Even the best learners take a wrong turn. You are still moving forward.',
-      'I found a detour. Let’s get you back to your learning path.',
-      'Tap again if you need a little encouragement.',
-      'Your next chapter is waiting at home base.',
-    ]
-    setOwlMessage(responses[Math.floor(Math.random() * responses.length)])
-    playOwlSound()
-    setOwlReaction(true)
-    window.setTimeout(() => setOwlReaction(false), 700)
+    respondToOwl('tap')
   }
 
   if (isNotFound) {
@@ -95,6 +148,12 @@ export default function RecoveryState({ type = 'error', onRetry }) {
                         <span className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t" style={{ borderColor: 'rgba(255,255,255,0.16)', background: 'rgba(5,15,29,0.72)' }} />
                         <p aria-live="polite" className="relative">{owlMessage}</p>
                       </div>
+                      <div className="flex flex-wrap items-center justify-center gap-1.5 text-[10px] font-bold" aria-label="Owl sound style">
+                        <span className="mr-1 uppercase tracking-[0.14em]" style={{ color: '#9AA8BB' }}>Sound</span>
+                        {[['chime', 'Chime'], ['pop', 'Pop'], ['soft', 'Soft'], ['off', 'Off']].map(([value, label]) => (
+                          <button key={value} type="button" onClick={() => updateSoundStyle(value)} aria-pressed={soundStyle === value} className="rounded-full border px-2 py-1" style={{ borderColor: soundStyle === value ? '#D4AF37' : 'rgba(255,255,255,0.16)', background: soundStyle === value ? 'rgba(212,175,55,0.16)' : 'transparent', color: soundStyle === value ? '#F7D76A' : '#9AA8BB' }}>{label}</button>
+                        ))}
+                      </div>
                     </div>
                     <span className="absolute right-1/4 top-4 h-3 w-3 rounded-full" style={{ background: '#D4AF37' }} />
                     <span className="absolute left-1/4 top-12 h-2 w-2 rounded-full" style={{ background: '#8BC6B5' }} />
@@ -105,7 +164,7 @@ export default function RecoveryState({ type = 'error', onRetry }) {
                 <p className="text-xs leading-5" style={{ color: '#9AA8BB' }}>The link may be out of date, or this learning space may have moved.</p>
                 <div className="flex flex-wrap items-center gap-4 text-sm font-bold">
                   <button type="button" onClick={handleBack} style={{ color: '#8FB4E8' }}>Go back</button>
-                  <Link to="/" className="rounded-xl px-4 py-2.5" style={{ background: '#D4AF37', color: '#0A2342' }}>Return home</Link>
+                  <Link to="/" onClick={handleReturnHome} className="rounded-xl px-4 py-2.5" style={{ background: '#D4AF37', color: '#0A2342' }}>Return home</Link>
                 </div>
               </div>
             </div>
@@ -120,7 +179,7 @@ export default function RecoveryState({ type = 'error', onRetry }) {
     <main className="min-h-screen overflow-x-hidden" style={{ background: '#F6F8FC', color: '#0A2342' }}>
       <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-5 py-6 sm:px-8 sm:py-8">
         <header className="flex items-center justify-between"><Link to="/" className="inline-flex items-center gap-2" aria-label="Return to Datakwest home"><img src="/datakwest_icon_1.png" alt="" className="h-9 w-9 object-contain sm:h-10 sm:w-10" /><span className="text-sm font-black tracking-tight sm:text-base">DataKwest</span></Link><span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: '#8290A5' }}>Career Operating System</span></header>
-        <section className="flex flex-1 items-center justify-center py-16 sm:py-20"><div className="w-full max-w-2xl"><div className="mb-7 flex items-center gap-4 sm:mb-8 sm:gap-6"><div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl sm:h-28 sm:w-28" style={{ background: '#EAF2FF' }}><div className="absolute -right-2 -top-2 h-4 w-4 rounded-full" style={{ background: '#8FB4E8' }} /><img src="/datakwest_icon_1.png" alt="Datakwest owl" className="h-14 w-14 object-contain sm:h-20 sm:w-20" /></div><div><p className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: '#9A7610' }}>Temporary interruption</p><p className="mt-2 text-sm font-semibold" style={{ color: '#6B7A99' }}>The owl hit a learning detour.</p></div></div><div className="rounded-[2rem] border bg-white p-6 sm:p-10" style={{ borderColor: '#DCE5F0', boxShadow: '0 22px 70px rgba(10,35,66,0.10)' }}><p className="text-5xl font-black tracking-[-0.06em] sm:text-7xl" style={{ color: '#0A2342' }}>Hmm</p><h1 className="mt-3 text-2xl font-black tracking-tight sm:text-4xl">Something interrupted your learning path.</h1><p className="mt-4 max-w-xl text-sm leading-7 sm:text-base" style={{ color: '#6B7A99' }}>Datakwest could not finish loading this page. Your progress is safe. Try again, or return to the workspace and continue from there.</p><div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><Link to="/" className="inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-sm font-bold" style={{ background: '#0A2342', color: 'white' }}>Go to Datakwest home</Link><button type="button" onClick={onRetry || (() => window.location.reload())} className="inline-flex min-h-12 items-center justify-center rounded-xl border-2 px-5 py-3 text-sm font-bold" style={{ borderColor: '#D9E3EF', color: '#0A2342', background: 'white' }}>Try again</button><button type="button" onClick={handleBack} className="inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-sm font-bold" style={{ color: '#2456A6' }}>Go back</button></div></div></div></section>
+        <section className="flex flex-1 items-center justify-center py-16 sm:py-20"><div className="w-full max-w-2xl"><div className="mb-7 flex items-center gap-4 sm:mb-8 sm:gap-6"><div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl sm:h-28 sm:w-28" style={{ background: '#EAF2FF' }}><div className="absolute -right-2 -top-2 h-4 w-4 rounded-full" style={{ background: '#8FB4E8' }} /><img src="/datakwest_icon_1.png" alt="Datakwest owl" className="h-14 w-14 object-contain sm:h-20 sm:w-20" /></div><div><p className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: '#9A7610' }}>Temporary interruption</p><p className="mt-2 text-sm font-semibold" style={{ color: '#6B7A99' }}>The owl hit a learning detour.</p></div></div><div className="rounded-[2rem] border bg-white p-6 sm:p-10" style={{ borderColor: '#DCE5F0', boxShadow: '0 22px 70px rgba(10,35,66,0.10)' }}><p className="text-5xl font-black tracking-[-0.06em] sm:text-7xl" style={{ color: '#0A2342' }}>Hmm</p><h1 className="mt-3 text-2xl font-black tracking-tight sm:text-4xl">Something interrupted your learning path.</h1><p className="mt-4 max-w-xl text-sm leading-7 sm:text-base" style={{ color: '#6B7A99' }}>Datakwest could not finish loading this page. Your progress is safe. Try again, or return to the workspace and continue from there.</p><div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><Link to="/" onClick={handleReturnHome} className="inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-sm font-bold" style={{ background: '#0A2342', color: 'white' }}>Go to Datakwest home</Link><button type="button" onClick={handleRetry} className="inline-flex min-h-12 items-center justify-center rounded-xl border-2 px-5 py-3 text-sm font-bold" style={{ borderColor: '#D9E3EF', color: '#0A2342', background: 'white' }}>Try again</button><button type="button" onClick={handleBack} className="inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-sm font-bold" style={{ color: '#2456A6' }}>Go back</button></div></div></div></section>
         <footer className="flex flex-col gap-2 text-xs leading-5 sm:flex-row sm:items-center sm:justify-between" style={{ color: '#8290A5' }}><span>If this keeps happening, return home and try the workspace again.</span><Link to="/login" className="font-bold" style={{ color: '#2456A6' }}>Sign in</Link></footer>
       </div>
     </main>
