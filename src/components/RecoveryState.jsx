@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 export default function RecoveryState({ type = 'error', onRetry }) {
   const navigate = useNavigate()
+  const [owlMessage, setOwlMessage] = useState('Tap the owl to say hello.')
+  const [owlReaction, setOwlReaction] = useState(false)
   const isNotFound = type === 'not-found'
 
   function handleBack() {
@@ -9,10 +12,17 @@ export default function RecoveryState({ type = 'error', onRetry }) {
     else navigate('/')
   }
 
+  function interactWithOwl() {
+    const responses = ['Hoo! Let’s find your next step.', 'Even the best learners take a wrong turn.', 'I’m watching the map. Try heading home.']
+    setOwlMessage(responses[Math.floor(Math.random() * responses.length)])
+    setOwlReaction(true)
+    window.setTimeout(() => setOwlReaction(false), 700)
+  }
+
   if (isNotFound) {
     return (
       <main className="min-h-screen overflow-x-hidden" style={{ background: '#0B1220', color: 'white' }}>
-        <style>{`@keyframes dkOwlEnter { from { opacity: 0; transform: translateY(28px) scale(.88) rotate(-3deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } } @keyframes dkOwlFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(1.5deg); } } @keyframes dkOwlShadow { 0%, 100% { transform: scaleX(1); opacity: .24; } 50% { transform: scaleX(.84); opacity: .16; } } .dk-owl { animation: dkOwlEnter .8s cubic-bezier(.2,.8,.2,1) both, dkOwlFloat 4.8s ease-in-out .8s infinite; transform-origin: center bottom; } .dk-owl-shadow { animation: dkOwlShadow 4.8s ease-in-out .8s infinite; transform-origin: center; } @media (prefers-reduced-motion: reduce) { .dk-owl, .dk-owl-shadow { animation: none; } }`}</style>
+        <style>{`@keyframes dkOwlEnter { from { opacity: 0; transform: translateY(28px) scale(.88) rotate(-3deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } } @keyframes dkOwlFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(1.5deg); } } @keyframes dkOwlShadow { 0%, 100% { transform: scaleX(1); opacity: .24; } 50% { transform: scaleX(.84); opacity: .16; } } @keyframes dkOwlBounce { 0%, 100% { transform: scale(1) rotate(0); } 35% { transform: scale(1.08) rotate(-4deg); } 70% { transform: scale(.96) rotate(3deg); } } .dk-owl { animation: dkOwlEnter .8s cubic-bezier(.2,.8,.2,1) both, dkOwlFloat 4.8s ease-in-out .8s infinite; transform-origin: center bottom; } .dk-owl-shadow { animation: dkOwlShadow 4.8s ease-in-out .8s infinite; transform-origin: center; } @media (prefers-reduced-motion: reduce) { .dk-owl, .dk-owl-shadow, .dk-owl-bounce { animation: none; } } .dk-owl-bounce { animation: dkOwlBounce .7s cubic-bezier(.2,.8,.2,1); }`}</style>
         <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-5 sm:px-8 sm:py-7">
           <header className="flex items-center justify-between">
             <Link to="/" className="inline-flex items-center gap-2" aria-label="Return to Datakwest home">
@@ -39,7 +49,12 @@ export default function RecoveryState({ type = 'error', onRetry }) {
                   <div className="relative flex min-h-[220px] items-center justify-center sm:min-h-[300px]">
                     <div className="dk-owl-shadow absolute bottom-5 h-10 w-56 rounded-[50%] blur-sm" style={{ background: 'rgba(0,0,0,0.24)' }} />
                     <div className="absolute bottom-8 h-32 w-64 rounded-[50%]" style={{ background: 'rgba(139,198,181,0.22)' }} />
-                    <img src="/datakwest_icon_1.png" alt="Datakwest owl" className="dk-owl relative z-10 h-48 w-48 object-contain drop-shadow-2xl sm:h-64 sm:w-64" />
+                    <div className="relative z-10 flex flex-col items-center gap-3">
+                      <button type="button" onClick={interactWithOwl} className={`rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/70 ${owlReaction ? 'dk-owl-bounce' : ''}`} aria-label="Talk to the Datakwest owl">
+                        <img src="/datakwest-owl-3d.png" alt="Interactive Datakwest owl" className="dk-owl h-48 w-48 cursor-pointer object-contain drop-shadow-2xl sm:h-64 sm:w-64" />
+                      </button>
+                      <p aria-live="polite" className="max-w-[18rem] rounded-full border px-4 py-2 text-center text-xs font-bold" style={{ borderColor: 'rgba(255,255,255,0.16)', background: 'rgba(5,15,29,0.5)', color: '#DCE7F5' }}>{owlMessage}</p>
+                    </div>
                     <span className="absolute right-1/4 top-4 h-3 w-3 rounded-full" style={{ background: '#D4AF37' }} />
                     <span className="absolute left-1/4 top-12 h-2 w-2 rounded-full" style={{ background: '#8BC6B5' }} />
                   </div>
