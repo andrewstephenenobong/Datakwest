@@ -69,15 +69,13 @@ async function embedTutorQuery(query: string, apiKey: string) {
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       content: { parts: [{ text: query }] },
-      embedContentConfig: {
-        taskType: 'RETRIEVAL_QUERY',
-        outputDimensionality: 768,
-      },
+      taskType: 'RETRIEVAL_QUERY',
+      outputDimensionality: 768,
     }),
   })
   if (!response.ok) return null
   const data = await response.json()
-  const values = data.embedding?.values
+  const values = data.embedding?.values || data.embeddings?.[0]?.values
   return Array.isArray(values) && values.length === 768 && values.every((value: unknown) => Number.isFinite(Number(value))) ? values : null
 }
 
@@ -226,6 +224,18 @@ Return only JSON matching the requested schema.`
     const providerData = await response.json()
     const rawText = providerData.candidates?.[0]?.content?.parts?.[0]?.text
     const result = normalizeTutorResult(rawText ? parseJsonObject(rawText) : null)
+    if (result.grounding.length === 0 && retrievedKnowledge.length > 0) {
+      const citationByUrl = new Map<string, { title: string; url: string; claim: string }>()
+      retrievedKnowledge.forEach((item) => {
+        if (!item || typeof item !== 'object') return
+        const source = item as Record<string, unknown>
+        const title = typeof source.title === 'string' ? source.title.slice(0, 160) : ''
+        const url = typeof source.canonical_url === 'string' ? source.canonical_url.slice(0, 500) : ''
+        const claim = typeof source.claim === 'string' ? source.claim.slice(0, 300) : 'Retrieved from an approved governed source chunk.'
+        if ((title || url) && !citationByUrl.has(url || title)) citationByUrl.set(url || title, { title, url, claim })
+      })
+      result.grounding = Array.from(citationByUrl.values()).slice(0, 3)
+    }
     const latencyMs = Date.now() - startedAt
     await adminClient.rpc('record_ai_runtime_event', {
       p_user_id: userId,

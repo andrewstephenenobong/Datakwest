@@ -34,7 +34,9 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await userClient.auth.getUser(accessToken)
     if (userError || !userData.user) return jsonResponse({ error: 'invalid_session' }, 401)
 
-    const { data: permitted, error: permissionError } = await userClient.rpc('has_admin_permission', {
+    const adminClient = createClient(supabaseUrl, serviceRoleKey)
+    const { data: permitted, error: permissionError } = await adminClient.rpc('has_user_admin_permission', {
+      p_user_id: userData.user.id,
       p_permission: 'learning:embed',
     })
     if (permissionError || permitted !== true) return jsonResponse({ error: 'admin_permission_required' }, 403)
@@ -44,7 +46,6 @@ Deno.serve(async (req) => {
     const limit = Math.min(Math.max(Number(body.limit) || 20, 1), 100)
     if (!sourceDocumentId) return jsonResponse({ error: 'sourceDocumentId_required' }, 400)
 
-    const adminClient = createClient(supabaseUrl, serviceRoleKey)
     const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
     await adminClient.from('admin_audit_log').insert({
       actor_id: userData.user.id,

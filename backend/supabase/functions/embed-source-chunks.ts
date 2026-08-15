@@ -37,7 +37,8 @@ Deno.serve(async (req) => {
       .select('id, title, publication_status, locale')
       .eq('id', sourceDocumentId)
       .maybeSingle()
-    if (documentError || !document) return jsonResponse({ error: 'source_document_not_found' }, 404)
+    if (documentError) return jsonResponse({ error: 'source_document_lookup_failed' }, 500)
+    if (!document) return jsonResponse({ error: 'source_document_not_found' }, 404)
     if (document.publication_status !== 'approved') return jsonResponse({ error: 'source_document_not_approved' }, 409)
 
     const { data: chunks, error: chunkError } = await adminClient
@@ -62,7 +63,7 @@ Deno.serve(async (req) => {
           content: { parts: [{ text: chunk.content }] },
           taskType: 'RETRIEVAL_DOCUMENT',
           title: document.title,
-          embedContentConfig: { outputDimensionality: 768 },
+          outputDimensionality: 768,
         })),
       }),
     })
