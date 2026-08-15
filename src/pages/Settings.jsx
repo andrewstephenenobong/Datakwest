@@ -26,6 +26,7 @@ export default function Settings() {
   const [privacyLoading, setPrivacyLoading] = useState(false)
   const [privacySaving, setPrivacySaving] = useState(false)
   const [privacyStatus, setPrivacyStatus] = useState('')
+  const [settingsNotice, setSettingsNotice] = useState('')
   const [privacyPreferences, setPrivacyPreferences] = useState({ personalization_consent: true, ai_memory_consent: false, analytics_consent: false })
   const [navigationSounds, setNavigationSounds] = useState(() => getNavigationSoundPreferences())
   const metadata = user?.user_metadata || {}
@@ -97,7 +98,10 @@ export default function Settings() {
     else if (key === 'feedback') { setFeedbackOpen(true); setFeedbackStatus('') }
     else if (key === 'help') navigate('/tutor')
     else if (key === 'privacy') openPrivacyCentre()
-    else setShowSounds(false)
+    else {
+      setShowSounds(false)
+      setSettingsNotice(key === 'preferences' ? 'Learning preferences are being prepared for the pilot. Your current path and server recommendations remain active.' : 'Notifications are not enabled for this pilot yet. We will add them when reminder delivery is ready.')
+    }
   }
 
   return (
@@ -105,6 +109,8 @@ export default function Settings() {
       <Navbar />
       <main className="mx-auto max-w-2xl px-4 pb-10 pt-5 sm:px-6 sm:pt-10">
         <header className="flex items-center justify-between border-b pb-5" style={{ borderColor: '#2B4046' }}><button type="button" onClick={() => navigate('/profile')} className="text-sm font-black" style={{ color: '#8BC6B5' }}>‹ Profile</button><div className="text-center"><p className="text-xs font-black uppercase tracking-[.2em]" style={{ color: '#91A7AD' }}>DataKwest</p><h1 className="mt-1 text-2xl font-black">Settings</h1></div><button type="button" onClick={() => navigate('/profile')} className="text-sm font-black" style={{ color: '#8BC6B5' }}>Done</button></header>
+
+        {settingsNotice && <div className="mt-5 rounded-2xl border px-4 py-3 text-sm leading-6" style={{ borderColor: '#40565D', background: '#14252A', color: '#DDF5E3' }} role="status">{settingsNotice}</div>}
 
         <section className="mt-7 flex items-center gap-4 rounded-2xl border p-4" style={{ borderColor: '#2B4046', background: '#14252A' }}><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl" style={{ background: 'radial-gradient(circle, #EAF7F1 0%, #8BC6B5 66%, #3C8E93 100%)' }}><img src="/datakwest-owl-3d.webp" alt="Datakwest owl" width="768" height="768" className="h-11 w-11 object-contain" /></div><div className="min-w-0"><p className="truncate text-lg font-black">{name}</p><p className="mt-1 truncate text-xs" style={{ color: '#91A7AD' }}>{user?.email || 'Learner account'}</p></div><button type="button" onClick={() => navigate('/profile')} className="ml-auto text-sm font-black" style={{ color: '#8BC6B5' }}>View</button></section>
 
