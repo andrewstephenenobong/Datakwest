@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
+import OwlLoading from '../components/OwlLoading'
 import { getAssessmentCenter } from '../lib/assessments'
 
 export default function Assessments() {
@@ -34,7 +35,7 @@ export default function Assessments() {
 
         {error && <div className="rounded-xl p-4 mb-6" style={{ background: '#FEE2E2', color: '#991B1B' }} role="alert">{error}</div>}
         {loading ? (
-          <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>Loading assessments…</div>
+          <OwlLoading message="Opening your assessment centre…" />
         ) : (
           <div className="space-y-8">
             <section>
