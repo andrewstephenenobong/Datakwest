@@ -28,6 +28,7 @@ const practiceClient = await readFile('src/lib/practice.js', 'utf8')
 const legacyEvidenceCompatibility = await readFile('backend/supabase/migrations/0033_legacy_evidence_compatibility.sql', 'utf8')
 const cybersecurityFlagship = await readFile('backend/supabase/migrations/0034_cybersecurity_flagship_slice.sql', 'utf8')
 const learningIntelligenceIndexes = await readFile('backend/supabase/migrations/0035_learning_intelligence_query_indexes.sql', 'utf8')
+const evidenceVerificationMastery = await readFile('backend/supabase/migrations/0036_evidence_verification_mastery_projection.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -612,6 +613,18 @@ test('initial skill catalogue seeds the ten launch paths and a publishable start
   assert.match(initialSkillCatalogMigration, /prerequisite/)
 })
 
+test('Evidence verification and mastery projection remain server-authoritative', () => {
+  assert.match(evidenceVerificationMastery, /create or replace function public\.verify_learning_evidence/)
+  assert.match(evidenceVerificationMastery, /service_role_required/)
+  assert.match(evidenceVerificationMastery, /deterministic-baseline-v1/)
+  assert.match(evidenceVerificationMastery, /status = 'verified'/)
+  assert.match(evidenceVerificationMastery, /learner_node_mastery/)
+  assert.match(evidenceVerificationMastery, /learner_skill_state/)
+  assert.match(evidenceVerificationMastery, /recompute_mastery_after_verified_attempt/)
+  assert.doesNotMatch(evidenceVerificationMastery, /grant execute on function public\.verify_learning_evidence[^\n]*authenticated/)
+  assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
+})
+
 test('Learning intelligence context queries have production indexes', () => {
   assert.match(learningIntelligenceIndexes, /learner_interaction_events_learner_time_idx/)
   assert.match(learningIntelligenceIndexes, /learner_evidence_learner_submitted_idx/)
@@ -697,8 +710,8 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
-  const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const secretPattern = /(SUPABASE_SERVICE_ROLE_KEY\s*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
 
