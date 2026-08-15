@@ -124,6 +124,8 @@ Deno.serve(async (req) => {
     if (!supabaseUrl || !supabaseAnonKey || !authHeader) return jsonResponse({ error: 'not_authenticated' }, 401)
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: authHeader } } })
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const adminClient = serviceRoleKey ? createClient(supabaseUrl, serviceRoleKey) : null
     const { data: authData } = await supabase.auth.getUser()
     const userId = authData.user?.id
     if (!userId) return jsonResponse({ error: 'not_authenticated' }, 401)
@@ -134,6 +136,16 @@ Deno.serve(async (req) => {
     const conversationId = typeof body.conversationId === 'string' ? body.conversationId : null
     if (!message || message.length > MAX_MESSAGE_LENGTH) return jsonResponse({ error: 'message_invalid' }, 400)
     if (!['tutor', 'mentor', 'practice', 'interview', 'career_coach', 'project_reviewer'].includes(mode)) return jsonResponse({ error: 'mode_invalid' }, 400)
+
+    if (!adminClient) return jsonResponse({ error: 'ai_budget_unavailable' }, 503)
+    const budgetResult = await adminClient.rpc('consume_ai_budget', {
+      p_user_id: userId,
+      p_feature_key: 'tutor-orchestrator',
+      p_estimated_tokens: 4000,
+      p_estimated_cost_micros: 0,
+    })
+    if (budgetResult.error) return jsonResponse({ error: 'ai_budget_unavailable' }, 503)
+    if (!budgetResult.data?.allowed) return jsonResponse({ error: 'daily_limit_reached', reason: budgetResult.data?.reason || 'ai_budget_exhausted' }, 429)
 
     const today = new Date().toISOString().slice(0, 10)
     const { data: usageRow } = await supabase.from('ai_usage').select('call_count').eq('user_id', userId).eq('usage_date', today).maybeSingle()
@@ -186,6 +198,7 @@ Rules:
 
 Return only JSON matching the requested schema.`
 
+    const startedAt = Date.now()
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -213,6 +226,23 @@ Return only JSON matching the requested schema.`
     const providerData = await response.json()
     const rawText = providerData.candidates?.[0]?.content?.parts?.[0]?.text
     const result = normalizeTutorResult(rawText ? parseJsonObject(rawText) : null)
+    const latencyMs = Date.now() - startedAt
+    await adminClient.rpc('record_ai_runtime_event', {
+      p_user_id: userId,
+      p_feature_key: 'tutor-orchestrator',
+      p_model_id: MODEL_ID,
+      p_prompt_version: PROMPT_VERSION,
+      p_retrieval_version: queryEmbedding ? 'pgvector-gemini-embedding-001-v1' : 'provenance-only-v1',
+      p_request_id: activeConversationId,
+      p_status: response.ok && rawText && result.reply ? 'completed' : 'failed',
+      p_latency_ms: latencyMs,
+      p_input_tokens: Number(providerData.usageMetadata?.promptTokenCount) || null,
+      p_output_tokens: Number(providerData.usageMetadata?.candidatesTokenCount) || null,
+      p_estimated_cost_micros: null,
+      p_retrieved_chunk_count: retrievedKnowledge.length,
+      p_error_code: response.ok && rawText && result.reply ? null : 'ai_provider_error',
+      p_metadata: { mode, grounding_count: result.grounding.length },
+    })
     if (!response.ok || !rawText || !result.reply) return jsonResponse({ error: 'ai_provider_error' }, 502)
 
     const { error: assistantMessageError } = await supabase.from('messages').insert({

@@ -35,6 +35,7 @@ const learningEventsFeatures = await readFile('backend/supabase/migrations/0038_
 const ragVectorMigration = await readFile('backend/supabase/migrations/0039_rag_vector_source_chunks.sql', 'utf8')
 const sourceEmbeddingFunction = await readFile('backend/supabase/functions/embed-source-chunks.ts', 'utf8')
 const mlShadowMigration = await readFile('backend/supabase/migrations/0040_ml_shadow_mode_foundation.sql', 'utf8')
+const aiControlsMigration = await readFile('backend/supabase/migrations/0041_ai_evaluation_runtime_controls.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -631,6 +632,22 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
 })
 
+test('AI evaluation and runtime controls are versioned and server-authoritative', () => {
+  assert.match(aiControlsMigration, /create table if not exists public\.ai_evaluation_suites/)
+  assert.match(aiControlsMigration, /create table if not exists public\.ai_evaluation_cases/)
+  assert.match(aiControlsMigration, /create table if not exists public\.ai_evaluation_runs/)
+  assert.match(aiControlsMigration, /create table if not exists public\.ai_evaluation_results/)
+  assert.match(aiControlsMigration, /create table if not exists public\.ai_runtime_events/)
+  assert.match(aiControlsMigration, /create table if not exists public\.ai_feature_limits/)
+  assert.match(aiControlsMigration, /create table if not exists public\.ai_budget_counters/)
+  assert.match(aiControlsMigration, /consume_ai_budget/)
+  assert.match(aiControlsMigration, /record_ai_runtime_event/)
+  assert.match(aiControlsMigration, /daily_token_limit/)
+  assert.match(aiControlsMigration, /daily_cost_limit_micros/)
+  assert.match(aiControlsMigration, /service_role_required/)
+  assert.doesNotMatch(aiControlsMigration, /grant execute on function public\.consume_ai_budget[^\n]*authenticated/)
+})
+
 test('ML workspace remains shadow-only until a model earns promotion', () => {
   assert.match(mlShadowMigration, /create table if not exists public\.ml_models/)
   assert.match(mlShadowMigration, /create table if not exists public\.ml_training_runs/)
@@ -661,6 +678,8 @@ test('Tutor Orchestrator grounds responses with optional vector retrieval', () =
   assert.match(tutorOrchestrator, /outputDimensionality: 768/)
   assert.match(tutorOrchestrator, /retrieve_knowledge_chunks/)
   assert.match(tutorOrchestrator, /retrievedKnowledge/)
+  assert.match(tutorOrchestrator, /consume_ai_budget/)
+  assert.match(tutorOrchestrator, /record_ai_runtime_event/)
   assert.match(tutorOrchestrator, /state uncertainty rather than fabricate citations/)
 })
 
@@ -792,7 +811,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, ragVectorMigration, sourceEmbeddingFunction, mlShadowMigration, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, ragVectorMigration, sourceEmbeddingFunction, mlShadowMigration, aiControlsMigration, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE_KEY\s*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
