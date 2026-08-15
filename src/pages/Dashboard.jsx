@@ -134,6 +134,8 @@ export default function Dashboard() {
   const currentPhase = sortedPhaseNumbers.find(n => !passedPhaseNumbers.has(n)) || sortedPhaseNumbers[sortedPhaseNumbers.length - 1] || 1
   const allPhasesPassed = totalPhases > 0 && passedPhaseNumbers.size === totalPhases
   const missionPayload = mission?.payload || {}
+  const daysSinceActive = profile.last_active_date ? Math.max(0, Math.floor((Date.now() - new Date(profile.last_active_date).getTime()) / 86400000)) : 0
+  const isReturningAfterBreak = daysSinceActive >= 14
 
   function openNextAction() {
     if (!nextAction) return
@@ -178,6 +180,7 @@ export default function Dashboard() {
       <div className="max-w-4xl mx-auto px-6 py-10">
 
         {firstMissionWelcome && <section className="mb-6 flex items-center gap-4 rounded-2xl border p-5" style={{ borderColor: '#F0D58A', background: '#FFF9E8' }} aria-labelledby="first-mission-welcome"><img src="/datakwest-owl-3d.webp" alt="Datakwest owl" width="96" height="96" className="h-16 w-16 shrink-0 object-contain" /><div className="min-w-0"><p className="text-xs font-black uppercase tracking-[.16em]" style={{ color: '#967414' }}>Your path is ready</p><h2 id="first-mission-welcome" className="mt-1 text-lg font-black" style={{ color: '#0A2342' }}>Start with one useful mission.</h2><p className="mt-1 text-sm leading-6" style={{ color: '#6B7A99' }}>Your first action is based on your chosen skill, pace, and the evidence you need to build next.</p></div><button type="button" onClick={() => document.getElementById('daily-mission-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className="ml-auto shrink-0 rounded-xl px-4 py-3 text-xs font-black" style={{ background: '#0A2342', color: 'white' }}>See mission</button></section>}
+        {isReturningAfterBreak && !firstMissionWelcome && <section className="mb-6 flex items-center gap-4 rounded-2xl border p-5" style={{ borderColor: '#B9D9D0', background: '#EEF8F4' }} aria-labelledby="welcome-back-title"><img src="/datakwest-owl-3d.webp" alt="Datakwest owl welcoming you back" width="96" height="96" className="h-16 w-16 shrink-0 object-contain" /><div className="min-w-0"><p className="text-xs font-black uppercase tracking-[.16em]" style={{ color: '#2D8A5A' }}>Welcome back</p><h2 id="welcome-back-title" className="mt-1 text-lg font-black" style={{ color: '#0A2342' }}>Restart gently. One useful step is enough.</h2><p className="mt-1 text-sm leading-6" style={{ color: '#54706D' }}>You have been away for {daysSinceActive} days. Your verified progress is safe; begin with {nextAction?.title || missionPayload.title || 'today’s mission'}.</p></div><button type="button" onClick={openNextAction} className="ml-auto shrink-0 rounded-xl px-4 py-3 text-xs font-black" style={{ background: '#0A2342', color: 'white' }}>Resume path</button></section>}
 
         <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
           <div>
