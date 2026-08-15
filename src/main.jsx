@@ -19,9 +19,17 @@ createRoot(document.getElementById('root')).render(
 )
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {
+  const checkForServiceWorkerUpdate = async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      await registration.update()
+    } catch {
       // Offline support is progressive enhancement; the app remains usable online.
-    })
+    }
+  }
+
+  window.addEventListener('load', checkForServiceWorkerUpdate)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkForServiceWorkerUpdate()
   })
 }
