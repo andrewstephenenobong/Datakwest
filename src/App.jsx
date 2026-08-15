@@ -48,6 +48,8 @@ export default function App() {
   return (
     <Suspense fallback={<RouteLoading />}>
       <NetworkStatusBanner />
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-[#0A2342] focus:px-4 focus:py-3 focus:text-sm focus:font-bold focus:text-white">Skip to main content</a>
+      <div id="main-content" tabIndex="-1">
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -81,6 +83,7 @@ export default function App() {
         <Route path="/profile" element={<Protected><Profile /></Protected>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </div>
     </Suspense>
   )
 }
