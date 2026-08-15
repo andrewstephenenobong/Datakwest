@@ -44,6 +44,7 @@ export default function Profile() {
   const streak = profile?.streak || 0
   const xp = profile?.xp || 0
   const readinessScore = readiness?.score ?? null
+  const isFirstWeekState = completedPhases === 0 && streak === 0 && xp === 0
 
   if (loading) return <OwlLoading message="Opening your learner profile…" />
 
@@ -61,6 +62,8 @@ export default function Profile() {
         </section>
 
         <section className="px-5 py-6 sm:px-10 sm:pt-16"><div className="grid grid-cols-3 gap-2 border-b pb-6" style={{ borderColor: '#26383D' }}><Stat value={totalPhases || '—'} label="Path phases" /><Stat value={completedPhases} label="Completed" /><Stat value={readinessScore === null ? '—' : readinessScore} label="Readiness" /></div><button type="button" onClick={() => navigate('/settings')} className="mt-6 flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 px-4 text-sm font-black" style={{ borderColor: '#40565D', color: '#F7FBFA', background: '#14252A' }}>Edit profile and preferences <span aria-hidden="true">→</span></button></section>
+
+        {isFirstWeekState && <section className="mx-5 mb-7 rounded-2xl border p-5 sm:mx-10" style={{ borderColor: '#F0D58A', background: '#FFF9E8' }} aria-labelledby="first-week-profile"><div className="flex items-center gap-4"><img src="/datakwest-owl-3d.webp" alt="Datakwest owl" width="96" height="96" className="h-16 w-16 shrink-0 object-contain" /><div><p className="text-xs font-black uppercase tracking-[.16em]" style={{ color: '#967414' }}>Your first week starts here</p><h2 id="first-week-profile" className="mt-1 text-lg font-black" style={{ color: '#0A2342' }}>One useful mission is enough for today.</h2><p className="mt-1 text-xs leading-5" style={{ color: '#6B7A99' }}>Complete your first verified activity and this profile will begin to reflect the evidence you are building.</p></div></div><button type="button" onClick={() => navigate('/dashboard')} className="mt-4 min-h-11 w-full rounded-xl px-4 py-3 text-sm font-black" style={{ background: '#0A2342', color: 'white' }}>Open my first mission</button></section>}
 
         <section className="px-5 pb-7 sm:px-10"><p className="text-xs font-black uppercase tracking-[.2em]" style={{ color: '#91A7AD' }}>Your momentum</p><div className="mt-4 grid gap-3 sm:grid-cols-3"><Metric icon="🔥" value={`${streak} days`} label="Current learning streak" tone="#FFB11B" /><Metric icon="⚡" value={`${xp} XP`} label="Practice points earned" tone="#F2D34E" /><Metric icon="🦉" value={`${completedPhases}/${totalPhases || '—'}`} label="Roadmap phases complete" tone="#8BC6B5" /></div></section>
 
