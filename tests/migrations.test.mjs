@@ -54,6 +54,7 @@ const passwordField = await readFile('src/components/PasswordField.jsx', 'utf8')
 const publicAiMigration = await readFile('backend/supabase/migrations/0023_public_ai_preview.sql', 'utf8')
 const publicAiTenMessageMigration = await readFile('backend/supabase/migrations/0025_public_ai_preview_ten_messages.sql', 'utf8')
 const publicAiFunction = await readFile('backend/supabase/functions/public-ai-preview.ts', 'utf8')
+const smartTaskFunction = await readFile('backend/supabase/functions/smart-task.ts', 'utf8')
 const publicAiClient = await readFile('src/lib/publicAi.js', 'utf8')
 const careerCentreMigration = await readFile('backend/supabase/migrations/0024_career_centre.sql', 'utf8')
 const careerCentreClient = await readFile('src/lib/careerCentre.js', 'utf8')
@@ -531,6 +532,14 @@ test('admin governance client and console use protected RPCs', () => {
   assert.match(adminGovernancePage, /claimModerationCase/)
   assert.match(adminGovernancePage, /getAdminAuditEvents/)
   assert.doesNotMatch(adminGovernancePage, /from\(['\"]moderation_/)
+})
+
+test('roadmap generation is skill-aware and resilient when AI output is unavailable', () => {
+  assert.match(smartTaskFunction, /fallbackRoadmap/)
+  assert.match(smartTaskFunction, /assessment\?\.targetSkill/)
+  assert.match(smartTaskFunction, /Never assume the learner is studying data analysis/)
+  assert.match(smartTaskFunction, /JSON\.parse\(cleanJson\)/)
+  assert.match(smartTaskFunction, /usedFallback/)
 })
 
 test('public product demo and auth UX are wired for the broader digital-skills product', () => {

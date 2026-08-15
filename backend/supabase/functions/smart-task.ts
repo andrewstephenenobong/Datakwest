@@ -1,3 +1,18 @@
+function fallbackRoadmap(assessment) {
+  const targetSkill = assessment?.targetSkill || 'Digital skills'
+  const pace = assessment?.availability || 'your available weekly time'
+  return {
+    skillLevels: { foundation: 5, practice: 0, projects: 0, communication: 0 },
+    phases: [
+      { number: 1, title: `${targetSkill} foundations`, weeks: 'Weeks 1-4', topics: `Core concepts · Essential vocabulary · Guided examples · Safe practice · Knowledge checks · First reflection` },
+      { number: 2, title: 'Build practical confidence', weeks: 'Weeks 5-8', topics: `Tools and workflows · Worked exercises · Common patterns · Debugging habits · Deliberate practice · Feedback loops` },
+      { number: 3, title: 'Create verified evidence', weeks: 'Weeks 9-12', topics: `Project brief · Planning and research · Build or analyse · Explain decisions · Improve quality · Publish evidence` },
+      { number: 4, title: 'Portfolio and career preparation', weeks: 'Weeks 13-16', topics: `Portfolio story · Project walkthrough · Communication practice · Interview foundations · Application readiness · Next milestone` },
+    ],
+    estimatedTimeline: `A paced starting roadmap for ${targetSkill}, designed around ${pace}. Your personalised phases can be refined as you complete more practice and projects.`,
+  }
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -52,20 +67,18 @@ Deno.serve(async (req) => {
     }, { onConflict: 'user_id,usage_date' })
 
     const { assessment } = await req.json()
+    const targetSkill = assessment?.targetSkill || 'Digital skills'
+    let usedFallback = false
     const apiKeys = [Deno.env.get('GEMINI_API_KEY'), Deno.env.get('GEMINI_API_KEY_2')].filter(Boolean)
 
     if (apiKeys.length === 0) {
-      return new Response(JSON.stringify({ error: 'No GEMINI_API_KEY secrets found' }), {
-        status: 400,
+      usedFallback = true
+      return new Response(JSON.stringify({ roadmap: fallbackRoadmap(assessment), fallback: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const masterCurriculum = `You are an elite Data Analysis instructor, curriculum designer, mentor, project supervisor, and career coach. Your mission is to take learners from COMPLETE BEGINNER to PROFESSIONAL DATA ANALYST. Assume they know nothing, and teach every concept in the correct order, never skipping prerequisites. Your teaching style is beginner-friendly, practical, interactive, project-based, industry-standard, and professional-level.
-
-The full curriculum scope you can draw from includes: Data Fundamentals, Excel (beginner to advanced), SQL, Statistics, Python for Data Analysis (NumPy, Pandas, Matplotlib, Seaborn, Plotly), Data Visualization, Power BI, Advanced Analytics, industry specializations when relevant (e.g. Healthcare Analytics), Real Business Analysis across industries, Portfolio Building, and Job Preparation.
-
-For every topic you ever teach: explain simply, explain technically, give a real-world example, give an exercise, and test understanding with a quiz. Never move the learner on until they demonstrate mastery.`
+    const masterCurriculum = `You are an expert digital-skills curriculum designer, mentor, project supervisor, and career coach. Build a beginner-friendly, practical, interactive, project-based roadmap for the learner's chosen skill. Never assume the learner is studying data analysis unless that is their selected skill. Respect the learner's stated experience, goal, available time, and device. Explain concepts simply, include deliberate practice, and always end with portfolio and career preparation.`
 
     const prompt = `${masterCurriculum}
 
@@ -74,7 +87,7 @@ For every topic you ever teach: explain simply, explain technically, give a real
 Assessment answers from this specific learner:
 ${JSON.stringify(assessment, null, 2)}
 
-Based on the curriculum scope above and this learner's specific background, goals, experience, available time, and target industry, design their personalized phased roadmap. If their target industry has a relevant specialization (e.g. Healthcare), include it as its own phase. Always end with a Portfolio & Job Preparation phase.
+Based on the curriculum scope above and this learner's specific background, goals, experience, available time, device, and chosen skill (${targetSkill}), design their personalized phased roadmap. If their target industry has a relevant specialization (e.g. Healthcare), include it as its own phase. Always end with a Portfolio & Job Preparation phase.
 
 Each phase's "topics" field must contain 6 to 10 short, distinct, bite-sized topics separated by ' · ', each phrased as a concise lesson title (3-6 words) suitable as one individual mini-lesson someone could complete in 10-15 minutes.
 
@@ -127,17 +140,30 @@ All skillLevels values must be actual numbers in the final JSON (not strings, no
     }
 
     if (!data?.candidates) {
-      return new Response(JSON.stringify({ error: 'Gemini API error on all keys', details: data }), {
-        status: 400,
+      usedFallback = true
+      return new Response(JSON.stringify({ roadmap: fallbackRoadmap(assessment), fallback: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const text = data.candidates[0].content.parts[0].text
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
     const cleanJson = text.replace(/```json|```/g, '').trim()
-    const roadmap = JSON.parse(cleanJson)
+    let roadmap
+    try {
+      roadmap = JSON.parse(cleanJson)
+    } catch {
+      const objectStart = cleanJson.indexOf('{')
+      const objectEnd = cleanJson.lastIndexOf('}')
+      if (objectStart >= 0 && objectEnd > objectStart) {
+        try { roadmap = JSON.parse(cleanJson.slice(objectStart, objectEnd + 1)) } catch { roadmap = null }
+      }
+      if (!roadmap) {
+        usedFallback = true
+        roadmap = fallbackRoadmap(assessment)
+      }
+    }
 
-    return new Response(JSON.stringify({ roadmap }), {
+    return new Response(JSON.stringify({ roadmap, fallback: usedFallback }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
