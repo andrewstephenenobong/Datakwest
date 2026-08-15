@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'datakwest-shell-v1'
+const CACHE_VERSION = 'datakwest-shell-v2'
 const OFFLINE_URL = '/offline.html'
 const PRECACHE_URLS = ['/', OFFLINE_URL, '/manifest.webmanifest', '/icons/datakwest-owl-192.png', '/icons/datakwest-owl-512.png']
 

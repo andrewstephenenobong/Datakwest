@@ -110,6 +110,9 @@ html[data-theme='dark'] a:not([style*='color']) {
   --landing-gold-wash: #FFF9E8;
   --landing-gold-soft: #FFF5D8;
   --landing-ink: #0A2342;
+  --landing-hero-surface: #0A2342;
+  --landing-hero-text: #FFFFFF;
+  --landing-button-ink: #0A2342;
   --landing-muted: #5D6D84;
   --landing-subtle: #8290A5;
   --landing-link: #2456A6;
@@ -132,6 +135,9 @@ html[data-theme='dark'] .landing-page {
   --landing-gold-wash: #302B1B;
   --landing-gold-soft: #3A321A;
   --landing-ink: #F7FBFA;
+  --landing-hero-surface: #102B35;
+  --landing-hero-text: #F7FBFA;
+  --landing-button-ink: #0E1B1F;
   --landing-muted: #C1CFD2;
   --landing-subtle: #A7B8BC;
   --landing-link: #9AD9C5;
@@ -207,4 +213,12 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline-color: var(--dk-accent) !important;
+}
+
+html[data-theme='dark'] .landing-page .bg-white {
+  background-color: var(--landing-surface) !important;
+}
+
+html[data-theme='dark'] .landing-page .bg-white\/95 {
+  background-color: rgba(20, 37, 42, 0.96) !important;
 }
