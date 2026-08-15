@@ -27,6 +27,7 @@ const practiceEngine = await readFile('backend/supabase/migrations/0012_practice
 const practiceClient = await readFile('src/lib/practice.js', 'utf8')
 const legacyEvidenceCompatibility = await readFile('backend/supabase/migrations/0033_legacy_evidence_compatibility.sql', 'utf8')
 const cybersecurityFlagship = await readFile('backend/supabase/migrations/0034_cybersecurity_flagship_slice.sql', 'utf8')
+const learningIntelligenceIndexes = await readFile('backend/supabase/migrations/0035_learning_intelligence_query_indexes.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -611,6 +612,13 @@ test('initial skill catalogue seeds the ten launch paths and a publishable start
   assert.match(initialSkillCatalogMigration, /prerequisite/)
 })
 
+test('Learning intelligence context queries have production indexes', () => {
+  assert.match(learningIntelligenceIndexes, /learner_interaction_events_learner_time_idx/)
+  assert.match(learningIntelligenceIndexes, /learner_evidence_learner_submitted_idx/)
+  assert.match(learningIntelligenceIndexes, /messages_conversation_created_idx/)
+  assert.match(learningIntelligenceIndexes, /skill_graph_node_sources_node_idx/)
+})
+
 test('Cybersecurity flagship slice is source-grounded, safe-scoped, and publishable', () => {
   assert.match(cybersecurityFlagship, /cyber-systems-basics/)
   assert.match(cybersecurityFlagship, /cyber-safe-lab-practice/)
@@ -689,7 +697,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
