@@ -222,3 +222,34 @@ html[data-theme='dark'] .landing-page .bg-white {
 html[data-theme='dark'] .landing-page .bg-white\/95 {
   background-color: rgba(20, 37, 42, 0.96) !important;
 }
+
+.landing-lockup {
+  align-items: center;
+}
+
+.landing-lockup-light {
+  display: inline-flex;
+}
+
+.landing-lockup-dark {
+  display: none;
+}
+
+html[data-theme='dark'] .landing-page .landing-lockup-light {
+  display: none;
+}
+
+html[data-theme='dark'] .landing-page .landing-lockup-dark {
+  display: inline-flex;
+}
+
+@media (max-width: 379px) {
+  .landing-page .landing-lockup-dark img {
+    height: 2.25rem;
+    width: 2.25rem;
+  }
+
+  .landing-page .landing-lockup-dark span {
+    font-size: 1.45rem;
+  }
+}

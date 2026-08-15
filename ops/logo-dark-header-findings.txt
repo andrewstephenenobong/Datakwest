@@ -1,0 +1,5 @@
+Logo dark-header findings (2026-08-16):
+
+- public/datakwest_logo_lockup.png is 445x109 with a transparent background. It contains a blue/black DataKwest wordmark; the dark navy/black letters lose contrast on the dark landing header, while the blue letters and owl remain visible.
+- public/datakwest_icon_1.png is 512x512 with a light/white background and contains the owl plus wordmark, so it is not a good dark-header fallback because its background is not transparent.
+- The safest implementation is to keep the existing lockup image and add a dark-mode CSS treatment for the wordmark, while using the transparent owl icon generated under public/icons only as a compact fallback if needed. Do not alter the original logo artwork.
