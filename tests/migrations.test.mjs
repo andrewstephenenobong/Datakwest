@@ -34,6 +34,7 @@ const dashboard = await readFile('src/pages/Dashboard.jsx', 'utf8')
 const learningEventsFeatures = await readFile('backend/supabase/migrations/0038_learning_events_feature_snapshots.sql', 'utf8')
 const ragVectorMigration = await readFile('backend/supabase/migrations/0039_rag_vector_source_chunks.sql', 'utf8')
 const sourceEmbeddingFunction = await readFile('backend/supabase/functions/embed-source-chunks.ts', 'utf8')
+const mlShadowMigration = await readFile('backend/supabase/migrations/0040_ml_shadow_mode_foundation.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -630,6 +631,19 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
 })
 
+test('ML workspace remains shadow-only until a model earns promotion', () => {
+  assert.match(mlShadowMigration, /create table if not exists public\.ml_models/)
+  assert.match(mlShadowMigration, /create table if not exists public\.ml_training_runs/)
+  assert.match(mlShadowMigration, /create table if not exists public\.ml_inference_requests/)
+  assert.match(mlShadowMigration, /create table if not exists public\.ml_shadow_outcomes/)
+  assert.match(mlShadowMigration, /untrained-v0/)
+  assert.match(mlShadowMigration, /shadow_only boolean not null default true/)
+  assert.match(mlShadowMigration, /get_shadow_model_contract/)
+  assert.match(mlShadowMigration, /record_ml_shadow_prediction/)
+  assert.match(mlShadowMigration, /service_role_required/)
+  assert.doesNotMatch(mlShadowMigration, /grant execute on function public\.record_ml_shadow_prediction[^\n]*authenticated/)
+})
+
 test('source embedding worker is service-role-only and batches governed documents', () => {
   assert.match(sourceEmbeddingFunction, /SUPABASE_SERVICE_ROLE_KEY/)
   assert.match(sourceEmbeddingFunction, /authorization !== `Bearer \$\{serviceRoleKey\}`/)
@@ -674,6 +688,7 @@ test('learning events and feature snapshots are versioned and server-authoritati
   assert.match(learningEventsFeatures, /deterministic-feature-baseline-v1/)
   assert.match(learningEventsFeatures, /service_role_required/)
   assert.match(learningIntelligenceClient, /recordVersionedLearningEvent/)
+  assert.match(learningIntelligenceClient, /getShadowModelContract/)
   assert.doesNotMatch(learningEventsFeatures, /grant execute on function public\.materialize_learner_feature_snapshot[^\n]*authenticated/)
 })
 
@@ -777,7 +792,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, ragVectorMigration, sourceEmbeddingFunction, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, ragVectorMigration, sourceEmbeddingFunction, mlShadowMigration, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE_KEY\s*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

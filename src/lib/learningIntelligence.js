@@ -42,6 +42,12 @@ export function getNextLearningAction(enrolmentId) {
   })
 }
 
+export function getShadowModelContract(modelKey = 'mastery_prediction') {
+  return callLearningRpc('get_shadow_model_contract', {
+    p_model_key: modelKey,
+  })
+}
+
 export function updateLearnerPreferences({
   locale = 'en',
   timezone = null,
