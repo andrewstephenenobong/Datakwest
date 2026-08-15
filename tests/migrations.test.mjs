@@ -26,6 +26,7 @@ const challengeParticipation = await readFile('backend/supabase/migrations/0011_
 const practiceEngine = await readFile('backend/supabase/migrations/0012_practice_engine.sql', 'utf8')
 const practiceClient = await readFile('src/lib/practice.js', 'utf8')
 const legacyEvidenceCompatibility = await readFile('backend/supabase/migrations/0033_legacy_evidence_compatibility.sql', 'utf8')
+const cybersecurityFlagship = await readFile('backend/supabase/migrations/0034_cybersecurity_flagship_slice.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -610,6 +611,21 @@ test('initial skill catalogue seeds the ten launch paths and a publishable start
   assert.match(initialSkillCatalogMigration, /prerequisite/)
 })
 
+test('Cybersecurity flagship slice is source-grounded, safe-scoped, and publishable', () => {
+  assert.match(cybersecurityFlagship, /cyber-systems-basics/)
+  assert.match(cybersecurityFlagship, /cyber-safe-lab-practice/)
+  assert.match(cybersecurityFlagship, /cybersecurity-risk-register/)
+  assert.match(cybersecurityFlagship, /NIST Cybersecurity Framework/)
+  assert.match(cybersecurityFlagship, /Cyber Essentials/)
+  assert.match(cybersecurityFlagship, /OWASP Top 10/)
+  assert.match(cybersecurityFlagship, /review_status.*approved/s)
+  assert.match(cybersecurityFlagship, /safe_scope/)
+  assert.match(cybersecurityFlagship, /insert into public\.learning_objects/)
+  assert.match(cybersecurityFlagship, /insert into public\.learning_object_versions/)
+  assert.match(cybersecurityFlagship, /status.*published/s)
+  assert.doesNotMatch(cybersecurityFlagship, /exploit a real|scan an external|steal credentials/i)
+})
+
 test('legacy practice and project flows synchronize server-owned evidence', () => {
   assert.match(legacyEvidenceCompatibility, /create or replace function public\.sync_legacy_practice_evidence\(\s*p_attempt_id uuid/s)
   assert.match(legacyEvidenceCompatibility, /create or replace function public\.sync_legacy_project_evidence\(\s*p_submission_id uuid/s)
@@ -673,7 +689,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
