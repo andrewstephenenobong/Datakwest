@@ -559,7 +559,7 @@ test('backend source contains no obvious secret material', () => {
 
 test('branded recovery states cover 404 and application errors', () => {
   assert.match(recoveryState, /datakwest_icon_1\.png/)
-  assert.match(recoveryState, /datakwest-owl-3d\.png/)
+  assert.match(recoveryState, /datakwest-owl-3d\.webp/)
   assert.match(recoveryState, /Talk to the Datakwest owl/)
   assert.match(recoveryState, /aria-live="polite"/)
   assert.match(recoveryState, /prefers-reduced-motion/)

@@ -51,7 +51,7 @@ export default function RecoveryState({ type = 'error', onRetry }) {
                     <div className="absolute bottom-8 h-32 w-64 rounded-[50%]" style={{ background: 'rgba(139,198,181,0.22)' }} />
                     <div className="relative z-10 flex flex-col items-center gap-3">
                       <button type="button" onClick={interactWithOwl} className={`rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/70 ${owlReaction ? 'dk-owl-bounce' : ''}`} aria-label="Talk to the Datakwest owl">
-                        <img src="/datakwest-owl-3d.png" alt="Interactive Datakwest owl" className="dk-owl h-48 w-48 cursor-pointer object-contain drop-shadow-2xl sm:h-64 sm:w-64" />
+                        <img src="/datakwest-owl-3d.webp" alt="Interactive Datakwest owl" width="768" height="768" loading="eager" fetchPriority="high" decoding="async" className="dk-owl h-48 w-48 cursor-pointer object-contain drop-shadow-2xl sm:h-64 sm:w-64" />
                       </button>
                       <p aria-live="polite" className="max-w-[18rem] rounded-full border px-4 py-2 text-center text-xs font-bold" style={{ borderColor: 'rgba(255,255,255,0.16)', background: 'rgba(5,15,29,0.5)', color: '#DCE7F5' }}>{owlMessage}</p>
                     </div>
