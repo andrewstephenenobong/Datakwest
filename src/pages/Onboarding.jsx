@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { logEvent } from '../lib/analytics'
 import { createSkillEnrolment, discoverUniversalSkill, findPublishedSkillForTarget, updateLearnerPreferences } from '../lib/learningIntelligence'
+import OwlLoading from '../components/OwlLoading'
 
 const skillOptions = [
   ['Frontend Development', 'Build websites and interfaces people enjoy using.'],
@@ -247,9 +248,7 @@ export default function Onboarding() {
     }
   }
 
-  if (generating) return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-10" style={{ background: '#F4F7FB' }}><div className="w-full max-w-4xl grid lg:grid-cols-[0.8fr_1.2fr] overflow-hidden rounded-[2rem]" style={{ background: 'white', boxShadow: '0 24px 80px rgba(10,35,66,0.14)' }}><div className="hidden lg:flex flex-col justify-between p-10" style={{ background: '#0A2342' }}><div><img src="/datakwest_logo_lockup.png" alt="DataKwest logo" className="h-12 w-52 object-contain object-left" /><p className="mt-8 text-xs font-bold uppercase tracking-[0.24em]" style={{ color: '#D4AF37' }}>Datakwest AI</p><h2 className="mt-3 text-3xl font-bold leading-tight text-white">Your next chapter is taking shape.</h2></div><p className="text-sm leading-6" style={{ color: 'rgba(255,255,255,0.68)' }}>We are turning your goals, time, and experience into a practical path you can follow.</p></div><div className="flex min-h-[440px] flex-col items-center justify-center p-8 sm:p-12 text-center"><div className="relative mb-7 h-20 w-20"><div className="absolute inset-0 rounded-full border-4" style={{ borderColor: '#E6ECF4' }} /><div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent" style={{ borderTopColor: '#D4AF37' }} /><div className="absolute inset-3 rounded-full flex items-center justify-center" style={{ background: '#FFF8E1', color: '#9A7610' }}>AI</div></div><p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#9A7610' }}>Personalising your path</p><h1 className="mt-3 text-2xl sm:text-3xl font-bold" style={{ color: '#0A2342' }}>Building your roadmap</h1><p className="mt-3 max-w-sm text-sm leading-6" style={{ color: '#6B7A99' }}>We are matching your chosen skill, time, and experience to a practical path you can follow.</p><div className="mt-8 h-2 w-full max-w-xs overflow-hidden rounded-full" style={{ background: '#E6ECF4' }}><div className="h-full w-2/3 rounded-full" style={{ background: '#D4AF37' }} /></div></div></div></div>
-  )
+  if (generating) return <OwlLoading message="Building your roadmap from your chosen skill, goals, and pace…" />
 
   return (
     <div className="min-h-screen" style={{ background: '#F4F7FB' }}>
