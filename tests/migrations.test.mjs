@@ -619,6 +619,10 @@ test('learner navigation keeps the workspace focused and routes all product area
   assert.doesNotMatch(dashboardPage, /Assessment Center.*Review verified learning evidence/s)
   assert.doesNotMatch(dashboardPage, /Marketplace.*Connect evidence to opportunities/s)
   assert.doesNotMatch(dashboardPage, /Build your portfolio.*Submit a project/s)
+  assert.match(dashboardPage, /Your learning space needs one more step/)
+  assert.match(dashboardPage, /datakwest-owl-3d\.webp/)
+  assert.match(dashboardPage, /Refresh workspace/)
+  assert.match(dashboardPage, /Open onboarding/)
 })
 
 test('route loading experience is branded and delegated to the owl loader', () => {

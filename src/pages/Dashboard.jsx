@@ -80,18 +80,20 @@ export default function Dashboard() {
 
   if (error || !profile?.roadmap) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#F5F7FA' }}>
-        <div className="w-full max-w-md rounded-2xl p-8 text-center" style={{ background: 'white', boxShadow: '0 18px 50px rgba(10,35,66,0.10)' }}>
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: '#E8F0FE', color: '#2456A6' }} aria-hidden="true">!</div>
-          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Dashboard recovery</p>
-          <h1 className="mt-2 text-2xl font-bold" style={{ color: '#0A2342' }}>Your workspace is almost ready</h1>
-          <p className="mt-3 text-sm leading-6" style={{ color: '#6B7A99' }}>{error || 'Complete onboarding to generate your roadmap and daily mission.'}</p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <button type="button" onClick={() => window.location.reload()} className="rounded-lg px-4 py-3 text-sm font-bold" style={{ background: '#0A2342', color: 'white' }}>Refresh workspace</button>
-            <button type="button" onClick={() => navigate('/onboarding')} className="rounded-lg px-4 py-3 text-sm font-bold" style={{ background: '#F5F7FA', color: '#0A2342' }}>Open onboarding</button>
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-12" style={{ background: 'linear-gradient(145deg, #F7FAFF 0%, #EEF4FB 58%, #E6F3F0 100%)', color: '#0A2342' }}>
+        <div className="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full" style={{ background: 'rgba(212,175,55,.14)' }} />
+        <div className="pointer-events-none absolute -right-24 bottom-20 h-72 w-72 rounded-full" style={{ background: 'rgba(139,198,181,.2)' }} />
+        <section className="relative w-full max-w-md rounded-[2rem] border bg-white/90 p-6 text-center shadow-[0_18px_60px_rgba(10,35,66,.12)] backdrop-blur sm:p-9" aria-labelledby="dashboard-recovery-title">
+          <div className="mx-auto mb-5 flex h-36 w-36 items-center justify-center rounded-full" style={{ background: 'radial-gradient(circle, rgba(139,198,181,.42), rgba(232,240,254,.25) 64%, transparent 65%)' }}>
+            <img src="/datakwest-owl-3d.webp" alt="Datakwest owl helping restore your learning space" width="768" height="768" className="h-28 w-28 object-contain drop-shadow-xl" />
           </div>
-        </div>
-      </div>
+          <p className="text-[11px] font-black uppercase tracking-[.2em]" style={{ color: '#9A7610' }}>A quick reset</p>
+          <h1 id="dashboard-recovery-title" className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">Your learning space needs one more step.</h1>
+          <p className="mx-auto mt-4 max-w-sm text-sm leading-6" style={{ color: '#6B7A99' }}>{error || 'Complete onboarding so DataKwest can build your roadmap, daily mission, and next best action.'}</p>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2"><button type="button" onClick={() => window.location.reload()} className="min-h-12 rounded-xl px-4 py-3 text-sm font-black transition-transform active:scale-[.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ background: '#0A2342', color: 'white' }}>Refresh workspace</button><button type="button" onClick={() => navigate('/onboarding')} className="min-h-12 rounded-xl border-2 px-4 py-3 text-sm font-black transition-transform active:scale-[.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ borderColor: '#DCE5F0', background: '#F5F7FA', color: '#0A2342' }}>Open onboarding</button></div>
+          <p className="mt-5 text-xs" style={{ color: '#8A98AA' }}>Your account is safe. We only need to finish connecting your learner profile.</p>
+        </section>
+      </main>
     )
   }
 
