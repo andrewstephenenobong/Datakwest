@@ -21,7 +21,7 @@ const moreItems = [
   { label: 'Achievements', path: '/achievements', icon: 'achievement', tone: '#8A6500' },
   { label: 'Notifications', path: '/notifications', icon: 'notification', tone: '#1E5AA8' },
   { label: 'Skill tree', path: '/skill-tree', icon: 'tree', tone: '#2E7D32' },
-  { label: 'Tutor AI', path: '/tutor', icon: 'tutor', tone: '#8A6500' },
+  { label: 'Ask the Owl', path: '/tutor', icon: 'tutor', tone: '#8A6500' },
   { label: 'Settings', path: '/settings', icon: 'settings', tone: '#6B7A99' },
 ]
 
