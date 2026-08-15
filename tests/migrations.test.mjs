@@ -562,6 +562,8 @@ test('branded recovery states cover 404 and application errors', () => {
   assert.match(recoveryState, /datakwest-owl-3d\.webp/)
   assert.match(recoveryState, /Talk to the Datakwest owl/)
   assert.match(recoveryState, /aria-live="polite"/)
+  assert.match(recoveryState, /AudioContext/)
+  assert.match(recoveryState, /Your next chapter is waiting at home base\./)
   assert.match(recoveryState, /prefers-reduced-motion/)
   assert.match(recoveryState, /This is not the learning space you’re looking for\./)
   assert.match(recoveryState, /Something interrupted your learning path\./)

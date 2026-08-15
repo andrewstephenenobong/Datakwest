@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 export default function RecoveryState({ type = 'error', onRetry }) {
   const navigate = useNavigate()
   const [owlMessage, setOwlMessage] = useState('Tap the owl to say hello.')
   const [owlReaction, setOwlReaction] = useState(false)
+  const soundContextRef = useRef(null)
   const isNotFound = type === 'not-found'
 
   function handleBack() {
@@ -12,9 +13,46 @@ export default function RecoveryState({ type = 'error', onRetry }) {
     else navigate('/')
   }
 
+  function playOwlSound() {
+    if (typeof window === 'undefined') return
+    const AudioContext = window.AudioContext || window.webkitAudioContext
+    if (!AudioContext) return
+
+    try {
+      const audioContext = soundContextRef.current || new AudioContext()
+      soundContextRef.current = audioContext
+      if (audioContext.state === 'suspended') audioContext.resume()
+
+      const now = audioContext.currentTime
+      const master = audioContext.createGain()
+      master.gain.setValueAtTime(0.0001, now)
+      master.gain.exponentialRampToValueAtTime(0.08, now + 0.015)
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.22)
+      master.connect(audioContext.destination)
+
+      ;[440, 660].forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator()
+        oscillator.type = 'sine'
+        oscillator.frequency.setValueAtTime(frequency, now + index * 0.045)
+        oscillator.connect(master)
+        oscillator.start(now + index * 0.045)
+        oscillator.stop(now + 0.24)
+      })
+    } catch {
+      // Audio is an enhancement; the tap interaction should still work if it is unavailable.
+    }
+  }
+
   function interactWithOwl() {
-    const responses = ['Hoo! Let’s find your next step.', 'Even the best learners take a wrong turn.', 'I’m watching the map. Try heading home.']
+    const responses = [
+      'Hoo! The best journeys start with one small step.',
+      'Even the best learners take a wrong turn. You are still moving forward.',
+      'I found a detour. Let’s get you back to your learning path.',
+      'Tap again if you need a little encouragement.',
+      'Your next chapter is waiting at home base.',
+    ]
     setOwlMessage(responses[Math.floor(Math.random() * responses.length)])
+    playOwlSound()
     setOwlReaction(true)
     window.setTimeout(() => setOwlReaction(false), 700)
   }
@@ -53,7 +91,10 @@ export default function RecoveryState({ type = 'error', onRetry }) {
                       <button type="button" onClick={interactWithOwl} className={`rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/70 ${owlReaction ? 'dk-owl-bounce' : ''}`} aria-label="Talk to the Datakwest owl">
                         <img src="/datakwest-owl-3d.webp" alt="Interactive Datakwest owl" width="768" height="768" loading="eager" fetchPriority="high" decoding="async" className="dk-owl h-48 w-48 cursor-pointer object-contain drop-shadow-2xl sm:h-64 sm:w-64" />
                       </button>
-                      <p aria-live="polite" className="max-w-[18rem] rounded-full border px-4 py-2 text-center text-xs font-bold" style={{ borderColor: 'rgba(255,255,255,0.16)', background: 'rgba(5,15,29,0.5)', color: '#DCE7F5' }}>{owlMessage}</p>
+                      <div className="relative max-w-[18rem] rounded-2xl border px-4 py-2.5 text-center text-xs font-bold leading-5" style={{ borderColor: 'rgba(255,255,255,0.16)', background: 'rgba(5,15,29,0.72)', color: '#DCE7F5' }}>
+                        <span className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t" style={{ borderColor: 'rgba(255,255,255,0.16)', background: 'rgba(5,15,29,0.72)' }} />
+                        <p aria-live="polite" className="relative">{owlMessage}</p>
+                      </div>
                     </div>
                     <span className="absolute right-1/4 top-4 h-3 w-3 rounded-full" style={{ background: '#D4AF37' }} />
                     <span className="absolute left-1/4 top-12 h-2 w-2 rounded-full" style={{ background: '#8BC6B5' }} />
