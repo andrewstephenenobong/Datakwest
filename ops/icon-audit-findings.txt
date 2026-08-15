@@ -1,0 +1,7 @@
+Icon audit findings (2026-08-15):
+- index.html currently references /favicon(1).png?v=3 only.
+- The existing favicon(1).png is a 259x263 transparent owl mark and is suitable for browser favicon use.
+- public/datakwest_icon_1.png is a 512x512 white-background logo lockup; it is not ideal as a shortcut icon because the wordmark reduces owl visibility.
+- No manifest.webmanifest or apple-touch-icon declaration was found in index.html inspection.
+- Android shortcut fallback letter V is therefore likely caused by missing manifest/apple-touch metadata or stale shortcut cache, not absence of an owl asset.
+- Planned fix: add a square transparent owl icon asset reference, manifest, apple-touch-icon, maskable icon metadata where safe, and update index.html links without committing secrets or confidential files.
