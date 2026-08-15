@@ -17,3 +17,11 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>
 )
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {
+      // Offline support is progressive enhancement; the app remains usable online.
+    })
+  })
+}
