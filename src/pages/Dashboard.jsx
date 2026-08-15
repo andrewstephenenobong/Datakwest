@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [nextAction, setNextAction] = useState(null)
   const [nextActionError, setNextActionError] = useState('')
   const [missionResult, setMissionResult] = useState(null)
+  const [todayMs] = useState(() => Date.now())
   const firstMissionWelcome = searchParams.get('welcome') === 'first-mission'
 
   useEffect(() => {
@@ -134,7 +135,7 @@ export default function Dashboard() {
   const currentPhase = sortedPhaseNumbers.find(n => !passedPhaseNumbers.has(n)) || sortedPhaseNumbers[sortedPhaseNumbers.length - 1] || 1
   const allPhasesPassed = totalPhases > 0 && passedPhaseNumbers.size === totalPhases
   const missionPayload = mission?.payload || {}
-  const daysSinceActive = profile.last_active_date ? Math.max(0, Math.floor((Date.now() - new Date(profile.last_active_date).getTime()) / 86400000)) : 0
+  const daysSinceActive = profile.last_active_date ? Math.max(0, Math.floor((todayMs - new Date(profile.last_active_date).getTime()) / 86400000)) : 0
   const isReturningAfterBreak = daysSinceActive >= 14
 
   function openNextAction() {

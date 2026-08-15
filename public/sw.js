@@ -63,7 +63,6 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   if (!isPublicSameOriginGet(request)) return
 
-  const url = new URL(request.url)
   if (request.mode === 'navigate') {
     event.respondWith(networkFirst(request, OFFLINE_URL))
     return

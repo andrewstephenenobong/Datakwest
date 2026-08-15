@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -38,7 +38,6 @@ export default function Profile() {
   const metadata = user?.user_metadata || {}
   const name = profile?.full_name || metadata.full_name || metadata.name || user?.email?.split('@')[0] || 'Learner'
   const username = profile?.username ? `@${profile.username}` : '@datakwest_learner'
-  const initials = useMemo(() => name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(), [name])
   const completedPhases = progress.filter((item) => item.passed).length
   const totalPhases = profile?.roadmap?.phases?.length || 0
   const streak = profile?.streak || 0

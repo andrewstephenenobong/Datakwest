@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
@@ -46,6 +46,7 @@ export default function Tutor() {
   useEffect(() => {
     try {
       const savedDraft = window.localStorage.getItem(draftKey)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (savedDraft) setMessage(savedDraft)
     } catch {
       // Draft persistence is an enhancement; the Tutor remains usable when storage is unavailable.

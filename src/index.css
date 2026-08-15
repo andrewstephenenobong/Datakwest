@@ -50,3 +50,52 @@ button:disabled {
     transition-duration: 0.01ms !important;
   }
 }
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --dk-page: #0E1B1F;
+  --dk-surface: #14252A;
+  --dk-surface-raised: #1B3036;
+  --dk-border: #40565D;
+  --dk-text: #F7FBFA;
+  --dk-muted: #B4C2C5;
+  --dk-link: #9AD9C5;
+}
+
+html[data-theme='dark'],
+html[data-theme='dark'] body {
+  background: var(--dk-page);
+  color: var(--dk-text);
+}
+
+html[data-theme='dark'] .bg-white {
+  background-color: var(--dk-surface) !important;
+}
+
+html[data-theme='dark'] input,
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea {
+  background-color: var(--dk-surface) !important;
+  border-color: var(--dk-border) !important;
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder {
+  color: #9BAEB2 !important;
+}
+
+html[data-theme='dark'] .text-gray-500,
+html[data-theme='dark'] .text-gray-600,
+html[data-theme='dark'] .text-slate-500,
+html[data-theme='dark'] .text-slate-600 {
+  color: var(--dk-muted) !important;
+}
+
+html[data-theme='dark'] a:not([style*='color']) {
+  color: var(--dk-link);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='system'] { color-scheme: dark; }
+}
