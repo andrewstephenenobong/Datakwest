@@ -41,6 +41,7 @@
     { "source": "/live-challenges", "destination": "/" },
     { "source": "/admin/governance", "destination": "/" },
     { "source": "/interviews", "destination": "/" },
-    { "source": "/career-centre", "destination": "/" }
+    { "source": "/career-centre", "destination": "/" },
+    { "source": "/(.*)", "destination": "/" }
   ]
 }

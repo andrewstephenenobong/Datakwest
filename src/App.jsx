@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import NotFound from './pages/NotFound'
 
 const Landing = lazy(() => import('./pages/Landing'))
 const Login = lazy(() => import('./pages/Login'))
@@ -33,13 +34,11 @@ const CareerCentre = lazy(() => import('./pages/CareerCentre'))
 
 function RouteLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F7FA' }}>
-      <div
-        className="w-10 h-10 rounded-full border-4 animate-spin"
-        style={{ borderColor: '#0A2342', borderTopColor: 'transparent' }}
-        role="status"
-        aria-label="Loading"
-      />
+    <div className="min-h-screen flex items-center justify-center px-5" style={{ background: '#F6F8FC' }}>
+      <div className="flex items-center gap-3 rounded-2xl border bg-white px-5 py-4 text-sm font-bold" style={{ borderColor: '#DCE5F0', color: '#0A2342' }}>
+        <span className="h-5 w-5 animate-spin rounded-full border-2" style={{ borderColor: '#D4AF37', borderTopColor: 'transparent' }} role="status" aria-label="Loading" />
+        Preparing your learning space…
+      </div>
     </div>
   )
 }
@@ -80,6 +79,7 @@ export default function App() {
         <Route path="/admin/governance" element={<Protected><AdminGovernance /></Protected>} />
         <Route path="/interviews" element={<Protected><Interviews /></Protected>} />
         <Route path="/career-centre" element={<Protected><CareerCentre /></Protected>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   )
