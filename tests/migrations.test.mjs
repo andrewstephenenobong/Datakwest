@@ -608,6 +608,9 @@ test('owl loading and profile settings keep the authenticated shell consistent',
   assert.match(navbar, /navigate\('\/settings'\)/)
   assert.doesNotMatch(navbar, /Sign out/)
   assert.match(settingsPage, /Sign out of DataKwest/)
+  assert.match(settingsPage, /Are you sure you want to sign out/)
+  assert.match(settingsPage, /Keep me signed in/)
+  assert.match(settingsPage, /Your learner identity/)
   assert.match(appSource, /Route path="\/settings"/)
 })
 
