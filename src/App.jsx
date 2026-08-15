@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import NotFound from './pages/NotFound'
 import OwlLoading from './components/OwlLoading'
+import NetworkStatusBanner from './components/NetworkStatusBanner'
 
 const Landing = lazy(() => import('./pages/Landing'))
 const Login = lazy(() => import('./pages/Login'))
@@ -46,6 +47,7 @@ function Protected({ children }) {
 export default function App() {
   return (
     <Suspense fallback={<RouteLoading />}>
+      <NetworkStatusBanner />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
