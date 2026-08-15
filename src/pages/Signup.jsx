@@ -16,6 +16,11 @@ export default function Signup() {
 
   async function handleSignup(event) {
     event.preventDefault()
+    const passwordIsValid = password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password)
+    if (!passwordIsValid) {
+      setError('Please meet all password requirements before creating your account.')
+      return
+    }
     setLoading(true)
     setError('')
     const normalizedUsername = username.trim().replace(/\s+/g, '').toLowerCase()
@@ -39,8 +44,9 @@ export default function Signup() {
       <div><label htmlFor="signup-full-name" className="mb-2 block text-sm font-bold" style={{ color: '#0A2342' }}>Your name</label><input id="signup-full-name" type="text" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="How should we address you?" autoComplete="name" required className="w-full rounded-xl border-2 bg-white px-4 py-3 text-sm outline-none transition focus:ring-4" style={{ borderColor: '#DCE5F0', color: '#0A2342', '--tw-ring-color': 'rgba(212,175,55,0.16)' }} /></div>
       <div><label htmlFor="signup-username" className="mb-2 block text-sm font-bold" style={{ color: '#0A2342' }}>Username <span className="font-normal" style={{ color: '#8290A5' }}>optional</span></label><input id="signup-username" type="text" value={username} onChange={(event) => setUsername(event.target.value.replace(/[^a-zA-Z0-9._-]/g, ''))} placeholder="e.g. andrew.builds" autoComplete="username" maxLength={30} className="w-full rounded-xl border-2 bg-white px-4 py-3 text-sm outline-none transition focus:ring-4" style={{ borderColor: '#DCE5F0', color: '#0A2342', '--tw-ring-color': 'rgba(212,175,55,0.16)' }} /></div>
       <div><label htmlFor="signup-email" className="mb-2 block text-sm font-bold" style={{ color: '#0A2342' }}>Email address</label><input id="signup-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@email.com" autoComplete="email" required className="w-full rounded-xl border-2 bg-white px-4 py-3 text-sm outline-none transition focus:ring-4" style={{ borderColor: '#DCE5F0', color: '#0A2342', '--tw-ring-color': 'rgba(212,175,55,0.16)' }} /></div>
-      <PasswordField id="signup-password" value={password} onChange={(event) => setPassword(event.target.value)} label="Create a password" autoComplete="new-password" hint="8+ characters recommended" />
+      <PasswordField id="signup-password" value={password} onChange={(event) => setPassword(event.target.value)} label="Create a password" autoComplete="new-password" hint="Required for account safety" showRequirements />
       <p className="text-xs leading-5" style={{ color: '#8290A5' }}>Your name personalises your workspace. Your username helps you recognise your portfolio and community presence. We never use either detail as your password or expose them publicly without your control.</p>
+      <p className="rounded-xl border px-4 py-3 text-xs leading-5" style={{ borderColor: '#DCE5F0', background: '#F8FBFF', color: '#6B7A99' }}>Your learning activity stays tied to your account controls. You can manage personalisation, Tutor memory, analytics, export, and deletion requests from Settings.</p>
       <button type="submit" disabled={loading} className="w-full rounded-xl px-4 py-3.5 text-sm font-bold transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60" style={{ background: '#D4AF37', color: '#0A2342' }}>{loading ? 'Creating your account…' : 'Create my free account'}</button>
     </form>
     <p className="mt-6 text-center text-xs leading-5" style={{ color: '#8A98AA' }}>By continuing, you agree to use Datakwest responsibly and keep your account secure.</p>
