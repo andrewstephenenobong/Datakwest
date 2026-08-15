@@ -78,8 +78,11 @@ export default function Interviews() {
   useEffect(() => {
     let active = true
     if (!latestCompletedSessionId) {
-      setLatestEvaluation(null)
-      return () => { active = false }
+      const resetEvaluation = window.setTimeout(() => setLatestEvaluation(null), 0)
+      return () => {
+        active = false
+        window.clearTimeout(resetEvaluation)
+      }
     }
     getInterviewEvaluation(latestCompletedSessionId).then(({ evaluation, error: evaluationError }) => {
       if (active && !evaluationError && evaluation?.status === 'completed') setLatestEvaluation(evaluation)

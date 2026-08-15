@@ -61,7 +61,8 @@ export default function LearnerNavigation() {
   const panelRef = useRef(null)
 
   useEffect(() => {
-    setOpen(false)
+    const closeDrawer = window.setTimeout(() => setOpen(false), 0)
+    return () => window.clearTimeout(closeDrawer)
   }, [location.pathname])
 
   useEffect(() => {

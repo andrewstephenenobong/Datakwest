@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { logEvent } from '../lib/analytics'
+import { createSkillEnrolment, findPublishedSkillForTarget, updateLearnerPreferences } from '../lib/learningIntelligence'
 
 const skillOptions = [
   ['Frontend Development', 'Build websites and interfaces people enjoy using.'],
@@ -197,6 +198,31 @@ export default function Onboarding() {
       if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
       const { error: upsertError } = await supabase.from('profiles').upsert({ id: user.id, email: user.email, full_name: user.user_metadata?.full_name || null, username: user.user_metadata?.username || null, assessment: finalAnswers, roadmap: data.roadmap, onboarding_completed: true })
       if (upsertError) throw upsertError
+
+      const weeklyMinutesByAnswer = {
+        'Less than 5 hrs/week': 180,
+        '5–10 hrs/week': 450,
+        '10–20 hrs/week': 900,
+        '20+ hrs/week (full-time)': 1800,
+      }
+      await updateLearnerPreferences({
+        weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
+        explanationStyle: finalAnswers.learningStyle || null,
+      })
+
+      const publishedSkill = await findPublishedSkillForTarget(finalAnswers.targetSkill)
+      if (publishedSkill?.skills?.id) {
+        const enrolment = await createSkillEnrolment({
+          skillId: publishedSkill.skills.id,
+          skillGraphVersionId: publishedSkill.id,
+          weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
+          targetOutcome: finalAnswers.goal || '',
+        })
+        logEvent(user.id, 'skill_enrolment_created', { skillId: publishedSkill.skills.id, enrolmentId: enrolment?.id, source: 'onboarding' })
+      } else {
+        logEvent(user.id, 'custom_skill_discovery_started', { targetSkill: finalAnswers.targetSkill, source: 'onboarding' })
+      }
+
       logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal, targetSkill: finalAnswers.targetSkill })
       navigate('/dashboard')
     } catch (err) {

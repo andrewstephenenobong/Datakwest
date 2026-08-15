@@ -24,6 +24,7 @@ const challenges = await readFile('backend/supabase/migrations/0010_challenge_ce
 const challengeParticipation = await readFile('backend/supabase/migrations/0011_challenge_participation.sql', 'utf8')
 const practiceEngine = await readFile('backend/supabase/migrations/0012_practice_engine.sql', 'utf8')
 const practiceClient = await readFile('src/lib/practice.js', 'utf8')
+const legacyEvidenceCompatibility = await readFile('backend/supabase/migrations/0033_legacy_evidence_compatibility.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -593,6 +594,19 @@ test('initial skill catalogue seeds the ten launch paths and a publishable start
   assert.match(initialSkillCatalogMigration, /insert into public\.skill_graph_nodes/)
   assert.match(initialSkillCatalogMigration, /insert into public\.skill_graph_edges/)
   assert.match(initialSkillCatalogMigration, /prerequisite/)
+})
+
+test('legacy practice and project flows synchronize server-owned evidence', () => {
+  assert.match(legacyEvidenceCompatibility, /create or replace function public\.sync_legacy_practice_evidence\(\s*p_attempt_id uuid/s)
+  assert.match(legacyEvidenceCompatibility, /create or replace function public\.sync_legacy_project_evidence\(\s*p_submission_id uuid/s)
+  assert.match(legacyEvidenceCompatibility, /auth\.uid\(\)/)
+  assert.match(legacyEvidenceCompatibility, /from public\.attempts/)
+  assert.match(legacyEvidenceCompatibility, /from public\.submissions/)
+  assert.match(legacyEvidenceCompatibility, /insert into public\.learner_evidence/)
+  assert.match(legacyEvidenceCompatibility, /revoke all on function public\.sync_legacy_practice_evidence/)
+  assert.match(legacyEvidenceCompatibility, /grant execute on function public\.sync_legacy_project_evidence.*authenticated/s)
+  assert.match(practiceClient, /syncLegacyPracticeEvidence\(data\.attempt_id\)/)
+  assert.match(projectClient, /syncLegacyProjectEvidence\(data\.submission_id\)/)
 })
 
 test('learning intelligence client uses protected RPCs for learner state and evidence', () => {

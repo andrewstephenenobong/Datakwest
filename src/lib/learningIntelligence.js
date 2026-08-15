@@ -58,6 +58,18 @@ export function updateLearnerPreferences({
   })
 }
 
+export function syncLegacyPracticeEvidence(attemptId) {
+  return callLearningRpc('sync_legacy_practice_evidence', {
+    p_attempt_id: attemptId,
+  })
+}
+
+export function syncLegacyProjectEvidence(submissionId) {
+  return callLearningRpc('sync_legacy_project_evidence', {
+    p_submission_id: submissionId,
+  })
+}
+
 export function recordLearnerInteraction({
   eventName,
   eventValue = {},
@@ -86,4 +98,18 @@ export async function getPublishedSkillCatalogue({ locale = 'en', limit = 100 } 
     .limit(limit)
   if (error) throw error
   return data ?? []
+}
+
+export async function findPublishedSkillForTarget(targetSkill, { locale = 'en' } = {}) {
+  const catalogue = await getPublishedSkillCatalogue({ locale })
+  const normalizedTarget = String(targetSkill || '').trim().toLowerCase()
+  if (!normalizedTarget) return null
+
+  return catalogue.find((entry) => {
+    const skill = entry.skills
+    return [skill?.id, skill?.slug, skill?.title].filter(Boolean).some((value) => String(value).trim().toLowerCase() === normalizedTarget)
+  }) || catalogue.find((entry) => {
+    const skill = entry.skills
+    return [skill?.slug, skill?.title].filter(Boolean).some((value) => String(value).trim().toLowerCase().includes(normalizedTarget) || normalizedTarget.includes(String(value).trim().toLowerCase()))
+  }) || null
 }

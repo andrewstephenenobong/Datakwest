@@ -51,7 +51,7 @@ export default function RecoveryState({ type = 'error', onRetry }) {
     }
     const pool = phrasePools[action] || phrasePools.tap
     if (action === 'tap' && nextCount > 1 && nextCount % 3 === 0) return 'You came back! That is exactly how progress is made.'
-    return pool[Math.floor(Math.random() * pool.length)]
+    return pool[Math.max(0, (nextCount - 1) % pool.length)]
   }
 
   function respondToOwl(action = 'tap') {

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { syncLegacyPracticeEvidence } from './learningIntelligence'
 
 const emptySession = { session_id: null, mode: null, item_limit: 0, items: [] }
 
@@ -19,7 +20,15 @@ export async function submitPracticeAnswer({ sessionId, practiceItemId, answer, 
     p_answer: answer,
     p_duration_seconds: durationSeconds,
   })
-  return { result: data, error }
+  if (error || !data?.attempt_id) return { result: data, error, evidence: null, evidenceError: null }
+
+  try {
+    const evidence = await syncLegacyPracticeEvidence(data.attempt_id)
+    return { result: data, error: null, evidence, evidenceError: null }
+  } catch (evidenceError) {
+    console.error('Practice evidence sync failed:', evidenceError)
+    return { result: data, error: null, evidence: null, evidenceError }
+  }
 }
 
 export async function getPracticeHistory(limit = 20) {
