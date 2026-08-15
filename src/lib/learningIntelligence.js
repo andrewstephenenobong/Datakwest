@@ -76,6 +76,26 @@ export function syncLegacyProjectEvidence(submissionId) {
   })
 }
 
+export function recordVersionedLearningEvent({
+  eventName,
+  eventValue = {},
+  sessionId = null,
+  skillId = null,
+  skillGraphNodeId = null,
+  learningObjectVersionId = null,
+  eventId = null,
+}) {
+  return callLearningRpc('record_versioned_learning_event', {
+    p_event_name: eventName,
+    p_event_value: eventValue,
+    p_session_id: sessionId,
+    p_skill_id: skillId,
+    p_skill_graph_node_id: skillGraphNodeId,
+    p_learning_object_version_id: learningObjectVersionId,
+    p_event_id: eventId,
+  })
+}
+
 export function recordLearnerInteraction({
   eventName,
   eventValue = {},

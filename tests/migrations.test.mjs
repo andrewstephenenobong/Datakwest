@@ -31,6 +31,7 @@ const learningIntelligenceIndexes = await readFile('backend/supabase/migrations/
 const evidenceVerificationMastery = await readFile('backend/supabase/migrations/0036_evidence_verification_mastery_projection.sql', 'utf8')
 const deterministicNextAction = await readFile('backend/supabase/migrations/0037_deterministic_next_learning_action.sql', 'utf8')
 const dashboard = await readFile('src/pages/Dashboard.jsx', 'utf8')
+const learningEventsFeatures = await readFile('backend/supabase/migrations/0038_learning_events_feature_snapshots.sql', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -627,6 +628,20 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
 })
 
+test('learning events and feature snapshots are versioned and server-authoritative', () => {
+  assert.match(learningEventsFeatures, /create table if not exists public\.learning_event_registry/)
+  assert.match(learningEventsFeatures, /create table if not exists public\.learning_feature_definitions/)
+  assert.match(learningEventsFeatures, /create table if not exists public\.learner_feature_snapshots/)
+  assert.match(learningEventsFeatures, /event_version integer not null/)
+  assert.match(learningEventsFeatures, /record_versioned_learning_event/)
+  assert.match(learningEventsFeatures, /event_not_registered/)
+  assert.match(learningEventsFeatures, /materialize_learner_feature_snapshot/)
+  assert.match(learningEventsFeatures, /deterministic-feature-baseline-v1/)
+  assert.match(learningEventsFeatures, /service_role_required/)
+  assert.match(learningIntelligenceClient, /recordVersionedLearningEvent/)
+  assert.doesNotMatch(learningEventsFeatures, /grant execute on function public\.materialize_learner_feature_snapshot[^\n]*authenticated/)
+})
+
 test('next learning action is prerequisite-aware and server-authoritative', () => {
   assert.match(deterministicNextAction, /create or replace function public\.get_next_learning_action/)
   assert.match(deterministicNextAction, /edge\.edge_type = 'prerequisite'/)
@@ -727,7 +742,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, learningEventsFeatures, learningIntelligenceClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE_KEY\s*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })
