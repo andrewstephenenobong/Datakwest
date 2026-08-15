@@ -5,6 +5,7 @@ import { logEvent } from '../lib/analytics'
 import AuthShell from '../components/AuthShell'
 import PasswordField from '../components/PasswordField'
 import CaptchaField from '../components/CaptchaField'
+import { updatePrivacyPreferences } from '../lib/privacy'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -15,6 +16,10 @@ export default function Signup() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [captchaToken, setCaptchaToken] = useState('')
+  const [deliveryAcknowledgement, setDeliveryAcknowledgement] = useState(false)
+  const [personalizationConsent, setPersonalizationConsent] = useState(true)
+  const [aiMemoryConsent, setAiMemoryConsent] = useState(false)
+  const [analyticsConsent, setAnalyticsConsent] = useState(false)
 
   async function handleSignup(event) {
     event.preventDefault()
@@ -25,6 +30,11 @@ export default function Signup() {
     }
     setLoading(true)
     setError('')
+    if (!deliveryAcknowledgement) {
+      setError('Please confirm that you understand how Datakwest uses your learning activity to deliver the service.')
+      setLoading(false)
+      return
+    }
     if (!captchaToken) {
       setError('Complete the security check before creating your account.')
       setLoading(false)
@@ -34,12 +44,20 @@ export default function Signup() {
     const { data, error: signupError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { full_name: fullName.trim(), username: normalizedUsername || null }, captchaToken },
+      options: { data: { full_name: fullName.trim(), username: normalizedUsername || null, privacy_preferences: { personalization_consent: personalizationConsent, ai_memory_consent: aiMemoryConsent, analytics_consent: analyticsConsent } }, captchaToken },
     })
     if (signupError) {
       setError(signupError.message)
       setLoading(false)
     } else {
+      if (data?.session) {
+        const { error: privacyError } = await updatePrivacyPreferences({ personalizationConsent, aiMemoryConsent, analyticsConsent })
+        if (privacyError) {
+          setError('Your account was created, but your privacy choices need one more confirmation in Settings.')
+          setLoading(false)
+          return
+        }
+      }
       if (data?.user?.id) logEvent(data.user.id, 'signup_completed')
       navigate('/onboarding')
     }
@@ -54,7 +72,14 @@ export default function Signup() {
       <PasswordField id="signup-password" value={password} onChange={(event) => setPassword(event.target.value)} label="Create a password" autoComplete="new-password" hint="Required for account safety" showRequirements />
       <CaptchaField onToken={setCaptchaToken} />
       <p className="text-xs leading-5" style={{ color: '#8290A5' }}>Your name personalises your workspace. Your username helps you recognise your portfolio and community presence. We never use either detail as your password or expose them publicly without your control.</p>
-      <p className="rounded-xl border px-4 py-3 text-xs leading-5" style={{ borderColor: '#DCE5F0', background: '#F8FBFF', color: '#6B7A99' }}>Your learning activity stays tied to your account controls. You can manage personalisation, Tutor memory, analytics, export, and deletion requests from Settings.</p>
+      <fieldset className="rounded-xl border p-4" style={{ borderColor: '#DCE5F0', background: '#F8FBFF' }}>
+        <legend className="px-1 text-sm font-bold" style={{ color: '#0A2342' }}>Choose your privacy defaults</legend>
+        <label className="mt-3 flex items-start gap-3 text-xs leading-5" style={{ color: '#4B6385' }}><input type="checkbox" checked={deliveryAcknowledgement} onChange={(event) => setDeliveryAcknowledgement(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#2456A6]" /> <span><strong style={{ color: '#0A2342' }}>Required:</strong> I understand that Datakwest uses my account and learning activity to deliver my personalised learning service.</span></label>
+        <label className="mt-3 flex items-start gap-3 text-xs leading-5" style={{ color: '#4B6385' }}><input type="checkbox" checked={personalizationConsent} onChange={(event) => setPersonalizationConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#2456A6]" /> <span><strong style={{ color: '#0A2342' }}>Personalisation:</strong> allow Datakwest to use verified learning evidence to improve recommendations.</span></label>
+        <label className="mt-3 flex items-start gap-3 text-xs leading-5" style={{ color: '#4B6385' }}><input type="checkbox" checked={aiMemoryConsent} onChange={(event) => setAiMemoryConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#2456A6]" /> <span><strong style={{ color: '#0A2342' }}>Tutor memory:</strong> allow relevant learning context to be remembered for future Tutor sessions.</span></label>
+        <label className="mt-3 flex items-start gap-3 text-xs leading-5" style={{ color: '#4B6385' }}><input type="checkbox" checked={analyticsConsent} onChange={(event) => setAnalyticsConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#2456A6]" /> <span><strong style={{ color: '#0A2342' }}>Product analytics:</strong> allow anonymous usage signals to help us improve Datakwest.</span></label>
+        <p className="mt-3 text-[11px] leading-5" style={{ color: '#8290A5' }}>You can change these choices, request an export, or request deletion from Settings. Optional choices are never required to start learning.</p>
+      </fieldset>
       <button type="submit" disabled={loading} className="w-full rounded-xl px-4 py-3.5 text-sm font-bold transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60" style={{ background: '#D4AF37', color: '#0A2342' }}>{loading ? 'Creating your account…' : 'Create my free account'}</button>
     </form>
     <p className="mt-6 text-center text-xs leading-5" style={{ color: '#8A98AA' }}>By continuing, you agree to use Datakwest responsibly and keep your account secure.</p>
