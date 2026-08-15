@@ -157,20 +157,6 @@ export default function Dashboard() {
           </span>
         </div>
 
-        <Link to="/tracks"
-          className="block rounded-2xl p-5 mb-8 transition-all"
-          style={{ background: '#0A2342', boxShadow: '0 2px 12px rgba(10,35,66,0.15)' }}>
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <p className="font-bold text-white">🐍 Want to go deeper on one skill?</p>
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                Explore standalone Skill Tracks — beginner to advanced, at your own pace
-              </p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4AF37' }}>Explore →</span>
-          </div>
-        </Link>
-
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Readiness', value: readiness ? `${readiness.score}%` : '—' },
@@ -216,94 +202,6 @@ export default function Dashboard() {
           {readinessError && <p className="text-xs mt-4" style={{ color: '#991B1B' }}>{readinessError}</p>}
         </section>
 
-        <Link to="/assessments" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#F2ECFF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6D4CB3' }}>Assessment Center</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Review verified learning evidence</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Access published skill checks and review your assessment history.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open assessments →</span>
-          </div>
-        </Link>
-
-        <Link to="/practice" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#EAF7F0', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2E7D32' }}>Practice Engine</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Build mastery through deliberate practice</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Use adaptive, timed, spaced, and weak-topic practice sessions.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Start practice →</span>
-          </div>
-        </Link>
-
-        <Link to="/community" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#F2ECFF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6D4CB3' }}>Community Hub</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Learn with accountability</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Join focused communities built around consistent learning and peer connection.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Explore communities →</span>
-          </div>
-        </Link>
-
-        <Link to="/marketplace" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Marketplace</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Connect evidence to opportunities</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Explore permissioned work opportunities and manage your applications.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open marketplace →</span>
-          </div>
-        </Link>
-
-        <Link to="/live-challenges" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFF1E8', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#C05621' }}>Live Challenges</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Compete in timed applied practice</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Join live rounds, submit server-scored responses, and review standings.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open live challenges →</span>
-          </div>
-        </Link>
-
-        <Link to="/skill-battles" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFF1E8', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#C05621' }}>Skill Battles</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Turn practice into a focused competition</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Join bounded battle rounds and track server-derived rankings.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open battles →</span>
-          </div>
-        </Link>
-
-        <Link to="/peer-review" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Peer Review</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Help learners improve through useful feedback</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Accept assigned reviews and submit rubric-scoped feedback.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open peer review →</span>
-          </div>
-        </Link>
-
-        <Link to="/challenges" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFFBEF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#8A6500' }}>Challenges</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Turn practice into evidence</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Explore active and upcoming challenges published by the learning team.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>View challenges →</span>
-          </div>
-        </Link>
-
         <section className="rounded-2xl p-6 mb-8" style={{ background: '#0A2342', boxShadow: '0 2px 12px rgba(10,35,66,0.12)' }} aria-labelledby="daily-mission-title">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
@@ -337,72 +235,6 @@ export default function Dashboard() {
             <p className="text-sm font-semibold mt-5" style={{ color: '#CDEFD5' }}>Progress recorded. Your XP and streak have been updated.</p>
           )}
         </section>
-
-        <Link to="/project" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#1E3A5F' }}>Build your portfolio</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Submit a project when you are ready</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Capture what you built, what you learned, and the evidence behind your progress.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open project →</span>
-          </div>
-        </Link>
-
-        <Link to="/tutor" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFFBEF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#8A6500' }}>Tutor AI</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Get unstuck without skipping the work</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Ask questions, explore examples, and build independent confidence.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Ask Tutor →</span>
-          </div>
-        </Link>
-
-        <Link to="/portfolio" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#EAF7F0', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2E7D32' }}>Portfolio</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>See the evidence behind your progress</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Review project submissions, reflections, and feedback in one place.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open portfolio →</span>
-          </div>
-        </Link>
-
-        <Link to="/achievements" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#F2ECFF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6D4CB3' }}>Achievements</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Turn momentum into milestones</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>See verified XP, streak progress, and badges earned from your work.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>View achievements →</span>
-          </div>
-        </Link>
-
-        <Link to="/notifications" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#F0F6FF', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#1E5AA8' }}>Notifications</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>Keep up with your learning updates</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>See mission, project review, and Tutor follow-up notifications.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open inbox →</span>
-          </div>
-        </Link>
-
-        <Link to="/skill-tree" className="block rounded-2xl p-6 mb-8 transition-opacity hover:opacity-90" style={{ background: '#FFF8E6', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#8A6500' }}>Skill tree</p>
-              <h2 className="text-lg font-bold mt-1" style={{ color: '#0A2342' }}>See how your skills connect</h2>
-              <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>Explore published concepts, practice nodes, and what comes next.</p>
-            </div>
-            <span className="text-sm font-bold whitespace-nowrap" style={{ color: '#0A2342' }}>Open skill tree →</span>
-          </div>
-        </Link>
 
         <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Your skill levels</h3>

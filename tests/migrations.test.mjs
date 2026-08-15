@@ -65,6 +65,8 @@ const owlAudioModerationMigration = await readFile('backend/supabase/migrations/
 const owlAudioClient = await readFile('src/lib/owlAudio.js', 'utf8')
 const errorBoundary = await readFile('src/components/ErrorBoundary.jsx', 'utf8')
 const appSource = await readFile('src/App.jsx', 'utf8')
+const learnerNavigation = await readFile('src/components/LearnerNavigation.jsx', 'utf8')
+const dashboardPage = await readFile('src/pages/Dashboard.jsx', 'utf8')
 const vercelConfig = await readFile('vercel.json', 'utf8')
 
 const requiredFoundationTables = [
@@ -594,6 +596,16 @@ test('branded recovery states cover 404 and application errors', () => {
   assert.match(recoveryState, /Something interrupted your learning path\./)
   assert.match(recoveryState, /Go to Datakwest home/)
   assert.match(recoveryState, /Go back/)
+})
+
+test('learner navigation keeps the workspace focused and routes all product areas intentionally', () => {
+  for (const label of ['Home', 'Learn', 'Practice', 'Community', 'Career', 'More']) assert.match(learnerNavigation, new RegExp(label))
+  for (const path of ['/dashboard', '/tracks', '/practice', '/community', '/career-centre', '/assessments', '/project', '/portfolio', '/marketplace', '/skill-battles', '/interviews', '/achievements', '/notifications', '/skill-tree', '/tutor']) assert.match(learnerNavigation, new RegExp(path.replaceAll('/', '\\/')))
+  assert.match(learnerNavigation, /safe-area-inset-bottom/)
+  assert.match(learnerNavigation, /aria-expanded/)
+  assert.doesNotMatch(dashboardPage, /Assessment Center.*Review verified learning evidence/s)
+  assert.doesNotMatch(dashboardPage, /Marketplace.*Connect evidence to opportunities/s)
+  assert.doesNotMatch(dashboardPage, /Build your portfolio.*Submit a project/s)
 })
 
 test('route loading experience is branded, progressive, and recoverable', () => {

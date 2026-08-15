@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import LearnerNavigation from './LearnerNavigation'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
@@ -12,7 +13,8 @@ export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
   }
 
   return (
-  <nav className="w-full h-20 px-6 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #E2E8F0' }}>
+    <>
+    <nav className="w-full h-20 px-4 sm:px-6 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #E2E8F0' }}>
     <div className="flex items-center gap-3 h-full overflow-visible">
       <div className="h-12 w-44 flex items-center overflow-visible">
         <img
@@ -42,5 +44,7 @@ export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
         </button>
       </div>
     </nav>
+    <LearnerNavigation />
+    </>
   )
 }
