@@ -36,6 +36,12 @@ export function getLearnerSkillState(enrolmentId) {
   })
 }
 
+export function getNextLearningAction(enrolmentId) {
+  return callLearningRpc('get_next_learning_action', {
+    p_enrolment_id: enrolmentId,
+  })
+}
+
 export function updateLearnerPreferences({
   locale = 'en',
   timezone = null,

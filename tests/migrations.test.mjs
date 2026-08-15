@@ -29,6 +29,8 @@ const legacyEvidenceCompatibility = await readFile('backend/supabase/migrations/
 const cybersecurityFlagship = await readFile('backend/supabase/migrations/0034_cybersecurity_flagship_slice.sql', 'utf8')
 const learningIntelligenceIndexes = await readFile('backend/supabase/migrations/0035_learning_intelligence_query_indexes.sql', 'utf8')
 const evidenceVerificationMastery = await readFile('backend/supabase/migrations/0036_evidence_verification_mastery_projection.sql', 'utf8')
+const deterministicNextAction = await readFile('backend/supabase/migrations/0037_deterministic_next_learning_action.sql', 'utf8')
+const dashboard = await readFile('src/pages/Dashboard.jsx', 'utf8')
 const communityHub = await readFile('backend/supabase/migrations/0013_community_hub.sql', 'utf8')
 const communityClient = await readFile('src/lib/community.js', 'utf8')
 const communityDiscussions = await readFile('backend/supabase/migrations/0014_community_discussions.sql', 'utf8')
@@ -625,6 +627,21 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
 })
 
+test('next learning action is prerequisite-aware and server-authoritative', () => {
+  assert.match(deterministicNextAction, /create or replace function public\.get_next_learning_action/)
+  assert.match(deterministicNextAction, /edge\.edge_type = 'prerequisite'/)
+  assert.match(deterministicNextAction, /prerequisite_mastery\.mastery_score/)
+  assert.match(deterministicNextAction, /deterministic-baseline-v1/)
+  assert.match(deterministicNextAction, /grant execute on function public\.get_next_learning_action\(uuid\) to authenticated/)
+  assert.doesNotMatch(deterministicNextAction, /p_mastery_score|p_recommended_node_id/)
+})
+
+test('dashboard consumes the protected next-action recommendation', () => {
+  assert.match(dashboard, /getNextLearningAction/)
+  assert.match(dashboard, /next-action-title/)
+  assert.match(dashboard, /server after verification/)
+})
+
 test('Learning intelligence context queries have production indexes', () => {
   assert.match(learningIntelligenceIndexes, /learner_interaction_events_learner_time_idx/)
   assert.match(learningIntelligenceIndexes, /learner_evidence_learner_submitted_idx/)
@@ -710,7 +727,7 @@ test('public product demo and auth UX are wired for the broader digital-skills p
 })
 
 test('backend source contains no obvious secret material', () => {
-  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
+  const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorOrchestrator, tutorClient, cybersecurityFlagship, learningIntelligenceIndexes, evidenceVerificationMastery, deterministicNextAction, dashboard, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE_KEY\s*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
 })

@@ -7,6 +7,7 @@ import { getDisplayStreak } from '../lib/gamification'
 import { completeDailyMission, getTodaysMission } from '../lib/missions'
 import OwlLoading from '../components/OwlLoading'
 import { getReadinessScore } from '../lib/readiness'
+import { getNextLearningAction } from '../lib/learningIntelligence'
 
 const skillLabels = {
   excel: 'Excel', sql: 'SQL', python: 'Python',
@@ -26,6 +27,8 @@ export default function Dashboard() {
   const [missionError, setMissionError] = useState('')
   const [readiness, setReadiness] = useState(null)
   const [readinessError, setReadinessError] = useState('')
+  const [nextAction, setNextAction] = useState(null)
+  const [nextActionError, setNextActionError] = useState('')
 
   useEffect(() => {
     async function loadProfile() {
@@ -62,6 +65,23 @@ export default function Dashboard() {
 
       const { mission: todaysMission, error: missionLoadError } = await getTodaysMission(user.id)
       const { readiness: readinessScore, error: readinessLoadError } = await getReadinessScore()
+      const { data: activeEnrolment } = await supabase
+        .from('learner_skill_enrolments')
+        .select('id')
+        .eq('learner_id', user.id)
+        .eq('status', 'active')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      let nextLearningAction = null
+      let nextLearningActionError = ''
+      if (activeEnrolment?.id) {
+        try {
+          nextLearningAction = await getNextLearningAction(activeEnrolment.id)
+        } catch (actionError) {
+          nextLearningActionError = actionError?.message || 'The next learning action is temporarily unavailable.'
+        }
+      }
 
       setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
       setSkillProgress(data.skill_progress || {})
@@ -70,6 +90,8 @@ export default function Dashboard() {
       setMissionError(missionLoadError?.message || '')
       setReadiness(readinessScore)
       setReadinessError(readinessLoadError?.message || '')
+      setNextAction(nextLearningAction)
+      setNextActionError(nextLearningActionError)
       setLoading(false)
     }
 
@@ -144,8 +166,8 @@ export default function Dashboard() {
 
         <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: '#0A2342' }}>Your Personalized Roadmap</h1>
-            <p className="text-sm mt-1" style={{ color: '#6B7A99' }}>Complete Beginner → Professional Data Analyst</p>
+            <h1 className="text-2xl font-bold" style={{ color: '#0A2342' }}>Your Personalized Learning Workspace</h1>
+            <p className="text-sm mt-1" style={{ color: '#6B7A99' }}>One focused action at a time, backed by verified progress.</p>
           </div>
           <span className="text-xs font-bold px-4 py-2 rounded-full"
             style={{ background: allPhasesPassed ? '#E8F5E9' : '#FFFBEF', color: allPhasesPassed ? '#2E7D32' : '#D4AF37', border: `1px solid ${allPhasesPassed ? '#2E7D32' : '#D4AF37'}` }}>
@@ -230,6 +252,19 @@ export default function Dashboard() {
           {mission?.status === 'completed' && (
             <p className="text-sm font-semibold mt-5" style={{ color: '#CDEFD5' }}>Progress recorded. Your XP and streak have been updated.</p>
           )}
+        </section>
+
+        <section className="rounded-2xl p-6 mb-8" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="next-action-title">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Next best action</p>
+              <h2 id="next-action-title" className="text-xl font-bold mt-1" style={{ color: '#0A2342' }}>{nextAction?.title || 'Your next action is being prepared'}</h2>
+              <p className="text-sm mt-2" style={{ color: '#4B6385' }}>{nextAction?.instruction || 'Complete a focused step and submit evidence. Your mastery is updated by the server after verification.'}</p>
+            </div>
+            {nextAction?.evidence_kind && <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#FFFFFF', color: '#2456A6' }}>{nextAction.evidence_kind}</span>}
+          </div>
+          {nextAction?.node_key && <p className="mt-4 text-xs font-semibold" style={{ color: '#2456A6' }}>Recommended node: {nextAction.node_key}</p>}
+          {nextActionError && <p className="mt-4 text-xs" style={{ color: '#991B1B' }}>{nextActionError}</p>}
         </section>
 
         <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
