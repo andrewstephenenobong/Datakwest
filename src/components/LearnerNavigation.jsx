@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { playNavigationSound } from '../lib/navigationSounds'
 
 const primaryItems = [
   { label: 'Home', shortLabel: 'Home', path: '/dashboard', icon: 'home' },
@@ -90,7 +91,18 @@ export default function LearnerNavigation() {
   }, [open])
 
   const moreActive = moreItems.some((item) => isActive(location.pathname, item.path))
-  const go = (path) => navigate(path)
+  const go = (path, action = 'learn') => {
+    playNavigationSound(action)
+    navigate(path)
+  }
+
+  const toggleMore = () => {
+    setOpen((current) => {
+      const next = !current
+      if (next) playNavigationSound('more')
+      return next
+    })
+  }
 
   return (
     <>
@@ -99,26 +111,26 @@ export default function LearnerNavigation() {
           <div className="flex items-center gap-1">
             {primaryItems.map((item) => {
               const active = isActive(location.pathname, item.path)
-              return <button key={item.path} type="button" onClick={() => go(item.path)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors hover:bg-[#F5F7FA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: active ? '#2456A6' : '#6B7A99', background: active ? '#E8F0FE' : 'transparent' }}><Icon name={item.icon} active={active} />{item.label}</button>
+              return <button key={item.path} type="button" onClick={() => go(item.path, item.icon)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors hover:bg-[#F5F7FA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: active ? '#2456A6' : '#6B7A99', background: active ? '#E8F0FE' : 'transparent' }}><Icon name={item.icon} active={active} />{item.label}</button>
             })}
           </div>
-          <button type="button" onClick={() => setOpen((current) => !current)} aria-expanded={open} aria-controls="learner-more-menu" className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: moreActive ? '#2456A6' : '#6B7A99', background: moreActive ? '#E8F0FE' : 'transparent' }}><span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: moreActive ? '#2456A6' : '#DCE5F0', color: 'white' }}>+</span>More</button>
+          <button type="button" onClick={toggleMore} aria-expanded={open} aria-controls="learner-more-menu" className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: moreActive ? '#2456A6' : '#6B7A99', background: moreActive ? '#E8F0FE' : 'transparent' }}><span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: moreActive ? '#2456A6' : '#DCE5F0', color: 'white' }}>+</span>More</button>
         </div>
       </div>
       <div className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] lg:hidden">
         <nav aria-label="Learner navigation" className="mx-auto flex max-w-md items-center justify-between rounded-[1.6rem] border bg-white/95 px-2 py-2 shadow-[0_12px_40px_rgba(10,35,66,.18)] backdrop-blur" style={{ borderColor: '#DCE5F0' }}>
           {primaryItems.map((item) => {
             const active = isActive(location.pathname, item.path)
-            return <button key={item.path} type="button" onClick={() => go(item.path)} aria-current={active ? 'page' : undefined} className="flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[10px] font-black transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: active ? '#2456A6' : '#77869B', background: active ? '#E8F0FE' : 'transparent' }}><Icon name={item.icon} active={active} /><span className="truncate">{item.shortLabel}</span></button>
+            return <button key={item.path} type="button" onClick={() => go(item.path, item.icon)} aria-current={active ? 'page' : undefined} className="flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[10px] font-black transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: active ? '#2456A6' : '#77869B', background: active ? '#E8F0FE' : 'transparent' }}><Icon name={item.icon} active={active} /><span className="truncate">{item.shortLabel}</span></button>
           })}
-          <button type="button" onClick={() => setOpen((current) => !current)} aria-expanded={open} aria-controls="learner-more-menu" className="flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[10px] font-black transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: moreActive ? '#2456A6' : '#77869B', background: moreActive ? '#E8F0FE' : 'transparent' }}><span className="flex h-5 w-5 items-center justify-center rounded-full text-base leading-none" style={{ background: moreActive ? '#2456A6' : '#DCE5F0', color: moreActive ? 'white' : '#6B7A99' }}>+</span><span>More</span></button>
+          <button type="button" onClick={toggleMore} aria-expanded={open} aria-controls="learner-more-menu" className="flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[10px] font-black transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ color: moreActive ? '#2456A6' : '#77869B', background: moreActive ? '#E8F0FE' : 'transparent' }}><span className="flex h-5 w-5 items-center justify-center rounded-full text-base leading-none" style={{ background: moreActive ? '#2456A6' : '#DCE5F0', color: moreActive ? 'white' : '#6B7A99' }}>+</span><span>More</span></button>
         </nav>
       </div>
       {open && <>
         <button type="button" aria-label="Close navigation menu" className="fixed inset-0 z-40 bg-[#0A2342]/20 lg:absolute" onClick={() => setOpen(false)} />
         <div id="learner-more-menu" ref={panelRef} role="dialog" aria-label="More learner destinations" className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+86px)] z-50 max-h-[70vh] overflow-y-auto rounded-[1.5rem] border bg-white p-4 shadow-[0_16px_50px_rgba(10,35,66,.2)] lg:absolute lg:inset-auto lg:right-6 lg:top-12 lg:w-[27rem]" style={{ borderColor: '#DCE5F0' }}>
           <div className="mb-3 flex items-center justify-between"><div><p className="text-xs font-black uppercase tracking-[.16em]" style={{ color: '#9A7610' }}>Your toolkit</p><h2 className="mt-1 text-lg font-black" style={{ color: '#0A2342' }}>Explore more of DataKwest</h2></div><button type="button" onClick={() => setOpen(false)} className="rounded-full px-3 py-1 text-lg leading-none" style={{ color: '#6B7A99', background: '#F5F7FA' }} aria-label="Close more destinations">×</button></div>
-          <div className="grid grid-cols-2 gap-2">{moreItems.map((item) => <button key={item.path} type="button" onClick={() => go(item.path)} className="flex min-h-14 items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-[#F5F7FA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ background: isActive(location.pathname, item.path) ? '#F5F7FA' : 'white' }}><span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${item.tone}18` }}><Icon name={item.icon} /></span><span className="min-w-0"><span className="block truncate text-xs font-bold" style={{ color: '#0A2342' }}>{item.label}</span><span className="mt-0.5 block text-[10px]" style={{ color: '#8A98AA' }}>{isActive(location.pathname, item.path) ? 'You are here' : 'Open area'}</span></span></button>)}</div>
+          <div className="grid grid-cols-2 gap-2">{moreItems.map((item) => <button key={item.path} type="button" onClick={() => go(item.path, 'more')} className="flex min-h-14 items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-[#F5F7FA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2456A6]" style={{ background: isActive(location.pathname, item.path) ? '#F5F7FA' : 'white' }}><span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${item.tone}18` }}><Icon name={item.icon} /></span><span className="min-w-0"><span className="block truncate text-xs font-bold" style={{ color: '#0A2342' }}>{item.label}</span><span className="mt-0.5 block text-[10px]" style={{ color: '#8A98AA' }}>{isActive(location.pathname, item.path) ? 'You are here' : 'Open area'}</span></span></button>)}</div>
         </div>
       </>}
     </>
