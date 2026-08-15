@@ -80,6 +80,8 @@ const learningIntelligenceRpcMigration = await readFile('backend/supabase/migrat
 const initialSkillCatalogMigration = await readFile('backend/supabase/migrations/0032_initial_skill_catalog.sql', 'utf8')
 const learningIntelligenceClient = await readFile('src/lib/learningIntelligence.js', 'utf8')
 const publicAiClient = await readFile('src/lib/publicAi.js', 'utf8')
+const privacyControlsMigration = await readFile('backend/supabase/migrations/0053_learner_privacy_controls.sql', 'utf8')
+const privacyClient = await readFile('src/lib/privacy.js', 'utf8')
 const careerCentreMigration = await readFile('backend/supabase/migrations/0024_career_centre.sql', 'utf8')
 const careerCentreClient = await readFile('src/lib/careerCentre.js', 'utf8')
 const careerCentrePage = await readFile('src/pages/CareerCentre.jsx', 'utf8')
@@ -969,6 +971,19 @@ test('public AI preview is anonymous-limited, structured, and non-mutating', () 
   assert.match(landingPage, /DEMO_REMAINING_KEY/)
   assert.match(landingPage, /complimentary owl coaching/)
   assert.match(landingPage, /Ask the Datakwest owl/)
+})
+
+test('privacy controls are server-authoritative and auditable', () => {
+  assert.match(privacyControlsMigration, /create table if not exists public\.learner_privacy_requests/i)
+  assert.match(privacyControlsMigration, /create or replace function public\.get_privacy_preferences/i)
+  assert.match(privacyControlsMigration, /create or replace function public\.update_privacy_preferences/i)
+  assert.match(privacyControlsMigration, /create or replace function public\.request_privacy_action/i)
+  assert.match(privacyControlsMigration, /enable row level security/i)
+  assert.match(privacyControlsMigration, /grant execute on function public\.update_privacy_preferences\(boolean, boolean, boolean\) to authenticated/i)
+  assert.doesNotMatch(privacyControlsMigration, /delete from public\./i)
+  assert.match(privacyClient, /rpc\('get_privacy_preferences'/i)
+  assert.match(privacyClient, /rpc\('update_privacy_preferences'/i)
+  assert.match(privacyClient, /rpc\('request_privacy_action'/i)
 })
 
 test('Career Centre aggregates protected readiness and career evidence', () => {

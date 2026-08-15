@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar'
 import { supabase } from '../lib/supabase'
 import { defaultNavigationSoundPreferences, getNavigationSoundPreferences, navigationActions, previewNavigationSound, saveNavigationSoundPreferences } from '../lib/navigationSounds'
 import { logEvent } from '../lib/analytics'
+import { getPrivacyPreferences, updatePrivacyPreferences, requestPrivacyAction } from '../lib/privacy'
 
 const settingGroups = [
   { title: 'Account', items: [['profile', 'Profile', 'Your learner identity'], ['preferences', 'Learning preferences', 'Pace, language, and explanation style'], ['notifications', 'Notifications', 'Choose what deserves your attention'], ['courses', 'Learning paths', 'Manage your active directions'], ['privacy', 'Privacy and AI memory', 'Control your data and consent']] },
@@ -21,6 +22,11 @@ export default function Settings() {
   const [feedbackRating, setFeedbackRating] = useState('')
   const [feedbackText, setFeedbackText] = useState('')
   const [feedbackStatus, setFeedbackStatus] = useState('')
+  const [privacyOpen, setPrivacyOpen] = useState(false)
+  const [privacyLoading, setPrivacyLoading] = useState(false)
+  const [privacySaving, setPrivacySaving] = useState(false)
+  const [privacyStatus, setPrivacyStatus] = useState('')
+  const [privacyPreferences, setPrivacyPreferences] = useState({ personalization_consent: true, ai_memory_consent: false, analytics_consent: false })
   const [navigationSounds, setNavigationSounds] = useState(() => getNavigationSoundPreferences())
   const metadata = user?.user_metadata || {}
   const name = metadata.full_name || metadata.name || user?.email?.split('@')[0] || 'Learner'
@@ -52,12 +58,44 @@ export default function Settings() {
     setFeedbackStatus('Thanks—your feedback has been recorded for the Datakwest pilot team.')
   }
 
+  async function openPrivacyCentre() {
+    setPrivacyOpen(true)
+    setPrivacyLoading(true)
+    setPrivacyStatus('')
+    const { preferences, error } = await getPrivacyPreferences()
+    if (preferences) setPrivacyPreferences(preferences)
+    if (error) setPrivacyStatus('Privacy preferences are temporarily unavailable. Your current settings were not changed.')
+    setPrivacyLoading(false)
+  }
+
+  async function savePrivacy(nextPreferences) {
+    setPrivacySaving(true)
+    setPrivacyStatus('')
+    const { preferences, error } = await updatePrivacyPreferences({
+      personalizationConsent: nextPreferences.personalization_consent,
+      aiMemoryConsent: nextPreferences.ai_memory_consent,
+      analyticsConsent: nextPreferences.analytics_consent,
+    })
+    if (error) setPrivacyStatus('We could not save that preference. Try again.')
+    else {
+      setPrivacyPreferences(preferences || nextPreferences)
+      setPrivacyStatus('Privacy preferences saved. This does not delete past data.')
+    }
+    setPrivacySaving(false)
+  }
+
+  async function submitPrivacyRequest(requestType) {
+    setPrivacyStatus('')
+    const { error } = await requestPrivacyAction(requestType)
+    setPrivacyStatus(error ? 'We could not submit that request. Try again.' : `Your ${requestType} request was recorded for secure processing. It is not complete yet.`)
+  }
+
   function handleItem(key) {
     if (key === 'profile') navigate('/profile')
     else if (key === 'courses') navigate('/tracks')
     else if (key === 'feedback') { setFeedbackOpen(true); setFeedbackStatus('') }
     else if (key === 'help') navigate('/tutor')
-    else if (key === 'privacy') setShowSounds(false)
+    else if (key === 'privacy') openPrivacyCentre()
     else setShowSounds(false)
   }
 
@@ -72,6 +110,8 @@ export default function Settings() {
         {settingGroups.map((group) => <section key={group.title} className="mt-8" aria-labelledby={`${group.title}-heading`}><h2 id={`${group.title}-heading`} className="px-1 text-sm font-black uppercase tracking-[.18em]" style={{ color: '#91A7AD' }}>{group.title}</h2><div className="mt-3 divide-y overflow-hidden rounded-2xl border" style={{ borderColor: '#40565D', background: '#14252A' }}>{group.items.map(([key, label, detail]) => <button type="button" key={key} onClick={() => handleItem(key)} className="flex min-h-20 w-full items-center justify-between gap-4 px-5 py-4 text-left active:bg-[#1D343A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#8BC6B5]" style={{ borderColor: '#2B4046' }}><span className="min-w-0"><span className="block text-base font-black">{label}</span><span className="mt-1 block truncate text-xs" style={{ color: '#91A7AD' }}>{detail}</span></span><span className="text-3xl font-light" style={{ color: '#70858C' }}>›</span></button>)}</div></section>)}
 
         <section className="mt-8" aria-labelledby="sound-heading"><div className="flex items-center justify-between px-1"><div><h2 id="sound-heading" className="text-sm font-black uppercase tracking-[.18em]" style={{ color: '#91A7AD' }}>Personalise</h2><p className="mt-2 text-xs" style={{ color: '#6F858B' }}>Make the app feel like yours.</p></div><button type="button" onClick={() => setShowSounds((value) => !value)} className="text-sm font-black" style={{ color: '#8BC6B5' }}>{showSounds ? 'Hide' : 'Open'}</button></div>{showSounds && <div className="mt-3 rounded-2xl border p-5" style={{ borderColor: '#40565D', background: '#14252A' }}><div className="flex items-start justify-between gap-4"><div><h3 className="text-base font-black">Navigation sounds</h3><p className="mt-2 text-xs leading-5" style={{ color: '#91A7AD' }}>Choose a gentle sound style for navigation. Sounds play only after a tap.</p></div><button type="button" onClick={resetNavigationSounds} className="text-xs font-black" style={{ color: '#8BC6B5' }}>Reset</button></div><div className="mt-5 flex flex-wrap gap-2">{[['soft', 'Soft'], ['chime', 'Chime'], ['pop', 'Pop'], ['off', 'Off']].map(([value, label]) => <button key={value} type="button" onClick={() => { updateNavigationSounds({ style: value, enabled: value !== 'off' }); previewNavigationSound(value) }} aria-pressed={navigationSounds.style === value} className="min-h-10 rounded-xl border px-4 text-xs font-black" style={{ borderColor: navigationSounds.style === value ? '#8BC6B5' : '#40565D', background: navigationSounds.style === value ? '#1D4945' : '#0E1B1F', color: navigationSounds.style === value ? '#DDF5E3' : '#91A7AD' }}>{label}</button>)}</div><label className="mt-4 flex min-h-14 items-center justify-between gap-4 rounded-xl px-4" style={{ background: '#0E1B1F' }}><span><span className="block text-sm font-black">Navigation feedback</span><span className="mt-1 block text-xs" style={{ color: '#91A7AD' }}>Play a sound after a destination opens</span></span><input type="checkbox" checked={navigationSounds.enabled} onChange={(event) => updateNavigationSounds({ enabled: event.target.checked, style: event.target.checked && navigationSounds.style === 'off' ? 'soft' : navigationSounds.style })} className="h-5 w-5 accent-[#8BC6B5]" /></label><div className="mt-4 grid gap-2 sm:grid-cols-2">{navigationActions.map(([key, label]) => <label key={key} className="flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: '#2B4046' }}><input type="checkbox" checked={navigationSounds[key]} onChange={(event) => updateNavigationSounds({ [key]: event.target.checked })} className="h-4 w-4 accent-[#8BC6B5]" /><span className="text-xs font-bold">{label}</span></label>)}</div></div>}</section>
+
+        {privacyOpen && <section className="mt-8 rounded-2xl border p-5" style={{ borderColor: '#40565D', background: '#14252A' }} aria-labelledby="privacy-heading"><div className="flex items-start justify-between gap-3"><div><h2 id="privacy-heading" className="text-base font-black">Privacy centre</h2><p className="mt-2 text-xs leading-5" style={{ color: '#91A7AD' }}>You control how future Datakwest processing uses your learning information. Turning a preference off does not delete past data.</p></div><button type="button" onClick={() => setPrivacyOpen(false)} className="text-xl" style={{ color: '#91A7AD' }} aria-label="Close privacy centre">×</button></div>{privacyLoading ? <p className="mt-5 text-sm" style={{ color: '#91A7AD' }}>Loading your privacy preferences…</p> : <div className="mt-5 space-y-3">{[['personalization_consent', 'Personalised learning', 'Use verified learning evidence to tailor the next action.'], ['ai_memory_consent', 'Tutor memory', 'Allow the Tutor to use permitted conversation context for continuity.'], ['analytics_consent', 'Product analytics', 'Allow privacy-scoped usage events to improve reliability and learner experience.']].map(([key, label, detail]) => <label key={key} className="flex min-h-16 items-center justify-between gap-4 rounded-xl p-4" style={{ background: '#0E1B1F' }}><span><span className="block text-sm font-black">{label}</span><span className="mt-1 block text-xs leading-5" style={{ color: '#91A7AD' }}>{detail}</span></span><input type="checkbox" checked={Boolean(privacyPreferences[key])} disabled={privacySaving} onChange={(event) => { const next = { ...privacyPreferences, [key]: event.target.checked }; setPrivacyPreferences(next); savePrivacy(next) }} className="h-5 w-5 accent-[#8BC6B5]" /></label>)}<div className="grid gap-2 pt-2 sm:grid-cols-2"><button type="button" onClick={() => submitPrivacyRequest('export')} className="min-h-11 rounded-xl border px-4 text-xs font-black" style={{ borderColor: '#40565D', color: '#DDF5E3' }}>Request my data export</button><button type="button" onClick={() => submitPrivacyRequest('deletion')} className="min-h-11 rounded-xl border px-4 text-xs font-black" style={{ borderColor: '#69444A', color: '#FFB5B5' }}>Request account deletion</button></div>{privacyStatus && <p className="pt-2 text-xs font-bold" style={{ color: privacyStatus.includes('could not') ? '#FFB5B5' : '#DDF5E3' }} role="status">{privacyStatus}</p>}</div>}</section>}
 
         {feedbackOpen && <section className="mt-8 rounded-2xl border p-5" style={{ borderColor: '#40565D', background: '#14252A' }} aria-labelledby="feedback-heading"><div className="flex items-start justify-between gap-3"><div><h2 id="feedback-heading" className="text-base font-black">Tell us what happened</h2><p className="mt-2 text-xs leading-5" style={{ color: '#91A7AD' }}>Share product feedback, not passwords or private learner information. This helps us improve the pilot experience.</p></div><button type="button" onClick={() => setFeedbackOpen(false)} className="text-xl" style={{ color: '#91A7AD' }} aria-label="Close feedback">×</button></div><form onSubmit={submitFeedback} className="mt-5"><fieldset><legend className="text-xs font-black uppercase tracking-wide" style={{ color: '#91A7AD' }}>How was this experience?</legend><div className="mt-3 flex flex-wrap gap-2">{['hard', 'okay', 'good', 'excellent'].map((rating) => <button key={rating} type="button" onClick={() => setFeedbackRating(rating)} aria-pressed={feedbackRating === rating} className="min-h-10 rounded-xl border px-3 text-xs font-black" style={{ borderColor: feedbackRating === rating ? '#8BC6B5' : '#40565D', background: feedbackRating === rating ? '#1D4945' : '#0E1B1F', color: feedbackRating === rating ? '#DDF5E3' : '#91A7AD' }}>{rating}</button>)}</div></fieldset><label htmlFor="pilot-feedback" className="mt-5 block text-xs font-black uppercase tracking-wide" style={{ color: '#91A7AD' }}>What should we improve?</label><textarea id="pilot-feedback" value={feedbackText} onChange={(event) => setFeedbackText(event.target.value.slice(0, 1200))} rows="4" className="mt-2 w-full rounded-xl border bg-[#0E1B1F] px-3 py-3 text-sm outline-none" style={{ borderColor: '#40565D', color: '#F7FBFA' }} placeholder="Tell us what worked, what was confusing, or what blocked you…" /><div className="mt-4 flex flex-wrap items-center gap-3"><button type="submit" disabled={!feedbackRating && !feedbackText.trim()} className="min-h-11 rounded-xl px-4 text-sm font-black disabled:opacity-50" style={{ background: '#8BC6B5', color: '#0E1B1F' }}>Send feedback</button>{feedbackStatus && <p className="text-xs font-bold" style={{ color: '#DDF5E3' }} role="status">{feedbackStatus}</p>}</div></form></section>}
 
