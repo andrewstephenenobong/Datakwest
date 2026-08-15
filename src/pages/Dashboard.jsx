@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [readinessError, setReadinessError] = useState('')
   const [nextAction, setNextAction] = useState(null)
   const [nextActionError, setNextActionError] = useState('')
+  const [missionResult, setMissionResult] = useState(null)
   const firstMissionWelcome = searchParams.get('welcome') === 'first-mission'
 
   useEffect(() => {
@@ -160,6 +161,7 @@ export default function Dashboard() {
       status: result?.status || 'completed',
       completed_at: new Date().toISOString(),
     }))
+    setMissionResult(result || { status: 'completed' })
     setProfile((current) => current ? {
       ...current,
       xp: (current.xp || 0) + (result?.xp_awarded || 0),
@@ -263,7 +265,11 @@ export default function Dashboard() {
             </button>
           )}
           {mission?.status === 'completed' && (
-            <p className="text-sm font-semibold mt-5" style={{ color: '#CDEFD5' }}>Progress recorded. Your XP and streak have been updated.</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3" aria-label="Mission completion explanation">
+              <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.09)' }}><p className="text-[11px] font-black uppercase tracking-wide" style={{ color: '#D4AF37' }}>What changed</p><p className="mt-2 text-sm font-semibold text-white">The server recorded this mission as complete{missionResult?.xp_awarded ? ` and awarded ${missionResult.xp_awarded} XP` : ''}.</p></div>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.09)' }}><p className="text-[11px] font-black uppercase tracking-wide" style={{ color: '#D4AF37' }}>Why it matters</p><p className="mt-2 text-sm font-semibold text-white">A completed mission adds verified momentum to your learning path and daily consistency.</p></div>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.09)' }}><p className="text-[11px] font-black uppercase tracking-wide" style={{ color: '#D4AF37' }}>What next</p><p className="mt-2 text-sm font-semibold text-white">{nextAction?.title || 'Return to your next learning action when you are ready.'}</p>{nextAction && <button type="button" onClick={openNextAction} className="mt-3 text-xs font-black underline underline-offset-2" style={{ color: '#D4AF37' }}>Continue →</button>}</div>
+            </div>
           )}
         </section>
 
