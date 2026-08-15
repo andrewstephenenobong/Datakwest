@@ -194,3 +194,17 @@ html.theme-transition body *::after {
     transition: none !important;
   }
 }
+
+:root {
+  --dk-accent: #2456A6;
+  --dk-accent-soft: #EEF3FA;
+  --dk-accent-contrast: #FFFFFF;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-color: var(--dk-accent) !important;
+}
