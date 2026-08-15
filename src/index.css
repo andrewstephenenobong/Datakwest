@@ -9,6 +9,11 @@ html {
   scroll-behavior: smooth;
 }
 
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
 ::selection {
   background: #D4AF37;
   color: #0A2342;
