@@ -75,7 +75,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: '#F6F8FC', color: '#0A2342' }}>
+    <div className="min-h-screen overflow-x-hidden pb-24 sm:pb-0" style={{ background: '#F6F8FC', color: '#0A2342' }}>
       <header className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur" style={{ borderColor: '#E7EDF5' }}><div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4 lg:px-10"><Link to="/" className="flex min-w-0 shrink items-center"><img src="/datakwest_logo_lockup.png" alt="DataKwest logo" className="h-10 w-44 object-contain object-left sm:h-12 sm:w-52" /><span className="hidden shrink-0 sm:block"><span className="block text-sm font-black tracking-tight">DATAKWEST</span><span className="hidden text-[10px] font-semibold uppercase tracking-[0.18em] sm:block" style={{ color: '#8391A7' }}>Digital skills, one mission at a time</span></span></Link><nav className="hidden items-center gap-7 text-sm font-bold md:flex"><a href="#paths" style={{ color: '#5D6D84' }}>Explore paths</a><a href="#how-it-works" style={{ color: '#5D6D84' }}>How it works</a><a href="#demo" style={{ color: '#5D6D84' }}>Try the AI</a><a href="#projects" style={{ color: '#5D6D84' }}>Projects</a></nav><div className="flex shrink-0 items-center gap-2 sm:gap-3"><Link to="/login" className="hidden px-3 py-2 text-sm font-bold sm:block" style={{ color: '#2456A6' }}>Sign in</Link><Link to="/signup" className="whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-bold sm:px-4" style={{ background: '#D4AF37', color: '#0A2342' }}>Start free</Link></div></div></header>
 
       <main>
