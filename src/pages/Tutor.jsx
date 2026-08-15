@@ -126,6 +126,7 @@ export default function Tutor() {
             <div className="flex shrink-0 flex-wrap gap-2" aria-label="Tutor context">
               <span className="rounded-full px-3 py-1.5 text-xs font-bold" style={{ background: '#EEF3FA', color: '#2456A6' }}>Current skill: your active path</span>
               <span className="rounded-full px-3 py-1.5 text-xs font-bold" style={{ background: '#EEF6F1', color: '#2D8A5A' }}>Evidence-first guidance</span>
+              <Link to="/settings" className="rounded-full px-3 py-1.5 text-xs font-bold underline underline-offset-2" style={{ background: '#FFF9E8', color: '#967414' }}>Review privacy controls</Link>
             </div>
           </div>
 
@@ -135,7 +136,7 @@ export default function Tutor() {
                 <button key={item.id} type="button" role="tab" aria-selected={mode === item.id} onClick={() => setMode(item.id)} className="rounded-xl px-3 py-2 text-xs font-bold transition" style={{ background: mode === item.id ? '#0A2342' : '#F4F7FB', color: mode === item.id ? 'white' : '#5D6D84' }}>{item.label}</button>
               ))}
             </div>
-            <p className="mt-3 text-xs" style={{ color: '#8290A5' }}>Mode: <strong style={{ color: '#2456A6' }}>{activeMode.prompt}</strong>. The Tutor will adapt its response without replacing your own thinking.</p>
+            <p className="mt-3 text-xs" style={{ color: '#8290A5' }}>Mode: <strong style={{ color: '#2456A6' }}>{activeMode.prompt}</strong>. The Tutor will adapt its response without replacing your own thinking. Your memory and analytics choices remain under your control.</p>
 
             <section className="mt-5 min-h-[20rem] rounded-2xl p-4 sm:p-6" style={{ background: '#F8FAFD' }} aria-label="Tutor conversation">
               {messages.length === 0 ? (
