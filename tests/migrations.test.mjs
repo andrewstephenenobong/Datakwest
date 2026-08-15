@@ -34,6 +34,7 @@ const dashboard = await readFile('src/pages/Dashboard.jsx', 'utf8')
 const learningEventsFeatures = await readFile('backend/supabase/migrations/0038_learning_events_feature_snapshots.sql', 'utf8')
 const ragVectorMigration = await readFile('backend/supabase/migrations/0039_rag_vector_source_chunks.sql', 'utf8')
 const sourceEmbeddingFunction = await readFile('backend/supabase/functions/embed-source-chunks.ts', 'utf8')
+const masteryShadowInference = await readFile('backend/supabase/functions/mastery-shadow-inference.ts', 'utf8')
 const mlShadowMigration = await readFile('backend/supabase/migrations/0040_ml_shadow_mode_foundation.sql', 'utf8')
 const aiControlsMigration = await readFile('backend/supabase/migrations/0041_ai_evaluation_runtime_controls.sql', 'utf8')
 const cyberRagCorpusMigration = await readFile('backend/supabase/migrations/0042_cybersecurity_rag_corpus.sql', 'utf8')
@@ -636,6 +637,15 @@ test('Evidence verification and mastery projection remain server-authoritative',
   assert.match(evidenceVerificationMastery, /recompute_mastery_after_verified_attempt/)
   assert.doesNotMatch(evidenceVerificationMastery, /grant execute on function public\.verify_learning_evidence[^\n]*authenticated/)
   assert.doesNotMatch(evidenceVerificationMastery, /p_mastery_score|p_readiness_score/)
+})
+
+test('mastery shadow inference is authenticated, server-feature-bound, and artifact-gated', () => {
+  assert.match(masteryShadowInference, /Authorization/)
+  assert.match(masteryShadowInference, /auth\.getUser/)
+  assert.match(masteryShadowInference, /learner_id.*userData\.user\.id/)
+  assert.match(masteryShadowInference, /shadow_artifact_not_registered/)
+  assert.match(masteryShadowInference, /feature_set_version_mismatch/)
+  assert.doesNotMatch(masteryShadowInference, /body\.features/)
 })
 
 test('ML training workflow is real-data-only, grouped, and shadow-only', () => {
