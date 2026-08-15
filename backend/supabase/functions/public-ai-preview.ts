@@ -19,12 +19,15 @@ Deno.serve(async (req) => {
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, 800) : ''
     const visitorToken = typeof body.visitorToken === 'string' ? body.visitorToken.trim() : ''
     const history = Array.isArray(body.history) ? body.history.slice(-4) : []
+    const forwardedFor = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || ''
+    const edgeIdentity = req.headers.get('cf-connecting-ip')?.trim() || req.headers.get('x-real-ip')?.trim() || forwardedFor
+    const abuseKey = edgeIdentity.slice(0, 128)
     const selectedPath = typeof body.selectedPath === 'string' ? body.selectedPath.slice(0, 80) : 'digital skills'
     if (!message) return responseJson({ error: 'Ask a question to try the preview.' }, 400)
     if (visitorToken.length < 16) return responseJson({ error: 'Preview session is invalid. Refresh and try again.' }, 400)
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey)
-    const { data: quota, error: quotaError } = await adminClient.rpc('consume_public_ai_preview', { p_visitor_token: visitorToken })
+    const { data: quota, error: quotaError } = await adminClient.rpc('consume_public_ai_preview', { p_visitor_token: visitorToken, p_abuse_key: abuseKey || null })
     if (quotaError || !quota?.allowed) return responseJson({ error: 'You have used your ten-message public preview allowance. Create a free account to unlock your personalised Datakwest AI mentor.', remaining: 0, limit: 10 }, 429)
 
     const apiKey = Deno.env.get('GEMINI_API_KEY')
