@@ -36,14 +36,14 @@ export default function Login() {
   }
 
   return <AuthShell eyebrow="Welcome back" title="Pick up where you left off." subtitle="Sign in to continue your daily digital-skills practice and keep your progress moving." alternateLabel="New to Datakwest?" alternateLink="/signup" alternateText="Create a free account">
-    {error && <div role="alert" className="mb-5 rounded-xl p-4 text-sm" style={{ background: '#FFF4F2', color: '#9C3F31' }}>{error}</div>}
+    {error && <div role="alert" className="mb-5 rounded-xl p-4 text-sm" style={{ background: 'var(--auth-error-bg)', color: 'var(--auth-error)' }}>{error}</div>}
     <form onSubmit={handleLogin} className="space-y-5">
-      <div><label htmlFor="login-email" className="mb-2 block text-sm font-bold" style={{ color: '#0A2342' }}>Email address</label><input id="login-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@email.com" autoComplete="email" required className="w-full rounded-xl border-2 bg-white px-4 py-3 text-sm outline-none transition focus:ring-4" style={{ borderColor: '#DCE5F0', color: '#0A2342', '--tw-ring-color': 'rgba(212,175,55,0.16)' }} /></div>
+      <div><label htmlFor="login-email" className="mb-2 block text-sm font-bold" style={{ color: 'var(--auth-ink)' }}>Email address</label><input id="login-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@email.com" autoComplete="email" required className="w-full rounded-xl border-2 bg-white px-4 py-3 text-sm outline-none transition focus:ring-4" style={{ borderColor: 'var(--auth-border)', color: 'var(--auth-ink)', background: 'var(--auth-input)', '--tw-ring-color': 'rgba(212,175,55,0.2)' }} /></div>
       <PasswordField id="login-password" value={password} onChange={(event) => setPassword(event.target.value)} hint="Keep it private" />
       <CaptchaField onToken={setCaptchaToken} />
-      <button type="submit" disabled={loading} className="w-full rounded-xl px-4 py-3.5 text-sm font-bold transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60" style={{ background: '#D4AF37', color: '#0A2342' }}>{loading ? 'Signing you in…' : 'Sign in to Datakwest'}</button>
-      <div className="flex items-center gap-3"><div className="h-px flex-1" style={{ background: '#E6ECF4' }} /><span className="text-xs font-semibold" style={{ color: '#8A98AA' }}>OR</span><div className="h-px flex-1" style={{ background: '#E6ECF4' }} /></div>
-      <button type="button" onClick={handleGoogle} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 text-sm font-bold transition hover:border-[#0A2342]" style={{ borderColor: '#E6ECF4', color: '#0A2342', background: 'white' }}><span className="text-base font-black" style={{ color: '#4285F4' }}>G</span> Continue with Google</button>
+      <button type="submit" disabled={loading} className="w-full rounded-xl px-4 py-3.5 text-sm font-bold transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60" style={{ background: '#D4AF37', color: 'var(--auth-button-ink)' }}>{loading ? 'Signing you in…' : 'Sign in to Datakwest'}</button>
+      <div className="flex items-center gap-3"><div className="h-px flex-1" style={{ background: 'var(--auth-divider)' }} /><span className="text-xs font-semibold" style={{ color: 'var(--auth-subtle)' }}>OR</span><div className="h-px flex-1" style={{ background: 'var(--auth-divider)' }} /></div>
+      <button type="button" onClick={handleGoogle} className="auth-google-action flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 px-4 py-3.5 text-sm font-bold transition" style={{ borderColor: 'var(--auth-border)', color: 'var(--auth-ink)', background: 'var(--auth-input)' }}><span className="text-base font-black" style={{ color: '#4285F4' }}>G</span> Continue with Google</button>
     </form>
   </AuthShell>
 }
