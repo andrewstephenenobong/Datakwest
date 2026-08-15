@@ -594,6 +594,19 @@ test('branded recovery states cover 404 and application errors', () => {
   assert.match(recoveryState, /Something interrupted your learning path\./)
   assert.match(recoveryState, /Go to Datakwest home/)
   assert.match(recoveryState, /Go back/)
+})
+
+test('route loading experience is branded, progressive, and recoverable', () => {
+  assert.match(appSource, /Preparing your learning space/)
+  assert.match(appSource, /Warming up your workspace/)
+  assert.match(appSource, /Checking your learning path/)
+  assert.match(appSource, /This is taking longer than usual/)
+  assert.match(appSource, /Retry connection/)
+  assert.match(appSource, /datakwest-owl-3d\.webp/)
+  assert.match(appSource, /prefers-reduced-motion/)
+})
+
+test('error boundary and SPA fallback keep recovery routes available', () => {
   assert.match(errorBoundary, /RecoveryState type="error"/)
   assert.match(appSource, /Route path="\*" element=\{<NotFound \/>\}/)
   assert.match(vercelConfig, /\{ "source": "\/\(\.\*\)", "destination": "\/" \}/)
