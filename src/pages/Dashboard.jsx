@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -17,6 +17,7 @@ const skillLabels = {
 export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [progress, setProgress] = useState([])
   const [skillProgress, setSkillProgress] = useState({})
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [readinessError, setReadinessError] = useState('')
   const [nextAction, setNextAction] = useState(null)
   const [nextActionError, setNextActionError] = useState('')
+  const firstMissionWelcome = searchParams.get('welcome') === 'first-mission'
 
   useEffect(() => {
     async function loadProfile() {
@@ -172,6 +174,8 @@ export default function Dashboard() {
       <Navbar streak={streak} xp={xp} streakActive={profile.streakActiveToday} />
 
       <div className="max-w-4xl mx-auto px-6 py-10">
+
+        {firstMissionWelcome && <section className="mb-6 flex items-center gap-4 rounded-2xl border p-5" style={{ borderColor: '#F0D58A', background: '#FFF9E8' }} aria-labelledby="first-mission-welcome"><img src="/datakwest-owl-3d.webp" alt="Datakwest owl" width="96" height="96" className="h-16 w-16 shrink-0 object-contain" /><div className="min-w-0"><p className="text-xs font-black uppercase tracking-[.16em]" style={{ color: '#967414' }}>Your path is ready</p><h2 id="first-mission-welcome" className="mt-1 text-lg font-black" style={{ color: '#0A2342' }}>Start with one useful mission.</h2><p className="mt-1 text-sm leading-6" style={{ color: '#6B7A99' }}>Your first action is based on your chosen skill, pace, and the evidence you need to build next.</p></div><button type="button" onClick={() => document.getElementById('daily-mission-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className="ml-auto shrink-0 rounded-xl px-4 py-3 text-xs font-black" style={{ background: '#0A2342', color: 'white' }}>See mission</button></section>}
 
         <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
           <div>

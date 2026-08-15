@@ -240,7 +240,7 @@ export default function Onboarding() {
       }
 
       logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal, targetSkill: finalAnswers.targetSkill })
-      navigate('/dashboard')
+      navigate('/dashboard?welcome=first-mission')
     } catch (err) {
       console.error('Onboarding error:', err)
       setError("We couldn't build your roadmap right now. Your answers are still here—try again.")
