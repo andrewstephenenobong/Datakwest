@@ -50,6 +50,14 @@ export function getAdminAuditEvents(limit = 50, before = null) {
   return callRpc('get_admin_audit_events', { p_limit: limit, p_before: before })
 }
 
+export function getOwlAudioModerationQueue() {
+  return callRpc('get_owl_audio_moderation_queue')
+}
+
+export function approveOwlAudioAsset(assetId, shared = true) {
+  return callRpc('approve_owl_audio_asset', { p_asset_id: assetId, p_shared: shared })
+}
+
 export function errorMessage(error) {
   return error?.message || 'Something went wrong. Please try again.'
 }

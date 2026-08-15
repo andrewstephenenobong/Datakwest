@@ -60,6 +60,9 @@ const careerCentreClient = await readFile('src/lib/careerCentre.js', 'utf8')
 const careerCentrePage = await readFile('src/pages/CareerCentre.jsx', 'utf8')
 const profileIdentityMigration = await readFile('backend/supabase/migrations/0026_profile_identity.sql', 'utf8')
 const recoveryState = await readFile('src/components/RecoveryState.jsx', 'utf8')
+const owlAudioMigration = await readFile('backend/supabase/migrations/0027_owl_audio_library.sql', 'utf8')
+const owlAudioModerationMigration = await readFile('backend/supabase/migrations/0028_owl_audio_moderation_queue.sql', 'utf8')
+const owlAudioClient = await readFile('src/lib/owlAudio.js', 'utf8')
 const errorBoundary = await readFile('src/components/ErrorBoundary.jsx', 'utf8')
 const appSource = await readFile('src/App.jsx', 'utf8')
 const vercelConfig = await readFile('vercel.json', 'utf8')
@@ -555,6 +558,24 @@ test('backend source contains no obvious secret material', () => {
   const files = [foundation, missions, readiness, projects, achievements, notifications, skillTree, assessments, challenges, challengeParticipation, practiceEngine, communityHub, communityDiscussions, peerReview, skillBattles, marketplace, richerLiveChallenges, missionClient, readinessClient, projectClient, tutorFunction, tutorClient, portfolioClient, achievementsClient, notificationsClient, skillTreeClient, assessmentsClient, challengesClient, practiceClient, communityClient, peerReviewClient, skillBattlesClient, marketplaceClient, liveChallengesClient]
   const secretPattern = /(SUPABASE_SERVICE_ROLE|service_role|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,})/
   for (const content of files) assert.doesNotMatch(content, secretPattern)
+})
+
+test('custom owl audio is private by default and admin-approved for sharing', () => {
+  assert.match(owlAudioMigration, /create table if not exists public\.owl_audio_assets/i)
+  assert.match(owlAudioMigration, /datakwest-owl-audio/)
+  assert.match(owlAudioMigration, /file_size_limit = 2097152/)
+  assert.match(owlAudioMigration, /create or replace function public\.register_owl_audio_asset/i)
+  assert.match(owlAudioMigration, /create or replace function public\.approve_owl_audio_asset/i)
+  assert.match(owlAudioMigration, /has_admin_permission\('moderation:write'\)/)
+  assert.match(owlAudioMigration, /owner_id = auth\.uid\(\)/)
+  assert.match(owlAudioClient, /supabase\.storage\.from\(OWL_AUDIO_BUCKET\)\.upload/)
+  assert.match(owlAudioClient, /register_owl_audio_asset/)
+  assert.match(owlAudioClient, /OWL_AUDIO_MAX_DURATION_MS = 5000/)
+  assert.match(owlAudioModerationMigration, /get_owl_audio_moderation_queue/)
+  assert.match(adminGovernanceClient, /get_owl_audio_moderation_queue/)
+  assert.match(adminGovernanceClient, /approve_owl_audio_asset/)
+  assert.match(adminGovernancePage, /Owl sound approvals/)
+  assert.match(adminGovernancePage, /Approve shared sound/)
 })
 
 test('branded recovery states cover 404 and application errors', () => {

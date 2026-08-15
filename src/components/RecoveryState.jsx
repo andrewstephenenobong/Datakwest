@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { getOwlAudioLibrary, getOwlAudioUrl, uploadOwlAudio } from '../lib/owlAudio'
 
 export default function RecoveryState({ type = 'error', onRetry }) {
   const navigate = useNavigate()
@@ -10,8 +11,19 @@ export default function RecoveryState({ type = 'error', onRetry }) {
     if (typeof window === 'undefined') return 'chime'
     return window.localStorage.getItem('datakwest-owl-sound') || 'chime'
   })
+  const [customSounds, setCustomSounds] = useState([])
+  const [uploadStatus, setUploadStatus] = useState('')
   const soundContextRef = useRef(null)
+  const activeAudioRef = useRef(null)
   const isNotFound = type === 'not-found'
+
+  useEffect(() => {
+    let active = true
+    getOwlAudioLibrary().then(({ data }) => {
+      if (active) setCustomSounds(data || [])
+    })
+    return () => { active = false }
+  }, [])
 
   function chooseOwlPhrase(action = 'tap', nextCount = interactionCount + 1) {
     const phrasePools = {
@@ -74,7 +86,38 @@ export default function RecoveryState({ type = 'error', onRetry }) {
     if (nextStyle !== 'off') playOwlSound(nextStyle)
   }
 
+  async function playCustomAudio(asset) {
+    const { url } = await getOwlAudioUrl(asset.storage_path)
+    if (!url) return
+    if (activeAudioRef.current) activeAudioRef.current.pause()
+    const audio = new Audio(url)
+    activeAudioRef.current = audio
+    audio.volume = 0.35
+    audio.onended = () => { if (activeAudioRef.current === audio) activeAudioRef.current = null }
+    await audio.play().catch(() => null)
+  }
+
+  async function handleCustomSoundUpload(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setUploadStatus('Checking audio…')
+    try {
+      const asset = await uploadOwlAudio(file)
+      setCustomSounds((current) => [asset, ...current])
+      updateSoundStyle(`custom:${asset.id}`)
+      setUploadStatus('Custom sound added.')
+    } catch (error) {
+      setUploadStatus(error.message || 'Could not add that sound.')
+    }
+  }
+
   function playOwlSound(style = soundStyle) {
+    if (style.startsWith('custom:')) {
+      const asset = customSounds.find((sound) => `custom:${sound.id}` === style)
+      if (asset) playCustomAudio(asset)
+      return
+    }
     if (typeof window === 'undefined') return
     const AudioContext = window.AudioContext || window.webkitAudioContext
     if (!AudioContext) return
@@ -153,7 +196,15 @@ export default function RecoveryState({ type = 'error', onRetry }) {
                         {[['chime', 'Chime'], ['pop', 'Pop'], ['soft', 'Soft'], ['off', 'Off']].map(([value, label]) => (
                           <button key={value} type="button" onClick={() => updateSoundStyle(value)} aria-pressed={soundStyle === value} className="rounded-full border px-2 py-1" style={{ borderColor: soundStyle === value ? '#D4AF37' : 'rgba(255,255,255,0.16)', background: soundStyle === value ? 'rgba(212,175,55,0.16)' : 'transparent', color: soundStyle === value ? '#F7D76A' : '#9AA8BB' }}>{label}</button>
                         ))}
+                        {customSounds.filter((sound) => sound.status !== 'archived').map((sound) => (
+                          <button key={sound.id} type="button" onClick={() => updateSoundStyle(`custom:${sound.id}`)} aria-pressed={soundStyle === `custom:${sound.id}`} className="max-w-[8rem] truncate rounded-full border px-2 py-1" style={{ borderColor: soundStyle === `custom:${sound.id}` ? '#D4AF37' : 'rgba(255,255,255,0.16)', background: soundStyle === `custom:${sound.id}` ? 'rgba(212,175,55,0.16)' : 'transparent', color: soundStyle === `custom:${sound.id}` ? '#F7D76A' : '#9AA8BB' }}>{sound.name}</button>
+                        ))}
+                        <label className="cursor-pointer rounded-full border px-2 py-1" style={{ borderColor: 'rgba(255,255,255,0.16)', color: '#9AA8BB' }}>
+                          Add sound
+                          <input type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/webm,audio/mp4" onChange={handleCustomSoundUpload} className="sr-only" />
+                        </label>
                       </div>
+                      {uploadStatus && <p role="status" className="max-w-[18rem] text-center text-[10px] font-semibold" style={{ color: uploadStatus === 'Custom sound added.' ? '#8BC6B5' : '#F7D76A' }}>{uploadStatus}</p>}
                     </div>
                     <span className="absolute right-1/4 top-4 h-3 w-3 rounded-full" style={{ background: '#D4AF37' }} />
                     <span className="absolute left-1/4 top-12 h-2 w-2 rounded-full" style={{ background: '#8BC6B5' }} />

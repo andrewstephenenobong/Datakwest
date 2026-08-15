@@ -7,6 +7,8 @@ import {
   errorMessage,
   getAdminAuditEvents,
   getModerationQueue,
+  getOwlAudioModerationQueue,
+  approveOwlAudioAsset,
 } from '../lib/adminGovernance'
 
 const colors = { navy: '#0A2342', muted: '#6B7A99', gold: '#D4AF37', bg: '#F5F7FA', red: '#991B1B', green: '#2E7D32' }
@@ -24,17 +26,21 @@ export default function AdminGovernance() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [queueFilter, setQueueFilter] = useState('all')
+  const [owlAudioQueue, setOwlAudioQueue] = useState([])
+  const [owlAudioLoading, setOwlAudioLoading] = useState(false)
 
   const load = useCallback(async (selectedQueue = queueFilter) => {
     setLoading(true)
     setError('')
-    const [{ data: queue, error: queueError }, { data: audit, error: auditError }] = await Promise.all([
+    const [{ data: queue, error: queueError }, { data: audit, error: auditError }, { data: owlAudio, error: owlAudioError }] = await Promise.all([
       getModerationQueue(selectedQueue === 'all' ? null : selectedQueue, 'open', 50),
       getAdminAuditEvents(25),
+      getOwlAudioModerationQueue(),
     ])
-    if (queueError || auditError) setError(errorMessage(queueError || auditError))
+    if (queueError || auditError || owlAudioError) setError(errorMessage(queueError || auditError || owlAudioError))
     setCases(queue?.cases || [])
     setAuditEvents(audit?.events || [])
+    setOwlAudioQueue(owlAudio || [])
     setLoading(false)
   }, [queueFilter])
 
@@ -43,6 +49,19 @@ export default function AdminGovernance() {
     const timer = window.setTimeout(() => { load(queueFilter) }, 0)
     return () => window.clearTimeout(timer)
   }, [user, load, queueFilter])
+
+  async function handleApproveOwlAudio(assetId) {
+    setOwlAudioLoading(true)
+    setError('')
+    setNotice('')
+    const { error: approvalError } = await approveOwlAudioAsset(assetId, true)
+    if (approvalError) setError(errorMessage(approvalError))
+    else {
+      setOwlAudioQueue((current) => current.filter((item) => item.id !== assetId))
+      setNotice('Owl sound approved for the shared Datakwest library.')
+    }
+    setOwlAudioLoading(false)
+  }
 
   async function handleClaim(caseId) {
     setActionLoading(true)
@@ -131,6 +150,10 @@ export default function AdminGovernance() {
           </section>
         </div>
 
+        <section className="rounded-2xl p-6 mt-6" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <div className="flex items-start justify-between gap-4 flex-wrap"><div><h2 className="text-xl font-bold" style={{ color: colors.navy }}>Owl sound approvals</h2><p className="text-sm mt-1" style={{ color: colors.muted }}>Review learner uploads before making them available in the shared sound library.</p></div><span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#FFFBEF', color: colors.gold }}>{owlAudioQueue.length} pending</span></div>
+          {owlAudioQueue.length === 0 ? <p className="text-sm mt-4" style={{ color: colors.muted }}>No custom sounds are waiting for review.</p> : <div className="mt-4 space-y-3">{owlAudioQueue.map((asset) => <div key={asset.id} className="flex items-center justify-between gap-4 flex-wrap rounded-xl p-4" style={{ background: '#F5F7FA' }}><div><p className="font-bold" style={{ color: colors.navy }}>{asset.name}</p><p className="text-xs mt-1" style={{ color: colors.muted }}>{asset.mime_type} · {Math.round(asset.file_size_bytes / 1024)}KB · {(asset.duration_ms / 1000).toFixed(1)}s</p></div><button type="button" onClick={() => handleApproveOwlAudio(asset.id)} className="px-4 py-2 rounded-lg text-sm font-bold text-white" style={{ background: colors.navy }} disabled={owlAudioLoading}>{owlAudioLoading ? 'Approving…' : 'Approve shared sound'}</button></div>)}</div>}
+        </section>
         <section className="rounded-2xl p-6 mt-6" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <h2 className="text-xl font-bold" style={{ color: colors.navy }}>Recent admin audit events</h2>
           {auditEvents.length === 0 ? <p className="text-sm mt-3" style={{ color: colors.muted }}>No audit events are available to this administrator.</p> : <div className="mt-4 space-y-2">{auditEvents.map((event) => <div key={event.id} className="flex justify-between gap-4 p-3 rounded-lg" style={{ background: '#F5F7FA' }}><span className="text-sm font-semibold" style={{ color: colors.navy }}>{event.action}</span><span className="text-xs" style={{ color: colors.muted }}>{new Date(event.created_at).toLocaleString()}</span></div>)}</div>}
