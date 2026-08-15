@@ -39,7 +39,29 @@ export default function Tutor() {
   const [copiedIndex, setCopiedIndex] = useState(null)
   const [reportedIndex, setReportedIndex] = useState(null)
   const [savedIndex, setSavedIndex] = useState(null)
+  const [draftRestored, setDraftRestored] = useState(false)
   const { user } = useAuth()
+  const draftKey = `datakwest:tutor-draft:${user?.id || 'anonymous'}`
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(draftKey)
+      if (savedDraft) setMessage(savedDraft)
+    } catch {
+      // Draft persistence is an enhancement; the Tutor remains usable when storage is unavailable.
+    }
+    setDraftRestored(true)
+  }, [draftKey])
+
+  useEffect(() => {
+    if (!draftRestored) return
+    try {
+      if (message) window.localStorage.setItem(draftKey, message)
+      else window.localStorage.removeItem(draftKey)
+    } catch {
+      // Ignore storage failures so learners can continue typing and submitting.
+    }
+  }, [draftKey, draftRestored, message])
 
   const activeMode = useMemo(() => MODES.find((item) => item.id === mode) || MODES[0], [mode])
 
@@ -183,7 +205,7 @@ export default function Tutor() {
             <form onSubmit={handleSubmit} className="mt-4 rounded-2xl border bg-white p-4" style={{ borderColor: '#DCE5F0' }}>
               <label htmlFor="tutor-message" className="sr-only">Ask the Datakwest owl</label>
               <textarea id="tutor-message" value={message} onChange={(event) => setMessage(event.target.value.slice(0, 4000))} rows="4" maxLength="4000" placeholder={`Ask the owl to ${activeMode.prompt.toLowerCase()}…`} className="w-full resize-y rounded-xl border px-4 py-3 text-sm outline-none focus:border-[#2456A6]" style={{ borderColor: '#E2E8F0', color: '#0A2342' }} />
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><span className="text-xs" style={{ color: '#6B7A99' }}>{message.length}/4000</span><button type="submit" disabled={!message.trim() || sending} className="rounded-xl px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50" style={{ background: '#0A2342', color: 'white' }}>{sending ? 'Thinking…' : 'Ask the owl'}</button></div>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><span className="text-xs" style={{ color: '#6B7A99' }}>{message.length}/4000{message && <span className="ml-2" role="status">· Draft saved on this device</span>}</span><button type="submit" disabled={!message.trim() || sending} className="rounded-xl px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50" style={{ background: '#0A2342', color: 'white' }}>{sending ? 'Thinking…' : 'Ask the owl'}</button></div>
             </form>
           </div>
         </section>
