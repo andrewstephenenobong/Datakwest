@@ -33,8 +33,12 @@ export function ThemeProvider({ children }) {
     try { localStorage.setItem(STORAGE_KEY, preference) } catch { /* device storage may be unavailable */ }
     const media = window.matchMedia?.('(prefers-color-scheme: dark)')
     if (preference === 'system' && media) {
-      media.addEventListener?.('change', applyTheme)
-      return () => media.removeEventListener?.('change', applyTheme)
+      if (media.addEventListener) {
+        media.addEventListener('change', applyTheme)
+        return () => media.removeEventListener('change', applyTheme)
+      }
+      media.addListener?.(applyTheme)
+      return () => media.removeListener?.(applyTheme)
     }
     return undefined
   }, [preference])

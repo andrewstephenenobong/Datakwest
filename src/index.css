@@ -151,3 +151,28 @@ html[data-theme='dark'] .landing-page .bg-white\/95 {
 html[data-theme='dark'] .landing-page .text-white {
   color: #F7FBFA !important;
 }
+
+.landing-page a,
+.landing-page button,
+.landing-page select {
+  touch-action: manipulation;
+}
+
+.landing-page button,
+.landing-page select {
+  min-height: 44px;
+}
+
+@media (max-width: 379px) {
+  .landing-page header img {
+    width: 9.5rem;
+  }
+
+  .landing-page h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .landing-page .hero-mission-card {
+    border-radius: 1.5rem;
+  }
+}
