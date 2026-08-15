@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { logEvent } from '../lib/analytics'
-import { createSkillEnrolment, findPublishedSkillForTarget, updateLearnerPreferences } from '../lib/learningIntelligence'
+import { createSkillEnrolment, discoverUniversalSkill, findPublishedSkillForTarget, updateLearnerPreferences } from '../lib/learningIntelligence'
 
 const skillOptions = [
   ['Frontend Development', 'Build websites and interfaces people enjoy using.'],
@@ -193,18 +193,33 @@ export default function Onboarding() {
     setError('')
     try {
       if (!user) throw new Error('No authenticated user found. Please log in again.')
-      const { data, error: fnError } = await supabase.functions.invoke('smart-task', { body: { assessment: finalAnswers } })
-      if (fnError) throw fnError
-      if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
-      const { error: upsertError } = await supabase.from('profiles').upsert({ id: user.id, email: user.email, full_name: user.user_metadata?.full_name || null, username: user.user_metadata?.username || null, assessment: finalAnswers, roadmap: data.roadmap, onboarding_completed: true })
-      if (upsertError) throw upsertError
-
       const weeklyMinutesByAnswer = {
         'Less than 5 hrs/week': 180,
         '5–10 hrs/week': 450,
         '10–20 hrs/week': 900,
         '20+ hrs/week (full-time)': 1800,
       }
+      const isCuratedSkill = skillOptions.some(([label]) => label.toLowerCase() === String(finalAnswers.targetSkill || '').toLowerCase())
+      let universalDiscovery = null
+      if (!isCuratedSkill) {
+        universalDiscovery = await discoverUniversalSkill({
+          requestedSkill: finalAnswers.targetSkill,
+          goal: finalAnswers.goal || '',
+          currentLevel: finalAnswers.background === 'Student, no work experience' ? 'beginner' : 'unknown',
+          weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
+          locale: 'en',
+        })
+        if (universalDiscovery?.error) throw new Error(universalDiscovery.error)
+        finalAnswers.universalSkillRequestId = universalDiscovery?.requestId || null
+        finalAnswers.universalSkillGraphVersionId = universalDiscovery?.skillGraphVersionId || null
+        finalAnswers.universalSkillStatus = universalDiscovery?.status || 'review'
+      }
+      const { data, error: fnError } = await supabase.functions.invoke('smart-task', { body: { assessment: finalAnswers } })
+      if (fnError) throw fnError
+      if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
+      const { error: upsertError } = await supabase.from('profiles').upsert({ id: user.id, email: user.email, full_name: user.user_metadata?.full_name || null, username: user.user_metadata?.username || null, assessment: finalAnswers, roadmap: data.roadmap, onboarding_completed: true })
+      if (upsertError) throw upsertError
+
       await updateLearnerPreferences({
         weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
         explanationStyle: finalAnswers.learningStyle || null,
@@ -220,7 +235,7 @@ export default function Onboarding() {
         })
         logEvent(user.id, 'skill_enrolment_created', { skillId: publishedSkill.skills.id, enrolmentId: enrolment?.id, source: 'onboarding' })
       } else {
-        logEvent(user.id, 'custom_skill_discovery_started', { targetSkill: finalAnswers.targetSkill, source: 'onboarding' })
+        logEvent(user.id, 'custom_skill_discovery_completed', { targetSkill: finalAnswers.targetSkill, requestId: universalDiscovery?.requestId || null, status: universalDiscovery?.status || 'review', source: 'onboarding' })
       }
 
       logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal, targetSkill: finalAnswers.targetSkill })

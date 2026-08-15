@@ -145,3 +145,37 @@ export async function findPublishedSkillForTarget(targetSkill, { locale = 'en' }
     return [skill?.slug, skill?.title].filter(Boolean).some((value) => String(value).trim().toLowerCase().includes(normalizedTarget) || normalizedTarget.includes(String(value).trim().toLowerCase()))
   }) || null
 }
+
+export function createUniversalSkillRequest({
+  requestedSkill,
+  goal = '',
+  currentLevel = 'beginner',
+  weeklyMinutes = null,
+  locale = 'en',
+  targetAgeMin = null,
+  targetAgeMax = null,
+} = {}) {
+  return callLearningRpc('create_universal_skill_request', {
+    p_requested_skill: requestedSkill,
+    p_goal: goal,
+    p_current_level: currentLevel,
+    p_weekly_minutes: weeklyMinutes,
+    p_locale: locale,
+    p_target_age_min: targetAgeMin,
+    p_target_age_max: targetAgeMax,
+  })
+}
+
+export function getUniversalSkillRequest(requestId) {
+  return callLearningRpc('get_universal_skill_request', { p_request_id: requestId })
+}
+
+export async function discoverUniversalSkill(payload) {
+  const { data: { session } = {} } = await supabase.auth.getSession()
+  const { data, error } = await supabase.functions.invoke('universal-skill-discovery', {
+    body: payload,
+    headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+  })
+  if (error) throw error
+  return data
+}
