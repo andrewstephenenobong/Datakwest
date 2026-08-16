@@ -185,7 +185,7 @@ export default function Dashboard() {
 
         <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: '#0A2342' }}>Your Personalized Learning Workspace</h1>
+            <h1 className="dashboard-primary-heading text-2xl font-bold" style={{ color: '#0A2342' }}>Your Personalized Learning Workspace</h1>
             <p className="text-sm mt-1" style={{ color: '#6B7A99' }}>One focused action at a time, backed by verified progress.</p>
           </div>
           <span className="text-xs font-bold px-4 py-2 rounded-full"
@@ -213,7 +213,7 @@ export default function Dashboard() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6B7A99' }}>Career readiness</p>
-              <h2 id="readiness-title" className="text-xl font-bold mt-1" style={{ color: '#0A2342' }}>
+              <h2 id="readiness-title" className="dashboard-section-heading text-xl font-bold mt-1" style={{ color: '#0A2342' }}>
                 {readiness ? `${readiness.score}% — ${readiness.band === 'ready' ? 'Ready to apply' : readiness.band === 'building' ? 'Building confidence' : 'Start building evidence'}` : 'Readiness is being calculated'}
               </h2>
               <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>
@@ -231,7 +231,7 @@ export default function Dashboard() {
               ].map(([label, value]) => (
                 <div key={label} className="rounded-xl p-3" style={{ background: '#F5F7FA' }}>
                   <p className="text-xs" style={{ color: '#6B7A99' }}>{label}</p>
-                  <p className="font-bold mt-1" style={{ color: '#0A2342' }}>{value ?? 0}%</p>
+                  <p className="dashboard-metric-value font-bold mt-1" style={{ color: '#0A2342' }}>{value ?? 0}%</p>
                 </div>
               ))}
             </div>
@@ -281,7 +281,7 @@ export default function Dashboard() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Next best action</p>
-              <h2 id="next-action-title" className="text-xl font-bold mt-1" style={{ color: '#0A2342' }}>{nextAction?.title || 'Your next action is being prepared'}</h2>
+              <h2 id="next-action-title" className="dashboard-section-heading text-xl font-bold mt-1" style={{ color: '#0A2342' }}>{nextAction?.title || 'Your next action is being prepared'}</h2>
               <p className="text-sm mt-2" style={{ color: '#4B6385' }}>{nextAction?.instruction || 'Complete a focused step and submit evidence. Your mastery is updated by the server after verification.'}</p>
             </div>
             {nextAction?.evidence_kind && <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#FFFFFF', color: '#2456A6' }}>{nextAction.evidence_kind}</span>}
