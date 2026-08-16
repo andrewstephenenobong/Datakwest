@@ -1,17 +1,11 @@
 import { supabase } from './supabase'
 import { syncLegacyProjectEvidence } from './learningIntelligence'
 
-export async function getPublishedProject(projectId) {
-  let query = supabase
-    .from('projects')
-    .select('id, title, brief, rubric, status')
-    .eq('status', 'published')
-    .limit(1)
-
-  if (projectId) query = query.eq('id', projectId)
-
-  const { data, error } = await query.maybeSingle()
-  return { project: data || null, error }
+export async function getPublishedProject(projectId = null) {
+  const { data, error } = await supabase.rpc('get_published_project', {
+    p_project_id: projectId,
+  })
+  return { project: data && data.id ? data : null, error }
 }
 
 export async function submitProjectEvidence(projectId, evidence, reflection) {

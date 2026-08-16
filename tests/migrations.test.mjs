@@ -172,9 +172,10 @@ test('project submission workflow controls status transitions server-side', () =
   assert.doesNotMatch(projects, /create policy[\s\S]*for update[\s\S]*on public\.submissions/i)
 })
 
-test('project client submits evidence through the protected RPC', () => {
-  assert.match(projectClient, /from\('projects'\)/)
+test('project client uses protected RPCs for project reads and submissions', () => {
+  assert.match(projectClient, /rpc\('get_published_project'/)
   assert.match(projectClient, /rpc\('submit_project_evidence'/)
+  assert.doesNotMatch(projectClient, /from\('projects'\)/)
   assert.doesNotMatch(projectClient, /from\('submissions'\)/)
 })
 
