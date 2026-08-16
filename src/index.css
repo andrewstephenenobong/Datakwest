@@ -1779,3 +1779,22 @@ html[data-theme='dark'] .dashboard-page [style*='background:#F5F7FA'] {
 @keyframes dk-owl-guide-sparkle { from { opacity: 0; transform: scale(.4) rotate(-30deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
 @media (prefers-reduced-motion: reduce) { .dk-owl-guide-enter, .dk-owl-guide-avatar, .dk-owl-guide-spark { animation: none; } }
 @media (max-width: 379px) { .dk-owl-guide-tools { flex-wrap: wrap; } .dk-owl-sound-toggle { flex: 1; } }
+
+.dk-invite-code-visible { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 2px solid #8BC6B5; border-radius: 1rem; background: #F7FBFA; padding: .9rem 1rem; color: #0A2342; }
+.dk-invite-code-visible span { display: block; color: #2456A6; font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.dk-invite-code-visible strong { display: block; margin-top: .2rem; color: #0A2342; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: clamp(1.25rem, 4vw, 1.7rem); letter-spacing: .18em; line-height: 1.2; }
+.dk-invite-copy { min-height: 2.8rem; border: 0; border-radius: .75rem; background: #2456A6; color: #fff; padding: .65rem .9rem; font-size: .78rem; font-weight: 900; white-space: nowrap; }
+.dk-invite-copy:active { transform: translateY(1px); }
+.dk-ludo-panel { --ludo-accent: #E17863; }
+.dk-ludo-track { display: grid; gap: 1.15rem; max-width: 680px; margin: 1.5rem auto 1rem; }
+.dk-ludo-lane { display: grid; grid-template-columns: 3rem minmax(0, 1fr) 3.5rem; align-items: center; gap: .7rem; }
+.dk-ludo-lane-label, .dk-ludo-home { color: var(--dk-muted); font-size: .8rem; font-weight: 900; }
+.dk-ludo-home { text-align: right; }
+.dk-ludo-progress { position: relative; height: .9rem; border-radius: 999px; background: color-mix(in srgb, var(--dk-accent) 12%, var(--dk-surface-soft)); }
+.dk-ludo-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #5B8DEF, #56B69A); }
+.dk-ludo-progress.owl i { background: linear-gradient(90deg, #A985F3, #E17863); }
+.dk-ludo-progress b { position: absolute; top: 50%; display: grid; width: 2rem; height: 2rem; place-items: center; border: 3px solid var(--dk-surface); border-radius: 50%; background: #2456A6; color: #fff; font-size: .8rem; transform: translate(-50%, -50%); }
+.dk-ludo-progress.owl b { background: #E17863; font-size: .95rem; }
+.dk-ludo-die { display: grid; width: 4.5rem; height: 4.5rem; place-items: center; margin: .9rem auto; border: 2px solid #E6C85C; border-radius: 1rem; background: var(--dk-surface-soft); color: var(--dk-text); font-size: 2rem; font-weight: 900; box-shadow: 0 8px 0 color-mix(in srgb, #E6C85C 22%, var(--dk-surface)); }
+.dk-ludo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .55rem; }
+@media (max-width: 640px) { .dk-invite-code-visible { align-items: flex-start; flex-direction: column; } .dk-invite-copy { width: 100%; } .dk-ludo-lane { grid-template-columns: 2.4rem minmax(0, 1fr) 3rem; gap: .45rem; } .dk-ludo-progress b { width: 1.8rem; height: 1.8rem; } .dk-ludo-actions { width: 100%; justify-content: stretch; } .dk-ludo-actions > * { flex: 1; } }
