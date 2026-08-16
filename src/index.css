@@ -1847,3 +1847,53 @@ html[data-theme='dark'] .dashboard-page [style*='background:#F5F7FA'] {
 @media (max-width: 900px) { .dk-chess-workspace { grid-template-columns: 1fr; } .dk-chess-board-wrap { max-width: 72rem; } .dk-chess-side-panel { grid-template-columns: auto 1fr auto; align-items: center; min-height: 0; } .dk-chess-side-panel .dk-kicker, .dk-chess-side-panel h3 { grid-column: 1; } .dk-chess-side-panel p { grid-column: 2; grid-row: 1 / span 2; } .dk-chess-side-panel .dk-chess-legend { grid-column: 1; } .dk-chess-side-panel .dk-secondary-button { grid-column: 3; grid-row: 1 / span 2; } }
 @media (max-width: 520px) { .dk-chess-full-panel { padding: .7rem .45rem 1rem; } .dk-chess-board-wrap { grid-template-columns: 1rem minmax(0, 1fr); gap: .25rem; } .dk-chess-board { border-width: .25rem; border-radius: .55rem; } .dk-chess-square { font-size: clamp(1.35rem, 9vw, 2.6rem); } .dk-chess-side-panel { grid-template-columns: 1fr 1fr; } .dk-chess-side-panel p { grid-column: 1 / -1; grid-row: auto; } .dk-chess-side-panel .dk-secondary-button { grid-column: 2; grid-row: 1; } }
 @media (prefers-reduced-motion: reduce) { .dk-chess-square { transition: none !important; } }
+
+/* Chess reference treatment: an isolated board stage that never borrows page/card colors accidentally. */
+.dk-playground-page .dk-chess-full-panel {
+  --chess-stage: #f4f6f9;
+  --chess-panel: #ffffff;
+  --chess-border: #d4dee8;
+  --chess-light: #f3eadb;
+  --chess-dark: #5c7775;
+  --chess-piece-light: #fffdf7;
+  --chess-piece-dark: #183334;
+  background: var(--chess-stage);
+  border: 1px solid var(--chess-border);
+  color: var(--dk-text);
+  box-shadow: 0 1.1rem 2.8rem rgb(14 27 31 / .08);
+}
+html[data-theme='dark'] .dk-playground-page .dk-chess-full-panel {
+  --chess-stage: #102328;
+  --chess-panel: #142d32;
+  --chess-border: #3e5b62;
+  --chess-light: #f1e7d6;
+  --chess-dark: #587471;
+  --chess-piece-light: #fffdf4;
+  --chess-piece-dark: #102829;
+  background: var(--chess-stage);
+  border-color: var(--chess-border);
+  box-shadow: 0 1.2rem 3rem rgb(0 0 0 / .24);
+}
+.dk-chess-full-panel .dk-chess-workspace { display: flex; flex-direction: column; align-items: stretch; gap: clamp(1rem, 2vw, 1.5rem); }
+.dk-chess-full-panel .dk-chess-board-wrap { grid-template-columns: 1.35rem minmax(0, 1fr); width: 100%; max-width: 72rem; margin: 0 auto; }
+.dk-chess-full-panel .dk-chess-board { max-width: none; margin: 0; border-color: var(--chess-panel); box-shadow: 0 .8rem 1.8rem rgb(0 0 0 / .18); }
+.dk-chess-full-panel .dk-chess-square.is-light { background: var(--chess-light); color: var(--chess-piece-dark); }
+.dk-chess-full-panel .dk-chess-square.is-dark { background: var(--chess-dark); color: var(--chess-piece-light); }
+.dk-chess-full-panel .dk-chess-square > span { position: relative; z-index: 1; filter: drop-shadow(0 .05rem .03rem rgb(0 0 0 / .24)); }
+.dk-chess-full-panel .dk-chess-side-panel { width: 100%; min-height: 0; grid-template-columns: 1fr auto; align-items: center; background: var(--chess-panel); border-color: var(--chess-border); }
+.dk-chess-full-panel .dk-chess-side-panel p { max-width: 48rem; }
+.dk-chess-full-panel .dk-game-footer { background: transparent; }
+@media (max-width: 900px) {
+  .dk-chess-full-panel .dk-chess-side-panel { display: grid; grid-template-columns: 1fr auto; }
+  .dk-chess-full-panel .dk-chess-side-panel .dk-kicker,
+  .dk-chess-full-panel .dk-chess-side-panel h3,
+  .dk-chess-full-panel .dk-chess-side-panel p,
+  .dk-chess-full-panel .dk-chess-side-panel .dk-chess-legend { grid-column: 1; }
+  .dk-chess-full-panel .dk-chess-side-panel .dk-secondary-button { grid-column: 2; grid-row: 1 / span 3; }
+}
+@media (max-width: 520px) {
+  .dk-chess-full-panel { margin-inline: -.45rem; border-radius: 0; border-inline: 0; padding-inline: .45rem; }
+  .dk-chess-full-panel .dk-chess-board-wrap { grid-template-columns: 1rem minmax(0, 1fr); gap: .25rem; }
+  .dk-chess-full-panel .dk-chess-side-panel { grid-template-columns: 1fr; }
+  .dk-chess-full-panel .dk-chess-side-panel .dk-secondary-button { grid-column: 1; grid-row: auto; width: 100%; }
+}
