@@ -1470,3 +1470,66 @@ html[data-theme='dark'] .learner-more-menu h3 {
     bottom: calc(env(safe-area-inset-bottom) + 5.5rem) !important;
   }
 }
+
+
+/* Whole-app protected-route safety net: catches legacy pages without a dedicated route class. */
+html[data-theme='dark'] .min-h-screen:not(.landing-page):not(.auth-page):not(.onboarding-page):not(.dashboard-page):not(.lesson-page) {
+  background: var(--dk-page) !important;
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] main h1,
+html[data-theme='dark'] main h2,
+html[data-theme='dark'] main h3,
+html[data-theme='dark'] main h4 {
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] main p:not(.text-white):not([class*='text-white']) {
+  color: var(--dk-muted);
+}
+
+html[data-theme='dark'] main [style*='color: rgb(10, 35, 66)'],
+html[data-theme='dark'] main [style*='color: rgb(29, 53, 87)'],
+html[data-theme='dark'] main [style*='color: rgb(36, 86, 166)'] {
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] main [style*='color: rgb(107, 122, 153)'],
+html[data-theme='dark'] main [style*='color: rgb(130, 144, 165)'],
+html[data-theme='dark'] main [style*='color: rgb(123, 138, 160)'],
+html[data-theme='dark'] main [style*='color: rgb(138, 152, 170)'],
+html[data-theme='dark'] main [style*='color: rgb(111, 133, 139)'] {
+  color: var(--dk-muted) !important;
+}
+
+html[data-theme='dark'] main [style*='background: rgb(255, 255, 255)'],
+html[data-theme='dark'] main [style*='background: rgb(251, 252, 254)'],
+html[data-theme='dark'] main [style*='background: rgb(247, 249, 252)'],
+html[data-theme='dark'] main [style*='background: rgb(246, 248, 252)'] {
+  background: var(--dk-surface) !important;
+}
+
+html[data-theme='dark'] main [style*='background: rgb(245, 247, 250)'],
+html[data-theme='dark'] main [style*='background: rgb(244, 247, 251)'],
+html[data-theme='dark'] main [style*='background: rgb(248, 250, 253)'] {
+  background: var(--dk-surface-soft) !important;
+}
+
+html[data-theme='dark'] main [style*='border-color: rgb(220, 229, 240)'],
+html[data-theme='dark'] main [style*='border-color: rgb(226, 234, 243)'],
+html[data-theme='dark'] main [style*='border-color: rgb(229, 234, 240)'],
+html[data-theme='dark'] main [style*='border-color: rgb(216, 225, 236)'] {
+  border-color: var(--dk-border) !important;
+}
+
+html[data-theme='dark'] main .bg-white {
+  background: var(--dk-surface) !important;
+  color: var(--dk-text);
+}
+
+@media (max-width: 1023px) {
+  html[data-theme='dark'] main {
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+  }
+}
