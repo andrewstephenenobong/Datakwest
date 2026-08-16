@@ -352,3 +352,90 @@ html[data-theme='dark'] {
   background: var(--auth-input) !important;
   color: var(--auth-ink) !important;
 }
+
+.onboarding-page {
+  --onboarding-page: #F4F7FB;
+  --onboarding-surface: #FFFFFF;
+  --onboarding-ink: #0A2342;
+  --onboarding-muted: #6B7A99;
+  --onboarding-subtle: #8290A5;
+  --onboarding-border: #E2EAF3;
+  --onboarding-recovery-bg: #FFF8F2;
+  --onboarding-recovery-border: #F0D2B5;
+  --onboarding-recovery-icon-bg: #FFF0DE;
+  --onboarding-recovery-icon: #9A5B21;
+  --onboarding-recovery-title: #0A2342;
+  --onboarding-recovery-copy: #6B5B50;
+  --onboarding-recovery-action-bg: #0A2342;
+  --onboarding-recovery-action-text: #FFFFFF;
+  background: var(--onboarding-page);
+  color: var(--onboarding-ink);
+}
+
+html[data-theme='dark'] .onboarding-page {
+  --onboarding-page: #0E1B1F;
+  --onboarding-surface: #14252A;
+  --onboarding-ink: #F7FBFA;
+  --onboarding-muted: #B4C2C5;
+  --onboarding-subtle: #A7B8BC;
+  --onboarding-border: #40565D;
+  --onboarding-recovery-bg: #2D2A22;
+  --onboarding-recovery-border: #76633A;
+  --onboarding-recovery-icon-bg: #4A3D20;
+  --onboarding-recovery-icon: #F0D56D;
+  --onboarding-recovery-title: #F7FBFA;
+  --onboarding-recovery-copy: #D8D0BF;
+  --onboarding-recovery-action-bg: #E6C85C;
+  --onboarding-recovery-action-text: #0E1B1F;
+}
+
+.onboarding-page .onboarding-recovery {
+  border: 1px solid var(--onboarding-recovery-border);
+  background: var(--onboarding-recovery-bg);
+}
+
+.onboarding-page .onboarding-recovery-icon {
+  background: var(--onboarding-recovery-icon-bg);
+  color: var(--onboarding-recovery-icon);
+}
+
+.onboarding-page .onboarding-recovery-title {
+  color: var(--onboarding-recovery-title);
+}
+
+.onboarding-page .onboarding-recovery-copy {
+  color: var(--onboarding-recovery-copy);
+}
+
+.onboarding-page .onboarding-recovery-action {
+  border-color: var(--onboarding-recovery-action-bg);
+  background: var(--onboarding-recovery-action-bg);
+  color: var(--onboarding-recovery-action-text);
+}
+
+@media (max-width: 379px) {
+  .onboarding-page header {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  .onboarding-page header img {
+    width: 9.5rem;
+  }
+
+  .onboarding-page main {
+    gap: 1rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .onboarding-page section > div[data-onboarding-step] {
+    border-radius: 1.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .onboarding-page .onboarding-recovery {
+    padding: 0.875rem;
+  }
+}
