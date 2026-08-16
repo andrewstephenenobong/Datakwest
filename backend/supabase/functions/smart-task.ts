@@ -1,14 +1,18 @@
-function fallbackRoadmap(assessment) {
-  const targetSkill = assessment?.targetSkill || 'Digital skills'
-  const pace = assessment?.availability || 'your available weekly time'
-  const ageBand = assessment?.ageBand || 'unspecified'
-  const ageGuidance = {
+function getAgeGuidance(ageBand) {
+  return {
     'Early learner · ages 5–7': 'Use 5–10 minute playful activities, concrete examples, simple vocabulary, visual or audio cues, one idea at a time, and no career-pressure language. Require parent or guardian involvement for account and safety decisions.',
     'Young learner · ages 8–12': 'Use 10–15 minute guided activities, concrete examples, short explanations, visual checks for understanding, and age-appropriate projects. Avoid requesting personal information and keep adult oversight available.',
     'Teen learner · ages 13–17': 'Use 15–25 minute structured activities, clear explanations, relatable real-world examples, increasing independence, and age-appropriate project context without assuming adult employment responsibilities.',
     'Adult learner · ages 18+': 'Use adult-appropriate technical depth, professional examples, longer practice blocks when suitable, and career-oriented outcomes.',
     'Prefer not to say': 'Use a balanced beginner-friendly pace and do not infer or reveal an age.'
   }[ageBand] || 'Use a balanced beginner-friendly pace and do not infer or reveal an age.'
+}
+
+function fallbackRoadmap(assessment) {
+  const targetSkill = assessment?.targetSkill || 'Digital skills'
+  const pace = assessment?.availability || 'your available weekly time'
+  const ageBand = assessment?.ageBand || 'unspecified'
+  const ageGuidance = getAgeGuidance(ageBand)
   return {
     skillLevels: { foundation: 5, practice: 0, projects: 0, communication: 0 },
     phases: [
@@ -77,6 +81,7 @@ Deno.serve(async (req) => {
 
     const { assessment } = await req.json()
     const targetSkill = assessment?.targetSkill || 'Digital skills'
+    const ageGuidance = getAgeGuidance(assessment?.ageBand || 'unspecified')
     let usedFallback = false
     const apiKeys = [Deno.env.get('GEMINI_API_KEY'), Deno.env.get('GEMINI_API_KEY_2')].filter(Boolean)
 

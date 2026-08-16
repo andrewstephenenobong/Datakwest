@@ -11,6 +11,7 @@ const primaryItems = [
 ]
 
 const moreItems = [
+  { label: 'Playground', path: '/playground', icon: 'playground', tone: '#2456A6' },
   { label: 'Assessment Center', path: '/assessments', icon: 'assessment', tone: '#6D4CB3' },
   { label: 'Projects', path: '/project', icon: 'project', tone: '#2456A6' },
   { label: 'Portfolio', path: '/portfolio', icon: 'portfolio', tone: '#2E7D32' },
@@ -26,6 +27,7 @@ const moreItems = [
 ]
 
 const moreGroups = [
+  { title: 'Play and reset', items: moreItems.filter((item) => ['playground'].includes(item.icon)) },
   { title: 'Prove your skills', items: moreItems.filter((item) => ['assessment', 'project', 'portfolio', 'challenge', 'battle', 'tree'].includes(item.icon)) },
   { title: 'Prepare for work', items: moreItems.filter((item) => ['interview', 'market'].includes(item.icon)) },
   { title: 'Stay on track', items: moreItems.filter((item) => ['achievement', 'notification', 'tutor', 'settings'].includes(item.icon)) },
@@ -52,6 +54,7 @@ function Icon({ name }) {
     tree: <><path d="M8 12V7M8 7 5.5 5M8 7l2.5-2M5.5 5V3.5M10.5 5V3.5" {...common} /><circle cx="5.5" cy="3" r="1" {...common} /><circle cx="10.5" cy="3" r="1" {...common} /><circle cx="8" cy="6.8" r="1" {...common} /></>,
     tutor: <><path d="M3.5 4.5h9v6h-5l-2.5 2v-2h-1.5z" {...common} /><path d="M6 7.5h4" {...common} /></>,
     settings: <><circle cx="8" cy="8" r="2.2" {...common} /><path d="M8 3.2v1.1M8 11.7v1.1M3.2 8h1.1M11.7 8h1.1M4.6 4.6l.8.8M10.6 10.6l.8.8M11.4 4.6l-.8.8M5.4 10.6l-.8.8" {...common} /></>,
+    playground: <><path d="M4 5.5h8v6H4z" {...common} /><path d="m6 8 1.3 1.3L10 6.6" {...common} /><circle cx="5.5" cy="4" r=".8" {...common} /><circle cx="10.5" cy="4" r=".8" {...common} /></>,
   }
   return <svg viewBox="0 0 16 16" aria-hidden="true" className="h-5 w-5 shrink-0">{paths[name]}</svg>
 }
