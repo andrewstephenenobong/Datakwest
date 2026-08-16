@@ -203,8 +203,8 @@ export default function Dashboard() {
             { label: 'Phases Passed', value: `${passedPhaseNumbers.size} / ${totalPhases}`, highlight: true }
           ].map((stat) => (
             <div key={stat.label} className="dashboard-light-surface rounded-2xl p-5 text-center" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-              <p className="text-xs mb-1" style={{ color: '#6B7A99' }}>{stat.label}</p>
-              <p className="text-xl font-bold" style={{ color: stat.highlight ? '#D4AF37' : '#0A2342' }}>{stat.value}</p>
+              <p className="dashboard-stat-label text-xs mb-1" style={{ color: '#6B7A99' }}>{stat.label}</p>
+              <p className={`dashboard-stat-value text-xl font-bold ${stat.highlight ? 'dashboard-stat-value-highlight' : ''}`} style={{ color: stat.highlight ? '#D4AF37' : '#0A2342' }}>{stat.value}</p>
             </div>
           ))}
         </div>
@@ -230,7 +230,7 @@ export default function Dashboard() {
                 ['Projects', readiness.factors?.reviewed_projects],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-xl p-3" style={{ background: '#F5F7FA' }}>
-                  <p className="text-xs" style={{ color: '#6B7A99' }}>{label}</p>
+                  <p className="dashboard-factor-label text-xs" style={{ color: '#6B7A99' }}>{label}</p>
                   <p className="dashboard-metric-value font-bold mt-1" style={{ color: '#0A2342' }}>{value ?? 0}%</p>
                 </div>
               ))}

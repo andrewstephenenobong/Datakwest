@@ -1657,3 +1657,36 @@ html[data-theme='dark'] main .bg-white {
 .dk-ranking-row.is-you { border-radius: .6rem; background: var(--dk-accent-soft); padding-inline: .5rem; }
 @media (max-width: 520px) { .dk-spectator-head, .dk-spectator-host-control { align-items: flex-start; flex-direction: column; } .dk-spectator-entry { align-items: stretch; flex-direction: column; } .dk-ranking-row { grid-template-columns: 2rem minmax(0, 1fr) auto; } .dk-ranking-row small { grid-column: 2 / -1; padding-bottom: .4rem; } }
 @media (max-width: 379px) { .dk-spectator-board.is-tic { grid-template-columns: repeat(3, 52px); } .dk-spectator-board.is-connect { grid-template-columns: repeat(7, 28px); gap: .2rem; } }
+
+
+/* Workspace metric contrast hardening for dark mode. These selectors intentionally
+   override legacy inline light-mode colors on the Dashboard route. */
+html[data-theme='dark'] .dashboard-page .dashboard-stat-label,
+html[data-theme='dark'] .dashboard-page .dashboard-factor-label {
+  color: var(--dk-muted) !important;
+}
+
+html[data-theme='dark'] .dashboard-page .dashboard-stat-value,
+html[data-theme='dark'] .dashboard-page .dashboard-metric-value {
+  color: var(--dk-text) !important;
+  text-shadow: 0 0 1px rgba(247, 251, 250, .16);
+}
+
+html[data-theme='dark'] .dashboard-page .dashboard-stat-value-highlight {
+  color: var(--dk-accent) !important;
+}
+
+html[data-theme='dark'] .dashboard-page [style*='color: rgb(10, 35, 66)'],
+html[data-theme='dark'] .dashboard-page [style*='color:#0A2342'] {
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] .dashboard-page [style*='color: rgb(107, 122, 153)'],
+html[data-theme='dark'] .dashboard-page [style*='color:#6B7A99'] {
+  color: var(--dk-muted) !important;
+}
+
+html[data-theme='dark'] .dashboard-page [style*='background: rgb(245, 247, 250)'],
+html[data-theme='dark'] .dashboard-page [style*='background:#F5F7FA'] {
+  background: var(--dk-surface-soft) !important;
+}
