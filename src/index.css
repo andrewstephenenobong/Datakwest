@@ -257,13 +257,15 @@ html[data-theme='dark'] .landing-page .landing-lockup-dark {
 :root {
   --auth-page: #F4F7FB;
   --auth-surface: #FFFFFF;
+  --auth-surface-soft: #F8FBFF;
   --auth-ink: #0A2342;
   --auth-muted: #6B7A99;
   --auth-subtle: #8290A5;
   --auth-link: #2456A6;
   --auth-border: #DCE5F0;
   --auth-divider: #E6ECF4;
-  --auth-eyebrow: #9A7610;
+  --auth-error: #9C3F31;
+  --auth-checkbox: #2456A6;
   --auth-input: #FFFFFF;
   --auth-button-ink: #0A2342;
   --auth-error-bg: #FFF4F2;
@@ -273,23 +275,67 @@ html[data-theme='dark'] .landing-page .landing-lockup-dark {
 html[data-theme='dark'] {
   --auth-page: #0B1B21;
   --auth-surface: #132A32;
+  --auth-surface-soft: #1B3036;
   --auth-ink: #F7FBFA;
   --auth-muted: #B5C7C9;
   --auth-subtle: #9CB2B5;
   --auth-link: #9AD9C5;
   --auth-border: #49656A;
   --auth-divider: #49656A;
-  --auth-eyebrow: #E6C85C;
+  --auth-error: #FFB5A9;
+  --auth-checkbox: #9AD9C5;
   --auth-input: #10242B;
   --auth-button-ink: #0E1B1F;
   --auth-error-bg: #3A2425;
   --auth-error: #FFB5A9;
 }
 
+.auth-page .auth-card,
+.auth-page .auth-card form,
+.auth-page .auth-card fieldset,
+.auth-page .auth-card .auth-captcha {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .auth-page .auth-card input {
   background: var(--auth-input) !important;
   border-color: var(--auth-border) !important;
   color: var(--auth-ink) !important;
+  max-width: 100%;
+}
+
+.auth-page .auth-label,
+.auth-page .auth-legend,
+.auth-page .auth-consent strong {
+  color: var(--auth-ink);
+}
+
+.auth-page .auth-label-muted,
+.auth-page .auth-helper,
+.auth-page .auth-consent,
+.auth-page .auth-footer-copy,
+.auth-page .auth-captcha-status {
+  color: var(--auth-muted);
+}
+
+.auth-page .auth-fieldset,
+.auth-page .auth-captcha {
+  border-color: var(--auth-border);
+  background: var(--auth-surface-soft);
+}
+
+.auth-page .auth-error {
+  background: var(--auth-error-bg);
+  color: var(--auth-error);
+}
+
+.auth-page .auth-error-text {
+  color: var(--auth-error) !important;
+}
+
+.auth-page .auth-checkbox {
+  accent-color: var(--auth-checkbox);
 }
 
 .auth-page .auth-card input::placeholder {

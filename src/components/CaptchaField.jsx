@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 
 const siteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY
@@ -6,20 +6,30 @@ const siteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY
 export default function CaptchaField({ onToken }) {
   const captchaRef = useRef(null)
   const [status, setStatus] = useState('')
+  const [compact, setCompact] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 379px)')
+    const update = () => setCompact(media.matches)
+    update()
+    media.addEventListener?.('change', update)
+    return () => media.removeEventListener?.('change', update)
+  }, [])
 
   if (!siteKey) {
     return (
-      <div role="status" className="rounded-xl border px-4 py-3 text-xs leading-5" style={{ borderColor: '#F0D58A', background: '#FFF9E8', color: '#7A5D10' }}>
+      <div role="status" className="auth-captcha rounded-xl border px-4 py-3 text-xs leading-5">
         CAPTCHA is not configured in this environment yet. Add <code>VITE_HCAPTCHA_SITE_KEY</code> before testing password authentication.
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border p-3" style={{ borderColor: '#DCE5F0', background: '#F8FBFF' }}>
+    <div className="auth-captcha min-w-0 max-w-full overflow-hidden rounded-xl border p-3">
       <HCaptcha
         ref={captchaRef}
         sitekey={siteKey}
+        size={compact ? 'compact' : 'normal'}
         onVerify={(token) => {
           setStatus('Verification complete.')
           onToken(token)
@@ -33,7 +43,9 @@ export default function CaptchaField({ onToken }) {
           onToken('')
         }}
       />
-      <p className="mt-2 text-xs" style={{ color: status.includes('could not') ? '#9C3F31' : '#8290A5' }} role="status">{status || 'Complete the security check before continuing.'}</p>
+      <p className={`auth-captcha-status mt-2 text-xs ${status.includes('could not') ? 'auth-error-text' : ''}`} role="status">
+        {status || 'Complete the security check before continuing.'}
+      </p>
     </div>
   )
 }
