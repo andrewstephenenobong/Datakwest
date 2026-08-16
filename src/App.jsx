@@ -8,6 +8,8 @@ import NetworkStatusBanner from './components/NetworkStatusBanner'
 const Landing = lazy(() => import('./pages/Landing'))
 const Login = lazy(() => import('./pages/Login'))
 const Signup = lazy(() => import('./pages/Signup'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Lesson = lazy(() => import('./pages/Lesson'))
@@ -56,6 +58,8 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/onboarding" element={<Protected><Onboarding /></Protected>} />
         <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
         <Route path="/lesson/:id" element={<Protected><Lesson /></Protected>} />
