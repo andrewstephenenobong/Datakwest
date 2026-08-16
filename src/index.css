@@ -939,3 +939,24 @@ html[data-theme='dark'] .app-navbar-profile [style*='#6B7A99'],
 html[data-theme='dark'] .app-navbar-profile [style*="color: '#6B7A99'"] {
   color: var(--dk-muted) !important;
 }
+
+/* Dashboard route compatibility for recovery and legacy inline surfaces */
+html[data-theme='dark'] [style*='linear-gradient(145deg, #F7FAFF'],
+html[data-theme='dark'] [style*="linear-gradient(145deg, '#F7FAFF'"] {
+  background: var(--dk-page) !important;
+}
+
+html[data-theme='dark'] [style*='radial-gradient(circle, rgba(139,198,181'],
+html[data-theme='dark'] [style*="radial-gradient(circle, 'rgba(139,198,181'"] {
+  background: radial-gradient(circle, rgba(139,198,181,.24), rgba(32,58,74,.32) 64%, transparent 65%) !important;
+}
+
+html[data-theme='dark'] [style*='background: #EEF8F4'],
+html[data-theme='dark'] [style*="background: '#EEF8F4'"] {
+  background: #1E3A32 !important;
+}
+
+html[data-theme='dark'] [style*='background: #F5F7FA'],
+html[data-theme='dark'] [style*="background: '#F5F7FA'"] {
+  background: var(--dk-page) !important;
+}
