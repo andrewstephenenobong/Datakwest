@@ -262,26 +262,41 @@ export default function Onboarding() {
       })
       if (completionError) throw completionError
 
-      await updateLearnerPreferences({
-        weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
-        explanationStyle: finalAnswers.learningStyle || null,
-      })
-
-      const publishedSkill = await findPublishedSkillForTarget(finalAnswers.targetSkill)
-      if (publishedSkill?.skills?.id) {
-        const enrolment = await createSkillEnrolment({
-          skillId: publishedSkill.skills.id,
-          skillGraphVersionId: publishedSkill.id,
-          weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
-          targetOutcome: finalAnswers.goal || '',
-        })
-        logEvent(user.id, 'skill_enrolment_created', { skillId: publishedSkill.skills.id, enrolmentId: enrolment?.id, source: 'onboarding' })
-      } else {
-        logEvent(user.id, 'custom_skill_discovery_completed', { targetSkill: finalAnswers.targetSkill, requestId: universalDiscovery?.requestId || null, status: universalDiscovery?.status || 'review', source: 'onboarding' })
-      }
-
-      logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal, targetSkill: finalAnswers.targetSkill })
+      // The roadmap and profile are the critical onboarding contract. Navigate as soon as
+      // that authoritative save succeeds; secondary personalization work must not trap
+      // the learner on a loading screen if a catalogue or telemetry request is slow.
+      setGenerating(false)
       navigate('/dashboard?welcome=first-mission')
+
+      void (async () => {
+        try {
+          await updateLearnerPreferences({
+            weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
+            explanationStyle: finalAnswers.learningStyle || null,
+          })
+        } catch (preferenceError) {
+          console.warn('Onboarding preferences sync deferred:', preferenceError)
+        }
+
+        try {
+          const publishedSkill = await findPublishedSkillForTarget(finalAnswers.targetSkill)
+          if (publishedSkill?.skills?.id) {
+            const enrolment = await createSkillEnrolment({
+              skillId: publishedSkill.skills.id,
+              skillGraphVersionId: publishedSkill.id,
+              weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
+              targetOutcome: finalAnswers.goal || '',
+            })
+            void logEvent(user.id, 'skill_enrolment_created', { skillId: publishedSkill.skills.id, enrolmentId: enrolment?.id, source: 'onboarding' })
+          } else {
+            void logEvent(user.id, 'custom_skill_discovery_completed', { targetSkill: finalAnswers.targetSkill, requestId: universalDiscovery?.requestId || null, status: universalDiscovery?.status || 'review', source: 'onboarding' })
+          }
+        } catch (enrolmentError) {
+          console.warn('Onboarding enrolment sync deferred:', enrolmentError)
+        }
+
+        void logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal, targetSkill: finalAnswers.targetSkill })
+      })()
     } catch (err) {
       console.error('Onboarding error:', err)
       setError(await describeOnboardingError(err))
