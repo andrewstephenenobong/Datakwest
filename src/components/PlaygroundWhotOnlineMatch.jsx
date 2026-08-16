@@ -1,12 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getWhotSnapshot, heartbeatWhotRoom, submitWhotIntent } from '../lib/playground'
 
 const SHAPES = ['circle', 'triangle', 'cross', 'square']
 
-function label(card) {
-  if (!card) return '—'
-  return card.shape === 'whot' ? 'WHOT' : `${card.shape} ${card.value}`
-}
 
 function isLegal(card, discard, currentShape) {
   if (!card || !discard) return false
@@ -17,9 +13,9 @@ export default function PlaygroundWhotOnlineMatch({ roomId }) {
   const [snapshot, setSnapshot] = useState(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('Connecting to the server-authoritative deck…')
-  const [intentCount, setIntentCount] = useState(0)
+  const intentCount = useRef(0)
 
-  const refresh = async (heartbeat = false) => {
+  const refresh = useCallback(async (heartbeat = false) => {
     const response = heartbeat ? await heartbeatWhotRoom(roomId) : await getWhotSnapshot(roomId)
     if (response.error) {
       setMessage('The card table connection needs attention. Your hand is unchanged.')
@@ -27,14 +23,14 @@ export default function PlaygroundWhotOnlineMatch({ roomId }) {
     }
     setSnapshot(response.snapshot)
     setMessage(response.snapshot?.last_event || 'The server is ready for your next action.')
-  }
+  }, [roomId])
 
   useEffect(() => {
     if (!roomId) return undefined
-    refresh(true)
-    const timer = window.setInterval(() => refresh(true), 5000)
-    return () => window.clearInterval(timer)
-  }, [roomId])
+    const initialRefresh = window.setTimeout(() => { void refresh(true) }, 0)
+    const timer = window.setInterval(() => { void refresh(true) }, 5000)
+    return () => { window.clearTimeout(initialRefresh); window.clearInterval(timer) }
+  }, [refresh, roomId])
 
   const you = snapshot?.members?.find((member) => member.is_you)
   const yourHand = you?.hand || []
@@ -44,8 +40,7 @@ export default function PlaygroundWhotOnlineMatch({ roomId }) {
   const send = async (action) => {
     if (busy) return
     setBusy(true)
-    const clientIntentId = `${roomId}-${you?.seat_no || 0}-${Date.now()}-${intentCount}`
-    setIntentCount((value) => value + 1)
+    const clientIntentId = `${roomId}-${you?.seat_no || 0}-${intentCount.current++}`
     const { result, error } = await submitWhotIntent(roomId, { ...action, client_intent_id: clientIntentId })
     setBusy(false)
     if (error) {

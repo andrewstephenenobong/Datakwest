@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import LearnerNavigation from '../components/LearnerNavigation'
 import PlaygroundOnlinePanel from '../components/PlaygroundOnlinePanel'
 import PlaygroundRankings from '../components/PlaygroundRankings'
-import { DIFFICULTIES, DifficultySelector, GAME_DEFINITIONS, GameComponent, getGameDefinition, getSavedDifficulty, usePlaygroundReaction } from '../components/playground/GameComponents'
+import { DIFFICULTIES, DifficultySelector, GAME_DEFINITIONS, GameComponent, getSavedDifficulty, saveDifficulty, usePlaygroundReaction } from '../components/playground/GameComponents'
 
 function OwlGuide({ game, onClose, replay = false }) {
   const [soundEnabled, setSoundEnabled] = useState(() => getOwlIntroSoundPreference())
@@ -26,8 +26,8 @@ function OwlGuide({ game, onClose, replay = false }) {
 }
 
 export default function PlaygroundGame() {
-  const { game: routeGame } = useParams(); const navigate = useNavigate(); const game = GAME_DEFINITIONS.find((item) => item.route === routeGame) || GAME_DEFINITIONS[0]; const { reaction, react } = usePlaygroundReaction(); const [difficulty, setDifficulty] = useState(() => getSavedDifficulty(game.id)); const [guideOpen, setGuideOpen] = useState(false); const [guideReplay, setGuideReplay] = useState(false)
-  useEffect(() => { setDifficulty(getSavedDifficulty(game.id)); const seen = window.localStorage.getItem(`dk_playground_guide_seen_${game.id}`); if (!seen) setGuideOpen(true) }, [game.id])
+  const { game: routeGame } = useParams(); const navigate = useNavigate(); const game = GAME_DEFINITIONS.find((item) => item.route === routeGame) || GAME_DEFINITIONS[0]; const { reaction, react } = usePlaygroundReaction(); const [difficultyOverrides, setDifficultyOverrides] = useState({}); const [guideOpen, setGuideOpen] = useState(() => !window.localStorage.getItem(`dk_playground_guide_seen_${game.id}`)); const [guideReplay, setGuideReplay] = useState(false); const difficulty = difficultyOverrides[game.id] || getSavedDifficulty(game.id)
+  const setDifficulty = (value) => { saveDifficulty(game.id, value); setDifficultyOverrides((current) => ({ ...current, [game.id]: value })) }
   const closeGuide = () => { window.localStorage.setItem(`dk_playground_guide_seen_${game.id}`, '1'); setGuideOpen(false) }; const openGuide = () => { setGuideReplay(true); setGuideOpen(true) }; const goToGame = (next) => navigate(`/playground/${next.route}`)
   return <div className="dk-playground-page"><LearnerNavigation /><main className="mx-auto max-w-7xl px-4 pb-20 pt-5 sm:px-6 lg:px-8 lg:pb-12">
     <div className="dk-game-breadcrumb"><Link to="/playground">Playground</Link><span aria-hidden="true">/</span><strong>{game.title}</strong></div>

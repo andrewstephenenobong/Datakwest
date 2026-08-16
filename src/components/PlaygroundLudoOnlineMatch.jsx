@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { getPlaygroundRoomSnapshot, submitPlaygroundIntent } from '../lib/playground'
 
 const COLORS = { blue: '#5B8DEF', red: '#E17863', yellow: '#E6B84B', green: '#56B69A' }
-const PLAYERS = ['blue', 'red', 'yellow', 'green']
 const STARTS = { blue: 0, red: 13, yellow: 26, green: 39 }
 const FINISH = 57
 const SAFE = [0, 8, 13, 21, 26, 34, 39, 47]

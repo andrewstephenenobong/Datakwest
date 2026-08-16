@@ -43,6 +43,7 @@
     { "source": "/interviews", "destination": "/" },
     { "source": "/career-centre", "destination": "/" },
     { "source": "/playground", "destination": "/" },
+    { "source": "/playground/:game", "destination": "/" },
     { "source": "/settings", "destination": "/" },
     { "source": "/profile", "destination": "/" },
     { "source": "/(.*)", "destination": "/" }
