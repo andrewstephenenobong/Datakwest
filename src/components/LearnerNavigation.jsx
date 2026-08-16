@@ -7,11 +7,11 @@ const primaryItems = [
   { label: 'Learn', shortLabel: 'Learn', path: '/tracks', icon: 'learn' },
   { label: 'Practice', shortLabel: 'Practice', path: '/practice', icon: 'practice' },
   { label: 'Community', shortLabel: 'Community', path: '/community', icon: 'community' },
-  { label: 'Career', shortLabel: 'Career', path: '/career-centre', icon: 'career' },
+  { label: 'Playground', shortLabel: 'Play', path: '/playground', icon: 'playground' },
 ]
 
 const moreItems = [
-  { label: 'Playground', path: '/playground', icon: 'playground', tone: '#2456A6' },
+  { label: 'Career Centre', path: '/career-centre', icon: 'career', tone: '#2456A6' },
   { label: 'Assessment Center', path: '/assessments', icon: 'assessment', tone: '#6D4CB3' },
   { label: 'Projects', path: '/project', icon: 'project', tone: '#2456A6' },
   { label: 'Portfolio', path: '/portfolio', icon: 'portfolio', tone: '#2E7D32' },
@@ -27,9 +27,8 @@ const moreItems = [
 ]
 
 const moreGroups = [
-  { title: 'Play and reset', items: moreItems.filter((item) => ['playground'].includes(item.icon)) },
+  { title: 'Prepare for work', items: moreItems.filter((item) => ['career', 'interview', 'market'].includes(item.icon)) },
   { title: 'Prove your skills', items: moreItems.filter((item) => ['assessment', 'project', 'portfolio', 'challenge', 'battle', 'tree'].includes(item.icon)) },
-  { title: 'Prepare for work', items: moreItems.filter((item) => ['interview', 'market'].includes(item.icon)) },
   { title: 'Stay on track', items: moreItems.filter((item) => ['achievement', 'notification', 'tutor', 'settings'].includes(item.icon)) },
 ]
 

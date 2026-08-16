@@ -34,6 +34,7 @@ const AdminGovernance = lazy(() => import('./pages/AdminGovernance'))
 const Interviews = lazy(() => import('./pages/Interviews'))
 const CareerCentre = lazy(() => import('./pages/CareerCentre'))
 const Playground = lazy(() => import('./pages/Playground'))
+const PlaygroundGame = lazy(() => import('./pages/PlaygroundGame'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Profile = lazy(() => import('./pages/Profile'))
 
@@ -81,6 +82,7 @@ export default function App() {
         <Route path="/interviews" element={<Protected><Interviews /></Protected>} />
         <Route path="/career-centre" element={<Protected><CareerCentre /></Protected>} />
         <Route path="/playground" element={<Protected><Playground /></Protected>} />
+        <Route path="/playground/:game" element={<Protected><PlaygroundGame /></Protected>} />
         <Route path="/settings" element={<Protected><Settings /></Protected>} />
         <Route path="/profile" element={<Protected><Profile /></Protected>} />
         <Route path="*" element={<NotFound />} />
