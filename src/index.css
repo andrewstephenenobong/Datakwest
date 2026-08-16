@@ -1934,3 +1934,10 @@ html[data-theme='dark'] .dk-ludo-cell { border-color: rgb(247 251 250 / .16); }
 @keyframes dk-ludo-pulse { 50% { transform: scale(1.14); } }
 @media (max-width: 600px) { .dk-ludo-traditional-board { border-width: .3rem; border-radius: .65rem; } .dk-ludo-traditional-status { grid-template-columns: 3.5rem minmax(0, 1fr); gap: .65rem; } .dk-ludo-traditional-status .dk-online-primary { grid-column: 1 / -1; width: 100%; } .dk-ludo-traditional-status strong { font-size: .8rem; } .dk-ludo-traditional-status p { font-size: .68rem; line-height: 1.45; } }
 @media (prefers-reduced-motion: reduce) { .dk-ludo-seed.is-legal { animation: none; } }
+
+/* The learner navigation is fixed on mobile; Chess needs a deliberate scroll runway below the board. */
+@media (max-width: 760px) {
+  .dk-playground-page:has(.dk-chess-full-panel) main { padding-bottom: 12rem !important; }
+  .dk-playground-page:has(.dk-chess-full-panel) .dk-chess-full-panel { margin-bottom: 2rem; }
+  .dk-playground-page:has(.dk-chess-full-panel) .dk-chess-full-panel .dk-game-footer { padding-bottom: 2.5rem; }
+}
