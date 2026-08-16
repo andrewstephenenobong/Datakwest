@@ -1743,3 +1743,27 @@ html[data-theme='dark'] .dashboard-page [style*='background:#F5F7FA'] {
 .dk-playground-owl-generated { position: relative; z-index: 1; width: min(100%, 270px); filter: drop-shadow(0 18px 24px rgba(2,14,33,.28)); }
 .dk-owl-speech-game img { width: 3rem; height: 3rem; object-fit: contain; }
 @media (max-width: 640px) { .dk-playground-owl-generated { width: min(70vw, 220px); } }
+
+.dk-game-actions { display: flex; align-items: center; gap: .65rem; }
+.dk-guide-button { min-height: 2.6rem; border: 1px solid color-mix(in srgb, var(--dk-accent) 45%, var(--dk-border)); border-radius: 999px; background: var(--dk-surface); color: var(--dk-accent-contrast); padding: .55rem .8rem; font-size: .75rem; font-weight: 900; }
+.dk-difficulty-control { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0; border: 1px solid var(--dk-border); border-radius: 1rem; background: var(--dk-surface-soft); padding: .8rem 1rem; }
+.dk-difficulty-control strong, .dk-difficulty-control small { display: block; }
+.dk-difficulty-control strong { margin-top: .2rem; color: var(--dk-text); font-size: .95rem; }
+.dk-difficulty-control small { margin-top: .15rem; color: var(--dk-muted); font-size: .72rem; }
+.dk-difficulty-options { display: flex; gap: .4rem; }
+.dk-difficulty-options button { min-height: 2.5rem; border: 1px solid var(--dk-border); border-radius: 999px; background: var(--dk-surface); color: var(--dk-muted); padding: .45rem .7rem; font-size: .72rem; font-weight: 900; }
+.dk-difficulty-options button.is-active { border-color: var(--difficulty-color); background: color-mix(in srgb, var(--difficulty-color) 16%, var(--dk-surface)); color: var(--dk-text); }
+.dk-owl-guide-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgba(5,20,39,.68); padding: 1rem; }
+.dk-owl-guide { position: relative; width: min(100%, 32rem); max-height: min(92vh, 42rem); overflow-y: auto; border: 1px solid rgba(255,255,255,.16); border-radius: 1.5rem; background: var(--dk-surface); padding: 1.4rem; box-shadow: 0 24px 80px rgba(0,0,0,.32); }
+.dk-owl-guide-close { position: absolute; top: .8rem; right: .8rem; width: 2.25rem; height: 2.25rem; border: 1px solid var(--dk-border); border-radius: 50%; background: var(--dk-surface-soft); color: var(--dk-muted); font-size: 1.25rem; }
+.dk-owl-guide-avatar { display: grid; width: 5rem; height: 5rem; place-items: center; margin-bottom: 1rem; border-radius: 1.3rem; background: linear-gradient(135deg, #0B2342, #2456A6); overflow: hidden; }
+.dk-owl-guide-avatar img { width: 5rem; height: 5rem; object-fit: contain; }
+.dk-owl-guide h2 { max-width: 24rem; margin: .3rem 0 .4rem; color: var(--dk-text); font-size: clamp(1.45rem, 5vw, 2rem); letter-spacing: -.04em; }
+.dk-owl-guide-intro { margin: 0; color: var(--dk-muted); font-size: .9rem; line-height: 1.55; }
+.dk-owl-guide ol { display: grid; gap: .7rem; margin: 1.2rem 0; padding: 0; list-style: none; }
+.dk-owl-guide li { display: flex; align-items: flex-start; gap: .7rem; border: 1px solid var(--dk-border); border-radius: .9rem; background: var(--dk-surface-soft); padding: .75rem; }
+.dk-owl-guide li > span { display: grid; width: 1.65rem; height: 1.65rem; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--dk-accent-soft); color: var(--dk-accent-contrast); font-size: .75rem; font-weight: 900; }
+.dk-owl-guide li p { margin: .1rem 0 0; color: var(--dk-text); font-size: .84rem; line-height: 1.5; }
+.dk-owl-guide .dk-online-primary { width: 100%; }
+@media (max-width: 640px) { .dk-difficulty-control { align-items: flex-start; flex-direction: column; } .dk-difficulty-options { width: 100%; } .dk-difficulty-options button { flex: 1; } .dk-game-actions { align-items: flex-start; flex-wrap: wrap; } }
+@media (max-width: 379px) { .dk-owl-guide { padding: 1rem; } .dk-difficulty-control { padding: .75rem; } .dk-difficulty-options button { padding-left: .45rem; padding-right: .45rem; font-size: .68rem; } }
