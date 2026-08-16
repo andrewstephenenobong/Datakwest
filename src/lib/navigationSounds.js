@@ -111,3 +111,47 @@ export function playOwlIntroSound() {
   window.setTimeout(() => context.close().catch(() => null), 520)
   return true
 }
+
+
+const PLAYGROUND_SOUND_KEY = 'datakwest-playground-sounds'
+
+export function getPlaygroundSoundPreference() {
+  if (typeof window === 'undefined') return true
+  return window.localStorage.getItem(PLAYGROUND_SOUND_KEY) !== 'off'
+}
+
+export function savePlaygroundSoundPreference(enabled) {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(PLAYGROUND_SOUND_KEY, enabled ? 'on' : 'off')
+}
+
+export function playPlaygroundSound(event = 'roll') {
+  if (typeof window === 'undefined' || !getPlaygroundSoundPreference()) return false
+  const AudioContext = window.AudioContext || window.webkitAudioContext
+  if (!AudioContext) return false
+  const context = new AudioContext()
+  const patterns = {
+    roll: [[220, 0, .05], [330, .06, .07], [440, .13, .09]],
+    ladder: [[392, 0, .1], [523, .09, .11], [659, .18, .15]],
+    snake: [[440, 0, .1], [330, .11, .11], [220, .22, .16]],
+    victory: [[392, 0, .14], [523, .12, .16], [659, .26, .18], [784, .42, .26]],
+  }
+  const types = { roll: 'triangle', ladder: 'sine', snake: 'sawtooth', victory: 'sine' }
+  const volume = event === 'snake' ? .025 : event === 'victory' ? .06 : .04
+  patterns[event in patterns ? event : 'roll'].forEach(([frequency, delay, duration]) => {
+    const oscillator = context.createOscillator()
+    const gain = context.createGain()
+    const start = context.currentTime + delay
+    oscillator.type = types[event] || 'triangle'
+    oscillator.frequency.setValueAtTime(frequency, start)
+    gain.gain.setValueAtTime(.0001, start)
+    gain.gain.exponentialRampToValueAtTime(volume, start + .012)
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration)
+    oscillator.connect(gain)
+    gain.connect(context.destination)
+    oscillator.start(start)
+    oscillator.stop(start + duration + .02)
+  })
+  window.setTimeout(() => context.close().catch(() => null), 900)
+  return true
+}
