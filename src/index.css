@@ -2046,3 +2046,23 @@ button.dk-whot-card { cursor: pointer; }
 .dk-online-snake-controls p { margin: .25rem 0 0; color: var(--dk-muted); font-size: .7rem; line-height: 1.4; }
 .dk-online-snake-die { display: grid; width: 3.5rem; height: 3.5rem; place-items: center; border: 2px solid #e9c46a; border-radius: .8rem; background: #173238; color: #fff; font-size: 1.4rem; font-weight: 900; }
 @media (max-width: 600px) { .dk-online-snake-panel { padding: .7rem; } .dk-online-snake-board { border-width: .25rem; border-radius: .6rem; } .dk-online-snake-controls { grid-template-columns: 3.4rem minmax(0, 1fr); } .dk-online-snake-controls .dk-online-primary { grid-column: 1 / -1; width: 100%; } .dk-online-snake-die { width: 3.1rem; height: 3.1rem; } }
+
+
+.dk-online-whot-panel { margin-top: 1rem; padding: 1rem; border: 1px solid var(--dk-border); border-radius: 1.2rem; background: var(--dk-surface-soft); color: var(--dk-text); }
+.dk-online-whot-seats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; margin: 1rem 0; }
+.dk-online-whot-seat { position: relative; display: grid; gap: .18rem; padding: .7rem; border: 1px solid var(--dk-border); border-radius: .8rem; background: var(--dk-surface); }
+.dk-online-whot-seat.is-you { border-color: #5b8def; box-shadow: 0 0 0 2px rgb(91 141 239 / .16); }
+.dk-online-whot-seat span, .dk-online-whot-seat small { color: var(--dk-muted); font-size: .7rem; font-weight: 800; }
+.dk-online-whot-seat strong { color: var(--dk-text); font-size: .82rem; }
+.dk-online-whot-seat i { position: absolute; top: .75rem; right: .75rem; width: .55rem; height: .55rem; border-radius: 50%; background: #56b69a; }
+.dk-online-whot-seat i.is-away { background: #d8795b; }
+.dk-online-whot-table { display: grid; grid-template-columns: minmax(0, 1fr) minmax(8rem, 12rem); align-items: stretch; gap: 1rem; padding: 1rem; border: 1px solid var(--dk-border); border-radius: 1rem; background: var(--dk-surface); }
+.dk-whot-online-opponent, .dk-whot-online-discard { display: grid; align-content: center; gap: .55rem; min-height: 8rem; }
+.dk-whot-online-opponent strong { color: var(--dk-text); font-size: 1.1rem; }
+.dk-whot-online-discard { justify-items: center; text-align: center; }
+.dk-whot-online-discard p { margin: 0; color: var(--dk-muted); font-size: .78rem; line-height: 1.45; }
+.dk-online-whot-hand { margin-top: 1rem; padding: .9rem; border: 1px solid var(--dk-border); border-radius: 1rem; background: var(--dk-surface); }
+.dk-whot-shape-picker { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .8rem; padding: .8rem; border: 1px solid #e9c46a; border-radius: .85rem; background: color-mix(in srgb, var(--dk-surface) 80%, #e9c46a 20%); }
+.dk-whot-shape-picker > span { width: 100%; color: var(--dk-text); font-weight: 900; }
+.dk-online-whot-panel .dk-game-footer p { color: var(--dk-muted); font-size: .75rem; line-height: 1.4; }
+@media (max-width: 600px) { .dk-online-whot-panel { padding: .7rem; } .dk-online-whot-table { grid-template-columns: 1fr; } .dk-whot-online-opponent { min-height: 5rem; } .dk-online-whot-panel .dk-whot-cards { overflow-x: auto; justify-content: flex-start; padding-bottom: .35rem; } .dk-online-whot-panel .dk-whot-card { flex: 0 0 4.2rem; } }

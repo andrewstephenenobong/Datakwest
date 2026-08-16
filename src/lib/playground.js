@@ -98,3 +98,23 @@ export async function submitSnakeLadderIntent(roomId, action) {
   })
   return { result: data, error }
 }
+
+
+export async function getWhotSnapshot(roomId) {
+  const { data, error } = await supabase.rpc('playground_whot_snapshot', { p_room_id: roomId })
+  return { snapshot: data, error }
+}
+
+export async function submitWhotIntent(roomId, action) {
+  const { data, error } = await supabase.rpc('submit_playground_whot_intent', {
+    p_room_id: roomId,
+    p_action: action,
+  })
+  return { result: data, error }
+}
+
+
+export async function heartbeatWhotRoom(roomId) {
+  const { data, error } = await supabase.rpc('heartbeat_playground_whot', { p_room_id: roomId })
+  return { snapshot: data, error }
+}
