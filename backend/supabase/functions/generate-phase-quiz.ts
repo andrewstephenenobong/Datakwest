@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     const ageGuidance = {
       under_6: 'Use very simple vocabulary, one idea per question, concrete everyday examples, and 6 to 8 short questions. Avoid career language and do not request personal information.',
       '6_12': 'Use clear vocabulary, concrete examples, short questions, and 8 to 10 questions. Keep examples age-appropriate and avoid requesting personal information.',
-      13_plus: 'Use accessible but increasingly technical language, relatable examples, and 10 to 15 questions.',
+      '13_plus': 'Use accessible but increasingly technical language, relatable examples, and 10 to 15 questions.',
       adult: 'Use adult-appropriate technical language, professional examples, and 15 to 20 questions.',
     }[ageBand] || 'Use accessible language, concrete examples, and 10 to 15 questions.'
     const apiKeys = [Deno.env.get('GEMINI_API_KEY'), Deno.env.get('GEMINI_API_KEY_2')].filter(Boolean)

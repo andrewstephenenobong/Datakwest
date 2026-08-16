@@ -107,7 +107,7 @@ For skillLevels, you MUST base each number on what the learner actually stated i
 - Advanced / experienced → 65 to 85
 For skills not directly asked about (like Power BI or Data Viz), estimate reasonably based on their overall background, coding experience, and goals.
 
-    For age-aware delivery, make each topic small enough for the learner stage, use the learner's selected device, and avoid adult employment claims for children. Include a `learnerStage` field equal to the supplied age band label.
+    For age-aware delivery, make each topic small enough for the learner stage, use the learner's selected device, and avoid adult employment claims for children. Include a learnerStage field equal to the supplied age band label.
 
 Return ONLY valid JSON (no markdown, no backticks, no explanation) in this exact structure:
 {
