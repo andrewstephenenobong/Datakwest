@@ -3,7 +3,7 @@ function fallbackRoadmap(assessment) {
   const pace = assessment?.availability || 'your available weekly time'
   const ageBand = assessment?.ageBand || 'unspecified'
   const ageGuidance = {
-    'Early learner · ages 5–7': 'Use 5–10 minute playful activities, concrete examples, simple vocabulary, visual or audio cues, one idea at a time, and no career-pressure language. Require parent or guardian involvement for account and safety decisions.',
+    'Early learner · ages 5–7': 'Use a warm, patient, playful tone that respects the learner without sounding babyish or patronising. Use very short sentences, familiar everyday words, concrete examples, and explain any unavoidable technical word immediately with a simple analogy. Present one idea and one action at a time; keep activities to about 5–10 minutes with clear start, try, and celebrate steps. Prefer pictures, stories, objects, safe pretend scenarios, audio-friendly wording, and encouragement over abstract lectures, jargon, acronyms, grades, failure language, money, jobs, or adult career pressure. Do not ask for names of schools, locations, contact details, family details, photos, or other personal information. Require parent or guardian involvement for account, safety, and sharing decisions.',
     'Young learner · ages 8–12': 'Use 10–15 minute guided activities, concrete examples, short explanations, visual checks for understanding, and age-appropriate projects. Avoid requesting personal information and keep adult oversight available.',
     'Teen learner · ages 13–17': 'Use 15–25 minute structured activities, clear explanations, relatable real-world examples, increasing independence, and age-appropriate project context without assuming adult employment responsibilities.',
     'Adult learner · ages 18+': 'Use adult-appropriate technical depth, professional examples, longer practice blocks when suitable, and career-oriented outcomes.',
@@ -98,7 +98,7 @@ ${JSON.stringify(assessment, null, 2)}
 
 Based on the curriculum scope above and this learner's specific background, goals, experience, available time, device, and chosen skill (${targetSkill}), design their personalized phased roadmap. If their target industry has a relevant specialization (e.g. Healthcare), include it as its own phase. Always end with a Portfolio & Job Preparation phase.
 
-Each phase's "topics" field must contain 6 to 10 short, distinct, bite-sized topics separated by ' · ', each phrased as a concise lesson title (3-6 words) suitable as one individual mini-lesson someone could complete in 10-15 minutes.
+Each phase's "topics" field must contain 6 to 10 short, distinct, bite-sized topics separated by ' · ', each phrased as a concise lesson title suitable as one individual mini-lesson. For the Early learner · ages 5–7 band, use 2–4 simple words per topic and design each mini-lesson for about 5–10 minutes; for other stages, use the learner-stage guidance above.
 
 For skillLevels, you MUST base each number on what the learner actually stated in their assessment above — never default everything to 0. Map their answers honestly using this scale:
 - "No experience at all" → 0 to 5
@@ -107,7 +107,7 @@ For skillLevels, you MUST base each number on what the learner actually stated i
 - Advanced / experienced → 65 to 85
 For skills not directly asked about (like Power BI or Data Viz), estimate reasonably based on their overall background, coding experience, and goals.
 
-    For age-aware delivery, make each topic small enough for the learner stage, use the learner's selected device, and avoid adult employment claims for children. Include a `learnerStage` field equal to the supplied age band label.
+For age-aware delivery, make each topic small enough for the learner stage and use the learner's selected device. For Early learner · ages 5–7, write directions as one short action at a time, use concrete familiar objects or stories, avoid unexplained technical vocabulary, avoid tests that depend on advanced reading, and make feedback encouraging and specific. Never include adult employment claims, pressure to choose a career, competitive ranking, or sensitive scenarios for children. Include a learnerStage field equal to the supplied age band label.
 
 Return ONLY valid JSON (no markdown, no backticks, no explanation) in this exact structure:
 {

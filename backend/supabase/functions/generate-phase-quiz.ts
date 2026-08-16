@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
       .maybeSingle()
     const ageBand = learnerPreferences?.age_band || '13_plus'
     const ageGuidance = {
-      under_6: 'Use very simple vocabulary, one idea per question, concrete everyday examples, and 6 to 8 short questions. Avoid career language and do not request personal information.',
+      under_6: 'Use a warm, patient, playful tone without sounding babyish. Use very simple familiar words, short sentences, one idea per question, and concrete everyday examples. Explain any technical word with a tiny analogy. Ask 6 to 8 short, encouraging questions with clear, non-trick answer choices; avoid advanced reading, abstract jargon, acronyms, grades, failure language, money, jobs, and career pressure. Prefer safe pretend scenarios and audio-friendly wording. Never request personal information, including school, location, contact, family, or photos.',
       '6_12': 'Use clear vocabulary, concrete examples, short questions, and 8 to 10 questions. Keep examples age-appropriate and avoid requesting personal information.',
       13_plus: 'Use accessible but increasingly technical language, relatable examples, and 10 to 15 questions.',
       adult: 'Use adult-appropriate technical language, professional examples, and 15 to 20 questions.',
@@ -82,7 +82,7 @@ Preferred learning style: ${learningStyle || 'theory + practice'}
 Learner stage: ${ageBand}
 Age-aware guidance: ${ageGuidance}
 
-Create an assessment testing mastery across ALL the topics listed above, not just one. Distribute questions proportionally across topics. Progress from basic understanding to applied reasoning at the learner's stage. For learners under 13, use child-safe examples, avoid collecting personal information, and never include adult employment pressure or sensitive scenarios.
+Create an assessment testing mastery across ALL the topics listed above, not just one. Distribute questions proportionally across topics. Progress from basic understanding to applied reasoning at the learner's stage. For under_6, use one short idea per question, familiar objects or stories, simple answer choices, supportive wording, and no trick questions; do not test reading ability instead of the topic. For learners under 13, use child-safe examples, avoid collecting personal information, and never include adult employment pressure, competition, ranking, or sensitive scenarios.
 
 Return ONLY valid JSON (no markdown, no backticks) in this exact structure:
 {
@@ -91,7 +91,7 @@ Return ONLY valid JSON (no markdown, no backticks) in this exact structure:
   ]
 }
 
-Include a number of questions appropriate to the learner-stage guidance above, covering every topic listed, with varied correctIndex positions and plausible wrong answers.`
+Include a number of questions appropriate to the learner-stage guidance above, covering every topic listed, with varied correctIndex positions and plausible wrong answers. For under_6, make wrong answers clearly playful but not confusing, keep the reading load very small, and make every question answerable without personal disclosure.`
 
     let data
     for (const apiKey of apiKeys) {
