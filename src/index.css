@@ -1823,3 +1823,14 @@ html[data-theme='dark'] .dashboard-page [style*='background:#F5F7FA'] {
 .dk-online-ludo-piece-actions button.is-legal { border-color: #56B69A; background: color-mix(in srgb, #56B69A 15%, var(--dk-surface)); color: var(--dk-text); }
 .dk-online-ludo-piece-actions button small { display: block; margin-top: .15rem; color: var(--dk-muted); font-size: .62rem; }
 @media (max-width: 640px) { .dk-ludo-seat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dk-online-ludo-controls { grid-template-columns: 3.4rem minmax(0, 1fr); } .dk-online-ludo-controls .dk-online-primary { grid-column: 1 / -1; width: 100%; } .dk-online-ludo-piece-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.dk-chess-panel { --chess-light: #f3eadb; --chess-dark: #52706f; }
+.dk-chess-board { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); width: min(100%, 34rem); aspect-ratio: 1; margin: 1rem auto; overflow: hidden; border: .5rem solid var(--dk-surface-soft); border-radius: 1rem; box-shadow: 0 1rem 2.5rem rgb(0 0 0 / .14); }
+.dk-chess-square { position: relative; display: grid; min-width: 0; min-height: 0; place-items: center; border: 0; color: #17302f; font-family: Georgia, serif; font-size: clamp(1.5rem, 7vw, 3rem); line-height: 1; cursor: pointer; }
+.dk-chess-square.is-dark { background: var(--chess-dark); color: #f8f5ed; }
+.dk-chess-square.is-light { background: var(--chess-light); }
+.dk-chess-square.is-selected { box-shadow: inset 0 0 0 .25rem #f7ce67; }
+.dk-chess-square.is-target::after { content: ''; position: absolute; width: .6rem; height: .6rem; border-radius: 50%; background: #f7ce67; opacity: .92; }
+.dk-chess-square.is-target:has(♙), .dk-chess-square.is-target:has(♖), .dk-chess-square.is-target:has(♘), .dk-chess-square.is-target:has(♗), .dk-chess-square.is-target:has(♕), .dk-chess-square.is-target:has(♔), .dk-chess-square.is-target:has(♟), .dk-chess-square.is-target:has(♜), .dk-chess-square.is-target:has(♞), .dk-chess-square.is-target:has(♝), .dk-chess-square.is-target:has(♛), .dk-chess-square.is-target:has(♚) { box-shadow: inset 0 0 0 .22rem rgb(247 206 103 / .8); }
+@media (max-width: 520px) { .dk-chess-board { border-width: .3rem; border-radius: .7rem; } .dk-chess-square { font-size: clamp(1.2rem, 8vw, 2.3rem); } }
+@media (prefers-reduced-motion: reduce) { .dk-chess-square { transition: none !important; } }
