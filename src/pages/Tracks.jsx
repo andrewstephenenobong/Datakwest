@@ -37,7 +37,7 @@ export default function Tracks() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
+    <div className="tracks-page min-h-screen" style={{ background: '#F5F7FA' }}>
       <Navbar />
       <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-bold mb-1" style={{ color: '#0A2342' }}>Skill Tracks</h1>

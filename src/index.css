@@ -1346,3 +1346,127 @@ html[data-theme='dark'] .dashboard-section-heading,
 html[data-theme='dark'] .dashboard-metric-value {
   color: #F7FBFA !important;
 }
+
+
+/* Protected-route Dark mode hardening. React serializes inline colors as RGB values in the DOM,
+   so these selectors complement the legacy hex compatibility rules above. */
+html[data-theme='dark'] .career-page,
+html[data-theme='dark'] .community-page,
+html[data-theme='dark'] .practice-page,
+html[data-theme='dark'] .tracks-page {
+  background: var(--dk-page) !important;
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] .career-page [style*='color: rgb(10, 35, 66)'],
+html[data-theme='dark'] .community-page [style*='color: rgb(10, 35, 66)'],
+html[data-theme='dark'] .practice-page [style*='color: rgb(10, 35, 66)'],
+html[data-theme='dark'] .tracks-page [style*='color: rgb(10, 35, 66)'],
+html[data-theme='dark'] .career-page [style*='color:#0A2342'],
+html[data-theme='dark'] .community-page [style*='color:#0A2342'],
+html[data-theme='dark'] .practice-page [style*='color:#0A2342'],
+html[data-theme='dark'] .tracks-page [style*='color:#0A2342'] {
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] .career-page [style*='color: rgb(107, 122, 153)'],
+html[data-theme='dark'] .community-page [style*='color: rgb(107, 122, 153)'],
+html[data-theme='dark'] .practice-page [style*='color: rgb(107, 122, 153)'],
+html[data-theme='dark'] .tracks-page [style*='color: rgb(107, 122, 153)'],
+html[data-theme='dark'] .career-page [style*='color:#6B7A99'],
+html[data-theme='dark'] .community-page [style*='color:#6B7A99'],
+html[data-theme='dark'] .practice-page [style*='color:#6B7A99'],
+html[data-theme='dark'] .tracks-page [style*='color:#6B7A99'] {
+  color: var(--dk-muted) !important;
+}
+
+html[data-theme='dark'] .career-page [style*='background: rgb(255, 255, 255)'],
+html[data-theme='dark'] .community-page [style*='background: rgb(255, 255, 255)'],
+html[data-theme='dark'] .practice-page [style*='background: rgb(255, 255, 255)'],
+html[data-theme='dark'] .tracks-page [style*='background: rgb(255, 255, 255)'],
+html[data-theme='dark'] .career-page [style*='background: white'],
+html[data-theme='dark'] .community-page [style*='background: white'],
+html[data-theme='dark'] .practice-page [style*='background: white'],
+html[data-theme='dark'] .tracks-page [style*='background: white'] {
+  background: var(--dk-surface) !important;
+  color: var(--dk-text);
+}
+
+html[data-theme='dark'] .career-page [style*='background: rgb(245, 247, 250)'],
+html[data-theme='dark'] .community-page [style*='background: rgb(245, 247, 250)'],
+html[data-theme='dark'] .practice-page [style*='background: rgb(245, 247, 250)'],
+html[data-theme='dark'] .tracks-page [style*='background: rgb(245, 247, 250)'] {
+  background: var(--dk-surface-soft) !important;
+}
+
+html[data-theme='dark'] .career-page [style*='border-color: rgb(226, 234, 243)'],
+html[data-theme='dark'] .community-page [style*='border-color: rgb(226, 234, 243)'],
+html[data-theme='dark'] .practice-page [style*='border-color: rgb(226, 234, 243)'],
+html[data-theme='dark'] .tracks-page [style*='border-color: rgb(226, 234, 243)'],
+html[data-theme='dark'] .practice-page [style*='border-color: rgb(229, 234, 240)'] {
+  border-color: var(--dk-border) !important;
+}
+
+html[data-theme='dark'] .career-page h1,
+html[data-theme='dark'] .career-page h2,
+html[data-theme='dark'] .career-page h3,
+html[data-theme='dark'] .career-page h4,
+html[data-theme='dark'] .community-page h1,
+html[data-theme='dark'] .community-page h2,
+html[data-theme='dark'] .community-page h3,
+html[data-theme='dark'] .community-page h4,
+html[data-theme='dark'] .practice-page h1,
+html[data-theme='dark'] .practice-page h2,
+html[data-theme='dark'] .practice-page h3,
+html[data-theme='dark'] .practice-page h4,
+html[data-theme='dark'] .tracks-page h1,
+html[data-theme='dark'] .tracks-page h2,
+html[data-theme='dark'] .tracks-page h3,
+html[data-theme='dark'] .tracks-page h4 {
+  color: var(--dk-text) !important;
+}
+
+/* The More drawer is shared by every protected route. */
+html[data-theme='dark'] .learner-more-menu [style*='color: rgb(10, 35, 66)'],
+html[data-theme='dark'] .learner-more-menu [style*='color: rgb(107, 122, 153)'],
+html[data-theme='dark'] .learner-more-menu [style*='color: rgb(130, 144, 165)'],
+html[data-theme='dark'] .learner-more-menu [style*='color: rgb(138, 152, 170)'] {
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] .learner-more-menu [style*='color: rgb(138, 152, 170)'] {
+  color: var(--dk-muted) !important;
+}
+
+html[data-theme='dark'] .learner-more-menu [style*='background: rgb(255, 255, 255)'],
+html[data-theme='dark'] .learner-more-menu [style*='background: white'] {
+  background: var(--dk-surface) !important;
+}
+
+html[data-theme='dark'] .learner-more-menu [style*='background: rgb(245, 247, 250)'],
+html[data-theme='dark'] .learner-more-menu [style*='background: #F5F7FA'] {
+  background: var(--dk-surface-soft) !important;
+}
+
+html[data-theme='dark'] .learner-more-menu input::placeholder {
+  color: var(--dk-subtle) !important;
+}
+
+html[data-theme='dark'] .learner-more-menu h2,
+html[data-theme='dark'] .learner-more-menu h3 {
+  color: var(--dk-text) !important;
+}
+
+/* Keep the last protected-route content clear of the fixed dock. */
+@media (max-width: 1023px) {
+  .career-page,
+  .community-page,
+  .practice-page,
+  .tracks-page {
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+  }
+
+  .learner-more-menu {
+    bottom: calc(env(safe-area-inset-bottom) + 5.5rem) !important;
+  }
+}

@@ -80,7 +80,7 @@ export default function Practice() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
+    <div className="practice-page min-h-screen" style={{ background: '#F5F7FA' }}>
       <Navbar />
       <main className="max-w-4xl mx-auto px-6 py-10">
         <Link to="/dashboard" className="text-sm font-semibold" style={{ color: '#6B7A99' }}>← Back to dashboard</Link>
