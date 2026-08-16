@@ -10,7 +10,7 @@ export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
     <>
     <nav className="app-navbar w-full h-20 px-4 sm:px-6 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #E2E8F0' }}>
     <div className="flex items-center gap-3 h-full overflow-visible">
-      <div className="h-12 w-44 flex items-center overflow-visible">
+      <div className="app-navbar-brand h-12 w-44 flex items-center overflow-visible">
         <img
           src="/datakwest_logo_lockup.png"
           alt="DataKwest logo"

@@ -1068,3 +1068,123 @@ html[data-theme='dark'] [style*="color: '#6F858B'"] {
     overflow-wrap: anywhere;
   }
 }
+
+/* Shared authenticated header: keep the DataKwest identity visible while scrolling. */
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  min-height: 5rem;
+  isolation: isolate;
+}
+
+.app-navbar-logo {
+  max-width: min(13rem, 58vw);
+}
+
+html[data-theme='dark'] .app-navbar-logo {
+  filter: brightness(1.7) saturate(.9) contrast(1.12);
+}
+
+/* Dashboard route: explicit semantic surfaces for legacy inline cards. */
+.dashboard-page {
+  min-height: 100vh;
+  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+  background: var(--dk-page) !important;
+  color: var(--dk-text) !important;
+}
+
+.dashboard-light-surface,
+.dashboard-surface {
+  border: 1px solid var(--dk-border);
+  background: var(--dk-surface) !important;
+  color: var(--dk-text);
+}
+
+.dashboard-next-action {
+  border: 1px solid var(--dk-border);
+  background: var(--dk-surface-soft) !important;
+  color: var(--dk-text);
+}
+
+.dashboard-next-action-content > div {
+  background: var(--dk-surface-raised) !important;
+  color: var(--dk-text);
+}
+
+.dashboard-heading,
+.dashboard-skill-name,
+.dashboard-phase-title {
+  color: var(--dk-text) !important;
+}
+
+.dashboard-skill-value,
+.dashboard-phase-topics,
+.dashboard-phase-weeks,
+.dashboard-phase-locked-copy {
+  color: var(--dk-muted) !important;
+}
+
+.dashboard-progress-track {
+  background: var(--dk-border) !important;
+}
+
+.dashboard-progress-fill {
+  background: var(--dk-link) !important;
+}
+
+.dashboard-phase-card {
+  border: 1px solid var(--dk-border);
+  background: var(--dk-surface) !important;
+  color: var(--dk-text);
+}
+
+.dashboard-phase-card:hover:not(:disabled),
+.dashboard-phase-card:focus-visible:not(:disabled) {
+  border-color: var(--dk-link);
+  background: var(--dk-surface-raised) !important;
+}
+
+.dashboard-phase-locked {
+  opacity: 1 !important;
+  background: var(--dk-surface-muted) !important;
+}
+
+.dashboard-phase-passed {
+  color: var(--dk-success) !important;
+}
+
+.dashboard-timeline {
+  border: 1px solid var(--dk-border);
+  background: var(--dk-surface-soft) !important;
+  color: var(--dk-text) !important;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-page {
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 379px) {
+  .app-navbar {
+    min-height: 4.5rem;
+    padding-left: .875rem;
+    padding-right: .875rem;
+  }
+
+  .app-navbar-brand {
+    width: 12.5rem;
+  }
+
+  .app-navbar-logo {
+    height: 3rem;
+    max-width: 12rem;
+  }
+
+  .dashboard-page > .max-w-4xl {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 2rem;
+  }
+}
