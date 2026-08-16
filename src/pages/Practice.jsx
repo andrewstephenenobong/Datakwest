@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
 import { getPracticeHistory, startPracticeSession, submitPracticeAnswer } from '../lib/practice'
+import { syncLegacyPracticeEvidence } from '../lib/learningIntelligence'
 
 const modes = [
   ['adaptive', 'Adaptive practice'],
@@ -32,6 +33,8 @@ export default function Practice() {
   const [loading, setLoading] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(true)
   const [error, setError] = useState('')
+  const [pendingEvidence, setPendingEvidence] = useState(null)
+  const [retryingEvidence, setRetryingEvidence] = useState(false)
 
   useEffect(() => {
     async function loadHistory() {
@@ -68,7 +71,10 @@ export default function Practice() {
       setHistory((current) => [{ attempt_id: result.attempt_id, score: result.score, created_at: new Date().toISOString() }, ...current].slice(0, 10))
 
       if (evidenceError) {
-        setError('Your answer was saved, but the mastery update is still pending. You can continue learning while we retry the evidence sync.')
+        setPendingEvidence({ attemptId: result.attempt_id, itemId: item.id })
+        setError('Your answer was saved, but the mastery update is still pending. You can continue learning or retry the mastery sync now.')
+      } else {
+        setPendingEvidence(null)
       }
     }
   }
@@ -84,7 +90,7 @@ export default function Practice() {
           <p className="mt-2" style={{ color: '#6B7A99' }}>Practise what you know, review weak topics, and let the server track your evidence of mastery.</p>
         </div>
 
-        {error && <div className="rounded-xl p-4 mb-6" style={{ background: '#FEE2E2', color: '#991B1B' }} role="alert">{error}</div>}
+        {error && <div className="rounded-xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap" style={{ background: '#FEE2E2', color: '#991B1B' }} role="alert"><span>{error}</span>{pendingEvidence && <button type="button" onClick={async () => { setRetryingEvidence(true); const { error: retryError } = await syncLegacyPracticeEvidence(pendingEvidence.attemptId); setRetryingEvidence(false); if (retryError) setError('The mastery sync is still unavailable. Your answer remains saved; please try again shortly.'); else { setPendingEvidence(null); setError('Mastery updated successfully from your saved practice evidence.') } }} disabled={retryingEvidence} className="rounded-lg px-3 py-2 text-xs font-bold" style={{ background: '#991B1B', color: 'white' }}>{retryingEvidence ? 'Retrying…' : 'Retry mastery sync'}</button>}</div>}
 
         <section className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <div className="flex items-start justify-between gap-4 flex-wrap">
