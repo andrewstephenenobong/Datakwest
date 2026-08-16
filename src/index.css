@@ -1897,3 +1897,40 @@ html[data-theme='dark'] .dk-playground-page .dk-chess-full-panel {
   .dk-chess-full-panel .dk-chess-side-panel { grid-template-columns: 1fr; }
   .dk-chess-full-panel .dk-chess-side-panel .dk-secondary-button { grid-column: 1; grid-row: auto; width: 100%; }
 }
+
+.dk-ludo-traditional-panel { --ludo-board: #e6e0d3; --ludo-route: #f7f1e5; --ludo-ink: #193033; }
+html[data-theme='dark'] .dk-ludo-traditional-panel { --ludo-board: #183036; --ludo-route: #f4ead8; --ludo-ink: #f7fbfa; }
+.dk-ludo-traditional-board { position: relative; display: grid; grid-template-columns: repeat(15, minmax(0, 1fr)); width: min(100%, 56rem); aspect-ratio: 1; margin: 1rem auto; overflow: hidden; border: clamp(.35rem, 1vw, .75rem) solid var(--dk-surface); border-radius: 1rem; background: var(--ludo-board); box-shadow: 0 1.2rem 2.8rem rgb(0 0 0 / .2); }
+.dk-ludo-cell { position: relative; display: grid; min-width: 0; min-height: 0; place-items: center; border: 1px solid rgb(24 48 51 / .14); background: var(--ludo-board); }
+.dk-ludo-cell.is-route { background: var(--ludo-route); }
+.dk-ludo-cell.is-safe::after { content: '★'; color: #d1a846; font-size: clamp(.45rem, 1.2vw, .9rem); opacity: .8; }
+.dk-ludo-cell.is-home-blue { background: #a9c8f3; }
+.dk-ludo-cell.is-home-red { background: #efb5a8; }
+.dk-ludo-cell.is-home-yellow { background: #f3dda1; }
+.dk-ludo-cell.is-home-green { background: #adddce; }
+.dk-ludo-cell.is-base-blue { background: #5687d8; }
+.dk-ludo-cell.is-base-red { background: #d9705f; }
+.dk-ludo-cell.is-base-yellow { background: #d8b34e; }
+.dk-ludo-cell.is-base-green { background: #51a58c; }
+html[data-theme='dark'] .dk-ludo-cell { border-color: rgb(247 251 250 / .16); }
+.dk-ludo-seed { position: relative; z-index: 2; display: grid; width: min(80%, 2.2rem); aspect-ratio: 1; place-items: center; padding: 0; border: .16rem solid rgb(255 255 255 / .8); border-radius: 50%; color: #fff; font-size: clamp(.45rem, 1.4vw, .82rem); font-weight: 900; box-shadow: 0 .18rem .35rem rgb(0 0 0 / .28); }
+.dk-ludo-seed.is-blue { background: #2c63b6; }
+.dk-ludo-seed.is-red { background: #b94a3f; }
+.dk-ludo-seed.is-yellow { background: #aa841a; }
+.dk-ludo-seed.is-green { background: #277d68; }
+.dk-ludo-seed.is-legal { outline: .2rem solid #fff2a8; animation: dk-ludo-pulse 1.2s ease-in-out infinite; }
+.dk-ludo-center-nest { position: absolute; z-index: 1; top: 50%; left: 50%; display: grid; width: 14%; aspect-ratio: 1; place-items: center; transform: translate(-50%, -50%); border: .3rem solid #e2bd51; border-radius: 50%; background: var(--dk-surface); font-size: clamp(1.2rem, 5vw, 3rem); box-shadow: 0 .3rem .8rem rgb(0 0 0 / .22); }
+.dk-ludo-base-labels { position: absolute; inset: 0; pointer-events: none; }
+.dk-ludo-base-labels span { position: absolute; z-index: 3; font-size: clamp(.45rem, 1.1vw, .75rem); font-weight: 900; text-transform: uppercase; }
+.dk-ludo-base-labels .is-red { top: 2%; left: 3%; color: #7d2922; }
+.dk-ludo-base-labels .is-yellow { top: 2%; right: 3%; color: #6f540b; }
+.dk-ludo-base-labels .is-blue { bottom: 2%; left: 3%; color: #163f81; }
+.dk-ludo-base-labels .is-green { right: 3%; bottom: 2%; color: #155d4b; }
+.dk-ludo-traditional-status { display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto; align-items: center; gap: 1rem; width: min(100%, 56rem); margin: 0 auto; padding: 1rem; border: 1px solid var(--dk-border); border-radius: 1rem; background: var(--dk-surface-soft); }
+.dk-ludo-traditional-status strong, .dk-ludo-traditional-status p { display: block; margin: 0; }
+.dk-ludo-traditional-status strong { color: var(--dk-text); }
+.dk-ludo-traditional-status p { margin-top: .25rem; color: var(--dk-muted); font-size: .75rem; }
+.dk-ludo-die-large { width: 3.5rem; height: 3.5rem; }
+@keyframes dk-ludo-pulse { 50% { transform: scale(1.14); } }
+@media (max-width: 600px) { .dk-ludo-traditional-board { border-width: .3rem; border-radius: .65rem; } .dk-ludo-traditional-status { grid-template-columns: 3.5rem minmax(0, 1fr); gap: .65rem; } .dk-ludo-traditional-status .dk-online-primary { grid-column: 1 / -1; width: 100%; } .dk-ludo-traditional-status strong { font-size: .8rem; } .dk-ludo-traditional-status p { font-size: .68rem; line-height: 1.45; } }
+@media (prefers-reduced-motion: reduce) { .dk-ludo-seed.is-legal { animation: none; } }
