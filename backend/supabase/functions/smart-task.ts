@@ -1,6 +1,14 @@
 function fallbackRoadmap(assessment) {
   const targetSkill = assessment?.targetSkill || 'Digital skills'
   const pace = assessment?.availability || 'your available weekly time'
+  const ageBand = assessment?.ageBand || 'unspecified'
+  const ageGuidance = {
+    'Early learner · ages 5–7': 'Use 5–10 minute playful activities, concrete examples, simple vocabulary, visual or audio cues, one idea at a time, and no career-pressure language. Require parent or guardian involvement for account and safety decisions.',
+    'Young learner · ages 8–12': 'Use 10–15 minute guided activities, concrete examples, short explanations, visual checks for understanding, and age-appropriate projects. Avoid requesting personal information and keep adult oversight available.',
+    'Teen learner · ages 13–17': 'Use 15–25 minute structured activities, clear explanations, relatable real-world examples, increasing independence, and age-appropriate project context without assuming adult employment responsibilities.',
+    'Adult learner · ages 18+': 'Use adult-appropriate technical depth, professional examples, longer practice blocks when suitable, and career-oriented outcomes.',
+    'Prefer not to say': 'Use a balanced beginner-friendly pace and do not infer or reveal an age.'
+  }[ageBand] || 'Use a balanced beginner-friendly pace and do not infer or reveal an age.'
   return {
     skillLevels: { foundation: 5, practice: 0, projects: 0, communication: 0 },
     phases: [
@@ -9,7 +17,8 @@ function fallbackRoadmap(assessment) {
       { number: 3, title: 'Create verified evidence', weeks: 'Weeks 9-12', topics: `Project brief · Planning and research · Build or analyse · Explain decisions · Improve quality · Publish evidence` },
       { number: 4, title: 'Portfolio and career preparation', weeks: 'Weeks 13-16', topics: `Portfolio story · Project walkthrough · Communication practice · Interview foundations · Application readiness · Next milestone` },
     ],
-    estimatedTimeline: `A paced starting roadmap for ${targetSkill}, designed around ${pace}. Your personalised phases can be refined as you complete more practice and projects.`,
+    estimatedTimeline: `A paced starting roadmap for ${targetSkill}, designed around ${pace} and a learner-appropriate format. Your personalised phases can be refined as you complete more practice and projects.`,
+    learnerStage: ageBand,
   }
 }
 
@@ -78,7 +87,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const masterCurriculum = `You are an expert digital-skills curriculum designer, mentor, project supervisor, and career coach. Build a beginner-friendly, practical, interactive, project-based roadmap for the learner's chosen skill. Never assume the learner is studying data analysis unless that is their selected skill. Respect the learner's stated experience, goal, available time, and device. Explain concepts simply, include deliberate practice, and always end with portfolio and career preparation.`
+    const masterCurriculum = `You are an expert digital-skills curriculum designer, mentor, project supervisor, and career coach. Build a beginner-friendly, practical, interactive, project-based roadmap for the learner's chosen skill. Never assume the learner is studying data analysis unless that is their selected skill. Respect the learner's stated experience, goal, available time, device, and learner age band. Explain concepts simply, include deliberate practice, and always end with an age-appropriate evidence milestone. Do not ask for or infer sensitive personal information. For learners under 13, keep activities child-safe, avoid direct requests for contact, location, school, or family details, and assume parent or guardian oversight. Adapt the roadmap using this learner-stage guidance: ${ageGuidance}`
 
     const prompt = `${masterCurriculum}
 
@@ -98,11 +107,14 @@ For skillLevels, you MUST base each number on what the learner actually stated i
 - Advanced / experienced → 65 to 85
 For skills not directly asked about (like Power BI or Data Viz), estimate reasonably based on their overall background, coding experience, and goals.
 
+    For age-aware delivery, make each topic small enough for the learner stage, use the learner's selected device, and avoid adult employment claims for children. Include a `learnerStage` field equal to the supplied age band label.
+
 Return ONLY valid JSON (no markdown, no backticks, no explanation) in this exact structure:
 {
   "skillLevels": { "excel": "<0-100, based on their stated Excel experience>", "sql": "<0-100, based on their stated SQL experience>", "python": "<0-100, based on their stated coding experience>", "statistics": "<0-100, estimate from background>", "powerBI": "<0-100, estimate>", "dataViz": "<0-100, estimate>" },
   "phases": [{ "number": 1, "title": "string", "weeks": "Weeks 1-3", "topics": "topic one · topic two" }],
-  "estimatedTimeline": "one sentence summary"
+  "estimatedTimeline": "one sentence summary",
+  "learnerStage": "the supplied age band label"
 }
 
 All skillLevels values must be actual numbers in the final JSON (not strings, not placeholder text) — the quoted placeholders above just describe what to calculate. Customize the number of phases (3 to 7), titles, and topics based on this learner's specific situation.`
