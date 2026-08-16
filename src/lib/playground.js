@@ -79,3 +79,22 @@ export async function getPlaygroundRankings(gameKey, limit = 25) {
   const { data, error } = await supabase.rpc('get_playground_rankings', { p_game_key: gameKey, p_limit: limit })
   return { rankings: data, error }
 }
+
+
+export async function getSnakeLadderSnapshot(roomId) {
+  const { data, error } = await supabase.rpc('playground_snake_ladder_snapshot', { p_room_id: roomId })
+  return { snapshot: data, error }
+}
+
+export async function heartbeatSnakeLadderRoom(roomId) {
+  const { data, error } = await supabase.rpc('heartbeat_playground_snake_ladder', { p_room_id: roomId })
+  return { snapshot: data, error }
+}
+
+export async function submitSnakeLadderIntent(roomId, action) {
+  const { data, error } = await supabase.rpc('submit_playground_snake_ladder_intent', {
+    p_room_id: roomId,
+    p_action: action,
+  })
+  return { result: data, error }
+}
