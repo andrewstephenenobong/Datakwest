@@ -348,7 +348,7 @@ export default function Lesson() {
   const showPracticeReadOnly = reviewOnly && activeContentRef.practiceTask
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
+    <div className="lesson-page min-h-screen" style={{ background: '#F5F7FA' }}>
       <Navbar xp={xp} streak={streak} />
       <div className="max-w-2xl mx-auto px-6 py-10">
         <Link to="/dashboard" className="text-sm font-semibold mb-6 inline-block"
@@ -368,14 +368,14 @@ export default function Lesson() {
                   key={index}
                   onClick={() => handleLessonClick(index)}
                   disabled={status === 'locked'}
-                  className="w-full flex items-center gap-4 bg-white rounded-2xl p-5 text-left transition-all"
+                  className={`lesson-path-card lesson-path-card-${status} w-full flex items-center gap-4 bg-white rounded-2xl p-5 text-left transition-all`}
                   style={{
                     boxShadow: '0 2px 12px rgba(10,35,66,0.06)',
                     opacity: status === 'locked' ? 0.5 : 1,
                     cursor: status === 'locked' ? 'default' : 'pointer'
                   }}
                 >
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
+                  <div className={`lesson-step-indicator lesson-step-indicator-${status} w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm`}
                     style={{
                       background: status === 'completed' ? '#0A2342' : status === 'current' ? '#D4AF37' : '#E2E8F0',
                       color: status === 'locked' ? '#6B7A99' : 'white'
@@ -383,8 +383,8 @@ export default function Lesson() {
                     {status === 'completed' ? '✓' : index + 1}
                   </div>
                   <div>
-                    <p className="font-medium" style={{ color: '#0A2342' }}>{title}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#6B7A99' }}>
+                    <p className="lesson-path-title font-medium">{title}</p>
+                    <p className="lesson-path-subtitle text-xs mt-0.5">
                       {status === 'completed' ? 'Completed — tap to review or retake' : status === 'current' ? 'Start lesson' : 'Locked'}
                     </p>
                   </div>
