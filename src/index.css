@@ -1188,3 +1188,140 @@ html[data-theme='dark'] .app-navbar-logo {
     padding-top: 2rem;
   }
 }
+
+/* Dashboard mobile composition: clear hierarchy for returning learners. */
+.dashboard-welcome {
+  border-color: var(--dk-border) !important;
+  background: var(--dk-surface-soft) !important;
+  color: var(--dk-text);
+  box-shadow: 0 12px 34px rgba(10, 35, 66, .08);
+}
+
+.dashboard-welcome-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.dashboard-welcome-owl-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  border-radius: 1.5rem;
+  background: color-mix(in srgb, var(--dk-accent-soft) 70%, transparent);
+}
+
+.dashboard-welcome-owl {
+  filter: drop-shadow(0 8px 12px rgba(10, 35, 66, .16));
+}
+
+.dashboard-welcome-eyebrow {
+  color: var(--dk-success) !important;
+}
+
+.dashboard-welcome-title {
+  color: var(--dk-text) !important;
+  text-wrap: balance;
+}
+
+.dashboard-welcome-description {
+  color: var(--dk-muted) !important;
+  max-width: 38rem;
+}
+
+.dashboard-welcome-cta {
+  background: var(--dk-accent) !important;
+  color: var(--dk-accent-contrast) !important;
+  box-shadow: 0 8px 18px rgba(10, 35, 66, .14);
+}
+
+.dashboard-welcome-cta:focus-visible,
+.dashboard-welcome-cta:hover {
+  filter: brightness(1.08);
+}
+
+/* Keep the authenticated brand readable on both light and dark surfaces. */
+.app-navbar {
+  background: var(--dk-surface) !important;
+  border-bottom-color: var(--dk-border) !important;
+}
+
+.app-navbar-logo {
+  object-position: left center;
+}
+
+/* A quieter, denser mobile dock leaves more of the learner workspace visible. */
+@media (max-width: 1023px) {
+  .learner-nav-dock {
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + .5rem) !important;
+  }
+
+  .learner-nav-mobile {
+    max-width: 30rem;
+    padding: .3rem .35rem !important;
+    border-radius: 1.25rem !important;
+  }
+
+  .learner-nav-mobile .learner-nav-item {
+    min-height: 3.25rem !important;
+    border-radius: .95rem !important;
+    gap: .18rem !important;
+    font-size: .62rem !important;
+    line-height: 1rem;
+  }
+
+  .learner-nav-mobile .learner-nav-item svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .dashboard-page {
+    padding-bottom: calc(6.25rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 640px) {
+  .dashboard-welcome-grid {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1.25rem;
+  }
+
+  .dashboard-welcome-owl-wrap {
+    min-height: 6.5rem;
+    width: 7rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-welcome-grid {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .dashboard-page {
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 379px) {
+  .dashboard-welcome {
+    padding: 1rem !important;
+    border-radius: 1.5rem !important;
+  }
+
+  .dashboard-welcome-grid {
+    gap: .75rem;
+  }
+
+  .dashboard-welcome-owl-wrap {
+    min-height: 5rem;
+  }
+
+  .dashboard-welcome-title {
+    font-size: 1.65rem !important;
+    line-height: 1.08 !important;
+  }
+}
