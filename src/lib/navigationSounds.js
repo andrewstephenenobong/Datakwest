@@ -74,3 +74,40 @@ export function previewNavigationSound(style) {
   playNavigationSound('learn', style)
   saveNavigationSoundPreferences(current)
 }
+
+
+const OWL_INTRO_SOUND_KEY = 'datakwest-owl-intro-sound'
+
+export function getOwlIntroSoundPreference() {
+  if (typeof window === 'undefined') return true
+  return window.localStorage.getItem(OWL_INTRO_SOUND_KEY) !== 'off'
+}
+
+export function saveOwlIntroSoundPreference(enabled) {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(OWL_INTRO_SOUND_KEY, enabled ? 'on' : 'off')
+}
+
+export function playOwlIntroSound() {
+  if (typeof window === 'undefined' || !getOwlIntroSoundPreference()) return false
+  const AudioContext = window.AudioContext || window.webkitAudioContext
+  if (!AudioContext) return false
+  const context = new AudioContext()
+  const notes = [392, 523, 659]
+  notes.forEach((frequency, index) => {
+    const oscillator = context.createOscillator()
+    const gain = context.createGain()
+    const start = context.currentTime + index * 0.09
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(frequency, start)
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.045, start + 0.015)
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18)
+    oscillator.connect(gain)
+    gain.connect(context.destination)
+    oscillator.start(start)
+    oscillator.stop(start + 0.2)
+  })
+  window.setTimeout(() => context.close().catch(() => null), 520)
+  return true
+}

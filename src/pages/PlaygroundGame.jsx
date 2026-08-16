@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getOwlIntroSoundPreference, playOwlIntroSound, saveOwlIntroSoundPreference } from '../lib/navigationSounds'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import LearnerNavigation from '../components/LearnerNavigation'
 import PlaygroundOnlinePanel from '../components/PlaygroundOnlinePanel'
@@ -6,7 +7,22 @@ import PlaygroundRankings from '../components/PlaygroundRankings'
 import { DIFFICULTIES, DifficultySelector, GAME_DEFINITIONS, GameComponent, getGameDefinition, getSavedDifficulty, usePlaygroundReaction } from '../components/playground/GameComponents'
 
 function OwlGuide({ game, onClose, replay = false }) {
-  return <div className="dk-owl-guide-backdrop" role="presentation"><section className="dk-owl-guide" role="dialog" aria-modal="true" aria-labelledby="owl-guide-title"><button type="button" className="dk-owl-guide-close" onClick={onClose} aria-label="Close Owl game guide">×</button><div className="dk-owl-guide-avatar"><img src="/playground-owl-mascot-clean.png" alt="" /></div><span className="dk-kicker">{replay ? 'Owl refresher' : 'First time here?'}</span><h2 id="owl-guide-title">Let the Owl show you how to play.</h2><p className="dk-owl-guide-intro">{replay ? 'Here is a quick reminder before your next round.' : 'No pressure. I will explain the rules, then you can choose a comfortable challenge level.'}</p><ol>{game.guide.map((step, index) => <li key={step}><span>{index + 1}</span><p>{step}</p></li>)}</ol><button type="button" className="dk-online-primary" onClick={onClose}>{replay ? 'Back to the game' : 'I’m ready — let’s play'}</button></section></div>
+  const [soundEnabled, setSoundEnabled] = useState(() => getOwlIntroSoundPreference())
+  const [soundPlayed, setSoundPlayed] = useState(false)
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (!soundEnabled) return
+      setSoundPlayed(playOwlIntroSound())
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [soundEnabled])
+  const toggleSound = () => {
+    const next = !soundEnabled
+    setSoundEnabled(next)
+    saveOwlIntroSoundPreference(next)
+    if (next) setSoundPlayed(playOwlIntroSound())
+  }
+  return <div className="dk-owl-guide-backdrop" role="presentation"><section className="dk-owl-guide dk-owl-guide-enter" role="dialog" aria-modal="true" aria-labelledby="owl-guide-title"><button type="button" className="dk-owl-guide-close" onClick={onClose} aria-label="Close Owl game guide">×</button><div className="dk-owl-guide-avatar"><img src="/playground-owl-mascot-clean.png" alt="" /></div><div className="dk-owl-guide-spark" aria-hidden="true">✦</div><span className="dk-kicker">{replay ? 'Owl refresher' : 'First time here?'}</span><h2 id="owl-guide-title">Let the Owl show you how to play.</h2><p className="dk-owl-guide-intro">{replay ? 'Here is a quick reminder before your next round.' : 'No pressure. I will explain the rules, then you can choose a comfortable challenge level.'}</p><ol>{game.guide.map((step, index) => <li key={step}><span>{index + 1}</span><p>{step}</p></li>)}</ol><div className="dk-owl-guide-tools"><button type="button" className="dk-owl-sound-toggle" onClick={toggleSound} aria-pressed={soundEnabled}>{soundEnabled ? 'Sound on' : 'Sound off'}</button><button type="button" className="dk-owl-sound-toggle" onClick={() => setSoundPlayed(playOwlIntroSound())}>{soundPlayed ? 'Replay chime' : 'Play chime'}</button></div><button type="button" className="dk-online-primary" onClick={onClose}>{replay ? 'Back to the game' : 'I’m ready — let’s play'}</button></section></div>
 }
 
 export default function PlaygroundGame() {
