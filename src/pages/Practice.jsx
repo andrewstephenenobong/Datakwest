@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
 import { getPracticeHistory, startPracticeSession, submitPracticeAnswer } from '../lib/practice'
-import { syncLegacyPracticeEvidence } from '../lib/learningIntelligence'
 
 const modes = [
   ['adaptive', 'Adaptive practice'],
@@ -58,7 +57,7 @@ export default function Practice() {
   async function submit(item) {
     const answer = answers[item.id]
     if (answer === undefined || answer === '') return
-    const { result, error: submitError } = await submitPracticeAnswer({
+    const { result, error: submitError, evidenceError } = await submitPracticeAnswer({
       sessionId: session.session_id,
       practiceItemId: item.id,
       answer: typeof answer === 'string' ? { value: answer } : answer,
@@ -68,9 +67,8 @@ export default function Practice() {
       setResults((current) => ({ ...current, [item.id]: result }))
       setHistory((current) => [{ attempt_id: result.attempt_id, score: result.score, created_at: new Date().toISOString() }, ...current].slice(0, 10))
 
-      const { error: evidenceError } = await syncLegacyPracticeEvidence(result.attempt_id)
       if (evidenceError) {
-        setError('Your answer was saved, but the mastery update is still pending. We will retry the evidence sync when you continue learning.')
+        setError('Your answer was saved, but the mastery update is still pending. You can continue learning while we retry the evidence sync.')
       }
     }
   }
