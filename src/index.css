@@ -1941,3 +1941,36 @@ html[data-theme='dark'] .dk-ludo-cell { border-color: rgb(247 251 250 / .16); }
   .dk-playground-page:has(.dk-chess-full-panel) .dk-chess-full-panel { margin-bottom: 2rem; }
   .dk-playground-page:has(.dk-chess-full-panel) .dk-chess-full-panel .dk-game-footer { padding-bottom: 2.5rem; }
 }
+
+/* Keep the guide action readable even when legacy button rules inherit a light text color. */
+.dk-dedicated-game .dk-game-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; }
+.dk-dedicated-game .dk-guide-button {
+  display: inline-flex !important;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: .7rem 1.35rem;
+  border: 1px solid #7d9bb7 !important;
+  border-radius: 999px;
+  background: #ffffff !important;
+  color: #102b4a !important;
+  font-size: .95rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+.dk-dedicated-game .dk-guide-button:hover,
+.dk-dedicated-game .dk-guide-button:focus-visible { background: #eaf1fb !important; color: #0a2342 !important; border-color: #2456a6 !important; }
+html[data-theme='dark'] .dk-dedicated-game .dk-guide-button {
+  border-color: #6f9eaa !important;
+  background: #173238 !important;
+  color: #f7fbfa !important;
+}
+html[data-theme='dark'] .dk-dedicated-game .dk-guide-button:hover,
+html[data-theme='dark'] .dk-dedicated-game .dk-guide-button:focus-visible { background: #24464e !important; color: #ffffff !important; border-color: #9ad9c5 !important; }
+@media (max-width: 560px) {
+  .dk-dedicated-game .dk-game-actions { width: 100%; }
+  .dk-dedicated-game .dk-guide-button { flex: 1 1 12rem; }
+  .dk-dedicated-game .dk-local-pill { flex: 1 1 12rem; text-align: center; }
+}
