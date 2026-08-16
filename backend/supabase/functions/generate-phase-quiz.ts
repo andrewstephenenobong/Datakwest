@@ -52,6 +52,18 @@ Deno.serve(async (req) => {
     }, { onConflict: 'user_id,usage_date' })
 
     const { phaseTitle, topics, background, learningStyle } = await req.json()
+    const { data: learnerPreferences } = await supabaseClient
+      .from('learner_preferences')
+      .select('age_band, guardian_controlled')
+      .eq('learner_id', userId)
+      .maybeSingle()
+    const ageBand = learnerPreferences?.age_band || '13_plus'
+    const ageGuidance = {
+      under_6: 'Use very simple vocabulary, one idea per question, concrete everyday examples, and 6 to 8 short questions. Avoid career language and do not request personal information.',
+      '6_12': 'Use clear vocabulary, concrete examples, short questions, and 8 to 10 questions. Keep examples age-appropriate and avoid requesting personal information.',
+      13_plus: 'Use accessible but increasingly technical language, relatable examples, and 10 to 15 questions.',
+      adult: 'Use adult-appropriate technical language, professional examples, and 15 to 20 questions.',
+    }[ageBand] || 'Use accessible language, concrete examples, and 10 to 15 questions.'
     const apiKeys = [Deno.env.get('GEMINI_API_KEY'), Deno.env.get('GEMINI_API_KEY_2')].filter(Boolean)
 
     if (apiKeys.length === 0) {
@@ -61,14 +73,16 @@ Deno.serve(async (req) => {
       })
     }
 
-    const prompt = `You are an elite Data Analysis examiner creating a comprehensive end-of-phase exam.
+    const prompt = `You are an expert digital-skills examiner creating an age-appropriate end-of-phase assessment.
 
 Phase: ${phaseTitle}
 All topics covered in this phase: ${topics}
 Learner background: ${background || 'beginner'}
 Preferred learning style: ${learningStyle || 'theory + practice'}
+Learner stage: ${ageBand}
+Age-aware guidance: ${ageGuidance}
 
-Create a thorough exam testing mastery across ALL the topics listed above, not just one. Distribute questions proportionally across topics. Progress from basic recall to applied/analytical questions.
+Create an assessment testing mastery across ALL the topics listed above, not just one. Distribute questions proportionally across topics. Progress from basic understanding to applied reasoning at the learner's stage. For learners under 13, use child-safe examples, avoid collecting personal information, and never include adult employment pressure or sensitive scenarios.
 
 Return ONLY valid JSON (no markdown, no backticks) in this exact structure:
 {
@@ -77,7 +91,7 @@ Return ONLY valid JSON (no markdown, no backticks) in this exact structure:
   ]
 }
 
-Include exactly 15 to 20 questions total, covering every topic listed, with varied correctIndex positions and plausible wrong answers.`
+Include a number of questions appropriate to the learner-stage guidance above, covering every topic listed, with varied correctIndex positions and plausible wrong answers.`
 
     let data
     for (const apiKey of apiKeys) {

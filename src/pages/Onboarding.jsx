@@ -98,6 +98,27 @@ const beginnerQuizzes = {
 const customDiscoveryOrientation = { type: 'orientation', key: 'custom-orientation', eyebrow: 'Discover your direction', question: 'Let’s make your new skill easier to understand.', helper: 'We will map the skill you entered into a practical starting point before asking you to choose a direction.', areas: [['What the skill is', 'We will define the core ideas in plain language and connect them to everyday work.'], ['How people use it', 'We will show the common tasks, tools, and outcomes people practise in this area.'], ['Where beginners start', 'We will identify the foundations worth learning before advanced topics.'], ['What you can build', 'We will turn your interest into a small project or useful first result.']] }
 const customDiscoveryQuiz = { type: 'quiz', key: 'custom-discovery-quiz', eyebrow: 'Find your fit', question: 'What would you most like this skill to help you do?', helper: 'Choose the outcome that feels most useful. This gives your first roadmap a clear direction.', options: ['Understand the foundations', 'Solve practical problems', 'Build projects or create things', 'Use the skill in my current work'], results: { 'Understand the foundations': 'Foundations and core concepts', 'Solve practical problems': 'Practical problem solving', 'Build projects or create things': 'Projects and creation', 'Use the skill in my current work': 'Workplace application' } }
 
+const ageBandStep = {
+  key: 'ageBand',
+  eyebrow: 'Personalise your pace',
+  question: 'Who is this learning journey for?',
+  helper: 'Choose an age range so we can adjust language, lesson length, examples, and activity style. We do not need an exact birth date.',
+  options: ['Early learner · ages 5–7', 'Young learner · ages 8–12', 'Teen learner · ages 13–17', 'Adult learner · ages 18+', 'Prefer not to say'],
+}
+const guardianConsentStep = {
+  key: 'guardianConsent',
+  eyebrow: 'Parent or guardian approval',
+  question: 'Can a parent or guardian manage this learning account?',
+  helper: 'For learners under 13, a parent or guardian needs to be involved before personalised AI lessons can begin.',
+  options: ['Yes, I am the parent or guardian', 'I need to come back with a parent or guardian'],
+}
+const AGE_BAND_META = {
+  'Early learner · ages 5–7': { value: 'under_6', min: 5, max: 7, requiresGuardian: true },
+  'Young learner · ages 8–12': { value: '6_12', min: 8, max: 12, requiresGuardian: true },
+  'Teen learner · ages 13–17': { value: '13_plus', min: 13, max: 17, requiresGuardian: false },
+  'Adult learner · ages 18+': { value: 'adult', min: 18, max: null, requiresGuardian: false },
+  'Prefer not to say': { value: '13_plus', min: null, max: null, requiresGuardian: false },
+}
 const finalSteps = [
   { key: 'targetIndustry', eyebrow: 'Career context', question: 'Any specific industry you want to target?', helper: 'We will make examples feel closer to the work you want to do.', options: ['General business (open)', 'Finance', 'Tech', 'Healthcare', 'Marketing'] },
   { key: 'learningStyle', eyebrow: 'Your learning style', question: 'How do you like to learn?', helper: 'Your roadmap balances explanation, practice, and reflection around this preference.', options: ['Theory + practice together', 'Practice-first, theory later', 'Visual and diagram-heavy explanations', 'Reading and documentation'] },
@@ -113,6 +134,13 @@ const optionDescriptions = {
   'Level up for my current role': 'Apply new digital skills to the work you already do.',
   'Build projects and a portfolio': 'Turn practice into visible proof of what you can do.',
   'Explore a new digital path': 'Try a new direction with a low-pressure first mission.',
+  'Early learner · ages 5–7': 'Short, visual activities with simple language and frequent encouragement.',
+  'Young learner · ages 8–12': 'Guided projects, concrete examples, and manageable practice sessions.',
+  'Teen learner · ages 13–17': 'More independent projects with age-appropriate real-world context.',
+  'Adult learner · ages 18+': 'Professional examples, deeper practice, and career-oriented outcomes.',
+  'Prefer not to say': 'Use a balanced default pace without storing an exact age.',
+  'Yes, I am the parent or guardian': 'A parent or guardian can manage this learner account and its safety settings.',
+  'I need to come back with a parent or guardian': 'We will pause personalised learning until an adult can be involved.',
 }
 
 function getSteps(targetSkill, currentAnswers = {}) {
@@ -127,7 +155,10 @@ function getSteps(targetSkill, currentAnswers = {}) {
     : beginner && orientation && quiz
       ? [skillStep[0], { ...orientation, type: 'orientation', key: `${targetSkill}-orientation` }, { ...quiz, type: 'quiz' }]
       : skillStep
+  const ageMeta = AGE_BAND_META[currentAnswers.ageBand]
   return [
+    ageBandStep,
+    ...(ageMeta?.requiresGuardian ? [guardianConsentStep] : []),
     { key: 'targetSkill', eyebrow: 'Choose your direction', question: 'What do you want to learn?', helper: 'Your choice determines the baseline questions, examples, projects, and pace we recommend.', options: skillOptions.map(([label]) => label) },
     ...commonSteps,
     ...adaptiveSkillSteps,
@@ -189,6 +220,10 @@ export default function Onboarding() {
 
   async function handleSelect(value) {
     setError('')
+    if (step.key === 'guardianConsent' && value !== guardianConsentStep.options[0]) {
+      setError('A parent or guardian needs to be involved before we can create a personalised account for a learner under 13.')
+      return
+    }
     const updatedAnswers = { ...answers, [step.key]: value }
     setAnswers(updatedAnswers)
     setShowOtherInput(false)
@@ -244,6 +279,8 @@ export default function Onboarding() {
           currentLevel: finalAnswers.background === 'Student, no work experience' ? 'beginner' : 'unknown',
           weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
           locale: 'en',
+          targetAgeMin: AGE_BAND_META[finalAnswers.ageBand]?.min || null,
+          targetAgeMax: AGE_BAND_META[finalAnswers.ageBand]?.max || null,
         })
         if (universalDiscovery?.error) throw new Error(universalDiscovery.error)
         finalAnswers.universalSkillRequestId = universalDiscovery?.requestId || null
@@ -273,6 +310,8 @@ export default function Onboarding() {
           await updateLearnerPreferences({
             weeklyMinutes: weeklyMinutesByAnswer[finalAnswers.availability] || null,
             explanationStyle: finalAnswers.learningStyle || null,
+            ageBand: AGE_BAND_META[finalAnswers.ageBand]?.value || 'unspecified',
+            guardianControlled: Boolean(AGE_BAND_META[finalAnswers.ageBand]?.requiresGuardian && finalAnswers.guardianConsent === guardianConsentStep.options[0]),
           })
         } catch (preferenceError) {
           console.warn('Onboarding preferences sync deferred:', preferenceError)
@@ -295,7 +334,7 @@ export default function Onboarding() {
           console.warn('Onboarding enrolment sync deferred:', enrolmentError)
         }
 
-        void logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal, targetSkill: finalAnswers.targetSkill })
+        void logEvent(user.id, 'onboarding_completed', { background: finalAnswers.background, goal: finalAnswers.goal, targetSkill: finalAnswers.targetSkill, ageBand: AGE_BAND_META[finalAnswers.ageBand]?.value || 'unspecified', guardianControlled: Boolean(AGE_BAND_META[finalAnswers.ageBand]?.requiresGuardian && finalAnswers.guardianConsent === guardianConsentStep.options[0]) })
       })()
     } catch (err) {
       console.error('Onboarding error:', err)
