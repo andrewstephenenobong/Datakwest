@@ -824,3 +824,84 @@ html[data-theme='dark'] .auth-surface {
     border-radius: 1.5rem;
   }
 }
+
+/* Legacy route compatibility: common inline Light-theme values */
+html[data-theme='dark'] [style*='background: #F5F7FA'],
+html[data-theme='dark'] [style*="background: '#F5F7FA'"],
+html[data-theme='dark'] [style*='background: #F7FAFF'],
+html[data-theme='dark'] [style*="background: '#F7FAFF'"],
+html[data-theme='dark'] [style*='background: #F8FAFD'],
+html[data-theme='dark'] [style*="background: '#F8FAFD'"],
+html[data-theme='dark'] [style*='background: #FBFCFE'],
+html[data-theme='dark'] [style*="background: '#FBFCFE'"],
+html[data-theme='dark'] [style*='background: #FFFFFF'],
+html[data-theme='dark'] [style*="background: '#FFFFFF'"] {
+  background: var(--dk-surface) !important;
+}
+
+html[data-theme='dark'] [style*='borderColor: #DCE5F0'],
+html[data-theme='dark'] [style*="borderColor: '#DCE5F0'"],
+html[data-theme='dark'] [style*='borderColor: #E7EDF4'],
+html[data-theme='dark'] [style*="borderColor: '#E7EDF4'"],
+html[data-theme='dark'] [style*='borderColor: #EDF1F6'],
+html[data-theme='dark'] [style*="borderColor: '#EDF1F6'"] {
+  border-color: var(--dk-border) !important;
+}
+
+html[data-theme='dark'] [style*='color: #0A2342'],
+html[data-theme='dark'] [style*="color: '#0A2342'"],
+html[data-theme='dark'] [style*='color: #1D3557'],
+html[data-theme='dark'] [style*="color: '#1D3557'"] {
+  color: var(--dk-text) !important;
+}
+
+html[data-theme='dark'] [style*='color: #6B7A99'],
+html[data-theme='dark'] [style*="color: '#6B7A99'"],
+html[data-theme='dark'] [style*='color: #8290A5'],
+html[data-theme='dark'] [style*="color: '#8290A5'"],
+html[data-theme='dark'] [style*='color: #8A98AA'],
+html[data-theme='dark'] [style*="color: '#8A98AA'"] {
+  color: var(--dk-muted) !important;
+}
+
+/* Repeated status and interaction color mappings */
+html[data-theme='dark'] [style*='background: #FEE2E2'],
+html[data-theme='dark'] [style*="background: '#FEE2E2'"] {
+  background: #3A2425 !important;
+}
+
+html[data-theme='dark'] [style*='background: #E8F5E9'],
+html[data-theme='dark'] [style*="background: '#E8F5E9'"] {
+  background: #1E3A32 !important;
+}
+
+html[data-theme='dark'] [style*='background: #FFF9E8'],
+html[data-theme='dark'] [style*="background: '#FFF9E8'"],
+html[data-theme='dark'] [style*='background: #FFFBEF'],
+html[data-theme='dark'] [style*="background: '#FFFBEF'"] {
+  background: var(--dk-accent-soft) !important;
+}
+
+html[data-theme='dark'] [style*='background: #E8F0FE'],
+html[data-theme='dark'] [style*="background: '#E8F0FE'"] {
+  background: #203A4A !important;
+}
+
+html[data-theme='dark'] [style*='borderColor: #E2E8F0'],
+html[data-theme='dark'] [style*="borderColor: '#E2E8F0'"],
+html[data-theme='dark'] [style*='borderColor: #E2EAF3'],
+html[data-theme='dark'] [style*="borderColor: '#E2EAF3'"],
+html[data-theme='dark'] [style*='borderColor: #DCE5F0'],
+html[data-theme='dark'] [style*="borderColor: '#DCE5F0'"] {
+  border-color: var(--dk-border) !important;
+}
+
+html[data-theme='dark'] [style*='color: #991B1B'],
+html[data-theme='dark'] [style*="color: '#991B1B'"] {
+  color: var(--dk-danger) !important;
+}
+
+html[data-theme='dark'] [style*='color: #2E7D32'],
+html[data-theme='dark'] [style*="color: '#2E7D32'"] {
+  color: var(--dk-success) !important;
+}
