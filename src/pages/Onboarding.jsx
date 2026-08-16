@@ -290,18 +290,19 @@ export default function Onboarding() {
       const { data, error: fnError } = await supabase.functions.invoke('smart-task', { body: { assessment: finalAnswers } })
       if (fnError) throw fnError
       if (data?.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error))
-      const { error: completionError } = await supabase.rpc('complete_onboarding', {
+      const { error: completionError } = await supabase.rpc('complete_onboarding_with_preferences', {
         p_email: user.email || '',
         p_full_name: user.user_metadata?.full_name || '',
         p_username: user.user_metadata?.username || '',
         p_assessment: finalAnswers,
         p_roadmap: data.roadmap,
+        p_age_band: AGE_BAND_META[finalAnswers.ageBand]?.value || '13_plus',
+        p_guardian_controlled: Boolean(AGE_BAND_META[finalAnswers.ageBand]?.requiresGuardian && finalAnswers.guardianConsent === guardianConsentStep.options[0]),
       })
       if (completionError) throw completionError
 
-      // The roadmap and profile are the critical onboarding contract. Navigate as soon as
-      // that authoritative save succeeds; secondary personalization work must not trap
-      // the learner on a loading screen if a catalogue or telemetry request is slow.
+      // The roadmap, profile, age band, and guardian state are the critical onboarding contract.
+      // The atomic RPC above has committed them together before navigation.
       setGenerating(false)
       navigate('/dashboard?welcome=first-mission')
 
