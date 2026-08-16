@@ -960,3 +960,37 @@ html[data-theme='dark'] [style*='background: #F5F7FA'],
 html[data-theme='dark'] [style*="background: '#F5F7FA'"] {
   background: var(--dk-page) !important;
 }
+
+/* Career Centre and learner-route legacy token compatibility */
+html[data-theme='dark'] [style*='background: #F6F8FC'],
+html[data-theme='dark'] [style*="background: '#F6F8FC'"] {
+  background: var(--dk-page) !important;
+}
+
+html[data-theme='dark'] [style*='background: #F4F7FB'],
+html[data-theme='dark'] [style*="background: '#F4F7FB'"] {
+  background: var(--dk-surface-muted) !important;
+}
+
+html[data-theme='dark'] [style*='background: #EEF6F1'],
+html[data-theme='dark'] [style*="background: '#EEF6F1'"] {
+  background: #1E3A32 !important;
+}
+
+html[data-theme='dark'] [style*='background: #EEF3FA'],
+html[data-theme='dark'] [style*="background: '#EEF3FA'"] {
+  background: #203A4A !important;
+}
+
+html[data-theme='dark'] [style*='#E2EAF3'],
+html[data-theme='dark'] [style*='#DCE5F0'],
+html[data-theme='dark'] [style*='#E6ECF4'] {
+  border-color: var(--dk-border) !important;
+}
+
+html[data-theme='dark'] [style*='color: #8290A5'],
+html[data-theme='dark'] [style*="color: '#8290A5'"],
+html[data-theme='dark'] [style*='color: #6F858B'],
+html[data-theme='dark'] [style*="color: '#6F858B'"] {
+  color: var(--dk-subtle) !important;
+}
