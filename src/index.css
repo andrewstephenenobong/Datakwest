@@ -905,3 +905,37 @@ html[data-theme='dark'] [style*='color: #2E7D32'],
 html[data-theme='dark'] [style*="color: '#2E7D32'"] {
   color: var(--dk-success) !important;
 }
+
+.app-navbar {
+  border-bottom-color: var(--dk-border) !important;
+  background: var(--dk-surface) !important;
+  color: var(--dk-text);
+}
+
+.app-navbar-logo {
+  filter: saturate(1.06) contrast(1.04);
+}
+
+.app-navbar-metrics {
+  color: var(--dk-muted) !important;
+}
+
+.app-navbar-profile {
+  border-color: var(--dk-border) !important;
+  color: var(--dk-text) !important;
+}
+
+.app-navbar-profile:hover {
+  border-color: var(--dk-link) !important;
+  background: var(--dk-surface-soft);
+}
+
+html[data-theme='dark'] .app-navbar-profile [style*='#E8F0FE'],
+html[data-theme='dark'] .app-navbar-profile [style*="background: '#E8F0FE'"] {
+  background: #203A4A !important;
+}
+
+html[data-theme='dark'] .app-navbar-profile [style*='#6B7A99'],
+html[data-theme='dark'] .app-navbar-profile [style*="color: '#6B7A99'"] {
+  color: var(--dk-muted) !important;
+}
