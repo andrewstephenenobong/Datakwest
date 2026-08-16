@@ -521,3 +521,32 @@ html[data-theme='dark'] .onboarding-page main section input {
   color: var(--onboarding-ink) !important;
   border-color: var(--onboarding-border) !important;
 }
+
+html[data-theme='dark'] .onboarding-page .onboarding-question-card {
+  background: var(--onboarding-surface) !important;
+  color: var(--onboarding-ink);
+}
+
+html[data-theme='dark'] .onboarding-page .onboarding-answer-option {
+  border-color: var(--onboarding-border) !important;
+  background: var(--onboarding-surface-soft) !important;
+  color: var(--onboarding-ink) !important;
+}
+
+html[data-theme='dark'] .onboarding-page .onboarding-answer-option[aria-selected='true'],
+html[data-theme='dark'] .onboarding-page .onboarding-answer-option[aria-checked='true'] {
+  border-color: #BFA64A !important;
+  background: var(--onboarding-gold-wash) !important;
+  box-shadow: 0 8px 22px rgba(230, 200, 92, 0.12) !important;
+}
+
+html[data-theme='dark'] .onboarding-page .onboarding-answer-option .onboarding-answer-icon {
+  background: var(--onboarding-icon-bg) !important;
+  color: var(--onboarding-control-text) !important;
+}
+
+html[data-theme='dark'] .onboarding-page .onboarding-answer-option[aria-selected='true'] .onboarding-answer-icon,
+html[data-theme='dark'] .onboarding-page .onboarding-answer-option[aria-checked='true'] .onboarding-answer-icon {
+  background: #E6C85C !important;
+  color: #0E1B1F !important;
+}
