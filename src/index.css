@@ -1325,3 +1325,24 @@ html[data-theme='dark'] .app-navbar-logo {
     line-height: 1.08 !important;
   }
 }
+
+/* Dashboard heading hierarchy: light ivory text on Dark-mode page surfaces. */
+.dashboard-primary-heading,
+.dashboard-section-heading,
+.dashboard-metric-value {
+  color: var(--dk-text) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dashboard-primary-heading,
+  .dashboard-section-heading,
+  .dashboard-metric-value {
+    color: #F7FBFA !important;
+  }
+}
+
+html[data-theme='dark'] .dashboard-primary-heading,
+html[data-theme='dark'] .dashboard-section-heading,
+html[data-theme='dark'] .dashboard-metric-value {
+  color: #F7FBFA !important;
+}
