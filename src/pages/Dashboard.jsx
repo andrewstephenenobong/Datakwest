@@ -175,7 +175,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
+    <div className="dashboard-page min-h-screen" style={{ background: '#F5F7FA' }}>
       <Navbar streak={streak} xp={xp} streakActive={profile.streakActiveToday} />
 
       <div className="max-w-4xl mx-auto px-6 py-10">
@@ -202,14 +202,14 @@ export default function Dashboard() {
             { label: 'Current Phase', value: `${Math.min(currentPhase, totalPhases)} / ${totalPhases}` },
             { label: 'Phases Passed', value: `${passedPhaseNumbers.size} / ${totalPhases}`, highlight: true }
           ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl p-5 text-center" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+            <div key={stat.label} className="dashboard-light-surface rounded-2xl p-5 text-center" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
               <p className="text-xs mb-1" style={{ color: '#6B7A99' }}>{stat.label}</p>
               <p className="text-xl font-bold" style={{ color: stat.highlight ? '#D4AF37' : '#0A2342' }}>{stat.value}</p>
             </div>
           ))}
         </div>
 
-        <section className="rounded-2xl p-6 mb-8" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="readiness-title">
+        <section className="dashboard-light-surface rounded-2xl p-6 mb-8" style={{ background: 'white', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="readiness-title">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6B7A99' }}>Career readiness</p>
@@ -277,7 +277,7 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="rounded-2xl p-6 mb-8" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="next-action-title">
+        <section className="dashboard-next-action rounded-2xl p-6 mb-8" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="next-action-title">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Next best action</p>
@@ -286,7 +286,7 @@ export default function Dashboard() {
             </div>
             {nextAction?.evidence_kind && <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#FFFFFF', color: '#2456A6' }}>{nextAction.evidence_kind}</span>}
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div className="dashboard-next-action-content mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
             <div className="rounded-xl p-4" style={{ background: '#FFFFFF' }}>
               <p className="text-xs font-bold" style={{ color: '#2456A6' }}>Why this is recommended</p>
               <p className="mt-1 text-sm leading-6" style={{ color: '#4B6385' }}>{nextAction?.instruction || 'The server will choose the next step after it verifies your learning evidence.'}</p>
@@ -298,19 +298,19 @@ export default function Dashboard() {
           {nextActionError && <p className="mt-4 text-xs" style={{ color: '#991B1B' }}>{nextActionError}</p>}
         </section>
 
-        <div className="bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
-          <h3 className="text-sm font-bold mb-5" style={{ color: '#0A2342' }}>Your skill levels</h3>
+        <div className="dashboard-surface dashboard-skill-levels bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
+          <h3 className="dashboard-heading text-sm font-bold mb-5">Your skill levels</h3>
           <div className="space-y-4">
             {Object.entries(roadmap.skillLevels || {}).map(([key, startingValue]) => {
               const grown = Math.min(100, Math.round((startingValue || 0) + (skillProgress[key] || 0)))
               return (
                 <div key={key}>
                   <div className="flex justify-between text-sm mb-1.5">
-                    <span style={{ color: '#0A2342' }}>{skillLabels[key] || key}</span>
-                    <span style={{ color: '#6B7A99' }}>{grown}%</span>
+                    <span className="dashboard-skill-name">{skillLabels[key] || key}</span>
+                    <span className="dashboard-skill-value">{grown}%</span>
                   </div>
-                  <div className="w-full h-2 rounded-full" style={{ background: '#E2E8F0' }}>
-                    <div className="h-2 rounded-full transition-all duration-500" style={{ background: '#0A2342', width: `${grown}%` }} />
+                  <div className="dashboard-progress-track w-full h-2 rounded-full" style={{ background: '#E2E8F0' }}>
+                    <div className="dashboard-progress-fill h-2 rounded-full transition-all duration-500" style={{ background: '#0A2342', width: `${grown}%` }} />
                   </div>
                 </div>
               )
@@ -318,7 +318,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <h3 className="text-sm font-bold mb-4" style={{ color: '#0A2342' }}>Your learning journey</h3>
+        <h3 className="dashboard-heading text-sm font-bold mb-4">Your learning journey</h3>
         <div className="space-y-4 mb-8">
           {roadmap.phases?.map((phase) => {
             const isPassed = passedPhaseNumbers.has(phase.number)
@@ -329,7 +329,7 @@ export default function Dashboard() {
                 key={phase.number}
                 onClick={() => isActive && navigate(`/lesson/${phase.number}`)}
                 disabled={!isActive}
-                className="w-full text-left bg-white rounded-2xl p-6 transition-all"
+                className={`dashboard-phase-card w-full text-left bg-white rounded-2xl p-6 transition-all ${isActive ? 'dashboard-phase-active' : 'dashboard-phase-locked'}`}
                 style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)', opacity: isActive ? 1 : 0.5, cursor: isActive ? 'pointer' : 'default' }}
               >
                 <div className="flex items-start justify-between mb-2 flex-wrap gap-2">
@@ -337,18 +337,18 @@ export default function Dashboard() {
                     <span className="text-2xl font-bold" style={{ color: isPassed ? '#2E7D32' : '#D4AF37' }}>
                       {isPassed ? '✓' : String(phase.number).padStart(2, '0')}
                     </span>
-                    <h4 className="font-bold" style={{ color: '#0A2342' }}>{phase.title}</h4>
+                    <h4 className="dashboard-phase-title font-bold">{phase.title}</h4>
                   </div>
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap" style={{ background: '#F5F7FA', color: '#6B7A99' }}>
+                  <span className="dashboard-phase-weeks text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
                     {phase.weeks}
                   </span>
                 </div>
-                <p className="text-sm" style={{ color: '#6B7A99' }}>{phase.topics}</p>
+                <p className="dashboard-phase-topics text-sm">{phase.topics}</p>
                 {isPassed && (
-                  <p className="text-xs font-semibold mt-2" style={{ color: '#2E7D32' }}>Passed ✓ — click to review</p>
+                  <p className="dashboard-phase-status dashboard-phase-passed text-xs font-semibold mt-2">Passed ✓ — click to review</p>
                 )}
                 {!isActive && (
-                  <p className="text-xs font-semibold mt-2" style={{ color: '#6B7A99' }}>🔒 Complete the previous phase to unlock</p>
+                  <p className="dashboard-phase-status dashboard-phase-locked-copy text-xs font-semibold mt-2">🔒 Complete the previous phase to unlock</p>
                 )}
               </button>
             )
@@ -356,7 +356,7 @@ export default function Dashboard() {
         </div>
 
         {roadmap.estimatedTimeline && (
-          <div className="rounded-2xl p-5 text-sm" style={{ background: '#E8F0FE', color: '#1E3A5F' }}>
+          <div className="dashboard-timeline rounded-2xl p-5 text-sm" style={{ background: '#E8F0FE', color: '#1E3A5F' }}>
             <strong>Estimated timeline:</strong> {roadmap.estimatedTimeline}
           </div>
         )}
