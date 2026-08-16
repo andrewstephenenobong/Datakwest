@@ -439,3 +439,85 @@ html[data-theme='dark'] .onboarding-page {
     padding: 0.875rem;
   }
 }
+
+/* Onboarding visual consistency: scoped overrides for legacy inline styles. */
+.onboarding-page {
+  --onboarding-surface-soft: #FBFCFE;
+  --onboarding-icon-bg: #EAF0F7;
+  --onboarding-gold-wash: #FFF9E8;
+  --onboarding-gold-soft: #FFF5D8;
+  --onboarding-gold-ink: #967414;
+  --onboarding-control-text: #416181;
+  --onboarding-progress-track: #E1E8F1;
+}
+
+html[data-theme='dark'] .onboarding-page {
+  --onboarding-surface-soft: #172B31;
+  --onboarding-icon-bg: #203A4A;
+  --onboarding-gold-wash: #302B1B;
+  --onboarding-gold-soft: #3A321A;
+  --onboarding-gold-ink: #F0D56D;
+  --onboarding-control-text: #C4D6D8;
+  --onboarding-progress-track: #40565D;
+}
+
+html[data-theme='dark'] .onboarding-page > header [style*='#0A2342'],
+html[data-theme='dark'] .onboarding-page > header [style*='#8391A7'],
+html[data-theme='dark'] .onboarding-page main section [style*='#0A2342'],
+html[data-theme='dark'] .onboarding-page main section [style*='#6B7A99'],
+html[data-theme='dark'] .onboarding-page main section [style*='#8290A5'],
+html[data-theme='dark'] .onboarding-page main section [style*='#7B8AA0'],
+html[data-theme='dark'] .onboarding-page main section [style*='#8A98AA'] {
+  color: var(--onboarding-ink) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section [style*='#6B7A99'],
+html[data-theme='dark'] .onboarding-page main section [style*='#8290A5'],
+html[data-theme='dark'] .onboarding-page main section [style*='#7B8AA0'],
+html[data-theme='dark'] .onboarding-page main section [style*='#8A98AA'] {
+  color: var(--onboarding-muted) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section > div[data-onboarding-step],
+html[data-theme='dark'] .onboarding-page main section [style*='background: white'] {
+  background: var(--onboarding-surface) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section [style*='#FBFCFE'],
+html[data-theme='dark'] .onboarding-page main section [style*='#FCFDFE'],
+html[data-theme='dark'] .onboarding-page main section [style*='#F7F9FC'] {
+  background: var(--onboarding-surface-soft) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section [style*='#FFF9E8'],
+html[data-theme='dark'] .onboarding-page main section [style*='#FFF5D8'] {
+  background: var(--onboarding-gold-wash) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section [style*='#E6ECF4'],
+html[data-theme='dark'] .onboarding-page main section [style*='#E2EAF3'],
+html[data-theme='dark'] .onboarding-page main section [style*='#D8E1EC'],
+html[data-theme='dark'] .onboarding-page main section [style*='#EDF1F6'] {
+  border-color: var(--onboarding-border) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section [style*='#EAF0F7'],
+html[data-theme='dark'] .onboarding-page main section [style*='#EEF3FA'] {
+  background: var(--onboarding-icon-bg) !important;
+  color: var(--onboarding-control-text) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section [style*='#E1E8F1'] {
+  background: var(--onboarding-progress-track) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section [style*='#967414'],
+html[data-theme='dark'] .onboarding-page main section [style*='#9A7610'] {
+  color: var(--onboarding-gold-ink) !important;
+}
+
+html[data-theme='dark'] .onboarding-page main section input {
+  background: var(--onboarding-surface-soft) !important;
+  color: var(--onboarding-ink) !important;
+  border-color: var(--onboarding-border) !important;
+}
