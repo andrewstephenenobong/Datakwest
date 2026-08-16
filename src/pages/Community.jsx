@@ -89,7 +89,7 @@ export default function Community() {
   const isMember = selectedCommunity?.membership_status === 'active'
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
+    <div className="community-page min-h-screen" style={{ background: '#F5F7FA' }}>
       <Navbar />
       <main className="max-w-5xl mx-auto px-6 py-10">
         <Link to="/dashboard" className="text-sm font-semibold" style={{ color: '#6B7A99' }}>← Back to dashboard</Link>
