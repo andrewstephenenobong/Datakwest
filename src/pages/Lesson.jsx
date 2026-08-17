@@ -491,7 +491,7 @@ export default function Lesson() {
                 )}
 
                 {activeContent.example && (
-                  <div className="rounded-2xl p-5 mb-6"
+                  <div className="lesson-example-card rounded-2xl p-5 mb-6"
                     style={{ background: '#FFFBEF', border: '1px solid #D4AF37' }}>
                     <p className="lesson-section-label text-xs font-black mb-2" style={{ color: '#0A2342' }}>💡 REAL-WORLD EXAMPLE</p>
                     <p className="lesson-section-copy text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.example}</p>
@@ -499,7 +499,7 @@ export default function Lesson() {
                 )}
 
                 {activeContent.exercise && (
-                  <div className="rounded-2xl p-5 mb-6"
+                  <div className="lesson-exercise-card rounded-2xl p-5 mb-6"
                     style={{ background: '#F0F4FF', border: '1px solid #0A2342' }}>
                     <p className="lesson-section-label text-xs font-black mb-2" style={{ color: '#0A2342' }}>🏋️ TRY IT YOURSELF</p>
                     <p className="lesson-section-copy text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.exercise}</p>
@@ -649,7 +649,7 @@ export default function Lesson() {
                     </button>
                   </div>
                 ) : currentQuestion ? (
-                  <div className="border-t pt-6" style={{ borderColor: '#E2E8F0' }}>
+                  <div className="lesson-quiz-panel border-t pt-6" style={{ borderColor: '#E2E8F0' }}>
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-xs font-semibold" style={{ color: '#6B7A99' }}>
                         QUIZ — QUESTION {qIndex + 1} OF {questions.length}
@@ -677,7 +677,7 @@ export default function Lesson() {
                         }
                         return (
                           <button key={i} onClick={() => handleAnswer(i)} disabled={answered}
-                            className="w-full text-left px-4 py-3 rounded-xl border-2 text-sm transition-all"
+                            className="lesson-quiz-option w-full text-left px-4 py-3 rounded-xl border-2 text-sm transition-all"
                             style={{ borderColor: border, background: bg, color }}>
                             <span className="font-semibold mr-2">{String.fromCharCode(65 + i)}.</span>
                             {opt}

@@ -2311,3 +2311,49 @@ html[data-theme='dark'] .lesson-content-card [style*="background: '#F0F4FF'"] {
     max-width: 100%;
   }
 }
+
+/* Prevent lesson sub-cards from inheriting incompatible global dark-mode tokens. */
+.lesson-example-card,
+.lesson-exercise-card,
+.lesson-quiz-panel,
+.lesson-quiz-option {
+  color: #0A2342 !important;
+}
+
+html[data-theme='dark'] .lesson-example-card {
+  background: #3B3821 !important;
+  border-color: #C9A83A !important;
+}
+
+html[data-theme='dark'] .lesson-exercise-card {
+  background: #1E3848 !important;
+  border-color: #6D9BC7 !important;
+}
+
+html[data-theme='dark'] .lesson-example-card .lesson-section-label,
+html[data-theme='dark'] .lesson-example-card .lesson-section-copy,
+html[data-theme='dark'] .lesson-exercise-card .lesson-section-label,
+html[data-theme='dark'] .lesson-exercise-card .lesson-section-copy {
+  color: #F7FBFA !important;
+}
+
+html[data-theme='dark'] .lesson-quiz-panel {
+  border-color: #55737B !important;
+}
+
+html[data-theme='dark'] .lesson-quiz-panel > div > p,
+html[data-theme='dark'] .lesson-quiz-panel > p {
+  color: #F7FBFA !important;
+}
+
+html[data-theme='dark'] .lesson-quiz-option {
+  background: #1D3941 !important;
+  border-color: #55737B !important;
+  color: #F7FBFA !important;
+}
+
+html[data-theme='dark'] .lesson-quiz-option:hover,
+html[data-theme='dark'] .lesson-quiz-option:focus-visible {
+  background: #24484F !important;
+  border-color: #8BC6B5 !important;
+}
