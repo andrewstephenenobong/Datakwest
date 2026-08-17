@@ -311,25 +311,25 @@ export default function Dashboard() {
           )}
         </section>
 
-        <section className="dashboard-next-action rounded-2xl p-6 mb-8" style={{ background: '#E8F0FE', boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }} aria-labelledby="next-action-title">
+        <section className="dashboard-next-action rounded-2xl p-6 mb-8" aria-labelledby="next-action-title">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#2456A6' }}>Next best action</p>
-              <h2 id="next-action-title" className="dashboard-section-heading text-xl font-bold mt-1" style={{ color: '#0A2342' }}>{nextAction?.title || 'Your next action is being prepared'}</h2>
-              <p className="text-sm mt-2" style={{ color: '#4B6385' }}>{nextAction?.instruction || 'Complete a focused step and submit evidence. Your mastery is updated by the server after verification.'}</p>
+              <p className="dashboard-next-action-eyebrow text-xs font-bold uppercase tracking-wide">Next best action</p>
+              <h2 id="next-action-title" className="dashboard-next-action-title dashboard-section-heading text-xl font-bold mt-1">{nextAction?.title || 'Your next action is being prepared'}</h2>
+              <p className="dashboard-next-action-copy text-sm mt-2">{nextAction?.instruction || 'Complete a focused step and submit evidence. Your mastery is updated by the server after verification.'}</p>
             </div>
-            {nextAction?.evidence_kind && <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#FFFFFF', color: '#2456A6' }}>{nextAction.evidence_kind}</span>}
+            {nextAction?.evidence_kind && <span className="dashboard-next-action-badge text-xs font-bold px-3 py-1 rounded-full">{nextAction.evidence_kind}</span>}
           </div>
           <div className="dashboard-next-action-content mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div className="rounded-xl p-4" style={{ background: '#FFFFFF' }}>
-              <p className="text-xs font-bold" style={{ color: '#2456A6' }}>Why this is recommended</p>
-              <p className="mt-1 text-sm leading-6" style={{ color: '#4B6385' }}>{nextAction?.instruction || 'The server will choose the next step after it verifies your learning evidence.'}</p>
-              {nextAction && <p className="mt-2 text-xs" style={{ color: '#8290A5' }}>{nextAction.evidence_count || 0} verified evidence item{nextAction.evidence_count === 1 ? '' : 's'} · {nextAction.confidence_score != null ? `${Math.round(Number(nextAction.confidence_score) * 100)}% confidence` : 'confidence pending'}</p>}
+            <div className="dashboard-next-action-detail rounded-xl p-4">
+              <p className="dashboard-next-action-label text-xs font-bold">Why this is recommended</p>
+              <p className="dashboard-next-action-copy mt-1 text-sm leading-6">{nextAction?.instruction || 'The server will choose the next step after it verifies your learning evidence.'}</p>
+              {nextAction && <p className="dashboard-next-action-meta mt-2 text-xs">{nextAction.evidence_count || 0} verified evidence item{nextAction.evidence_count === 1 ? '' : 's'} · {nextAction.confidence_score != null ? `${Math.round(Number(nextAction.confidence_score) * 100)}% confidence` : 'confidence pending'}</p>}
             </div>
-            {nextAction && <button type="button" onClick={openNextAction} className="min-h-12 rounded-xl px-5 py-3 text-sm font-bold" style={{ background: '#2456A6', color: 'white' }}>Start next action →</button>}
+            {nextAction && <button type="button" onClick={openNextAction} className="dashboard-next-action-button min-h-12 rounded-xl px-5 py-3 text-sm font-bold">Start next action →</button>}
           </div>
-          {nextAction?.node_key && <p className="mt-4 text-xs font-semibold" style={{ color: '#2456A6' }}>Recommended node: {nextAction.node_key}</p>}
-          {nextActionError && <p className="mt-4 text-xs" style={{ color: '#991B1B' }}>{nextActionError}</p>}
+          {nextAction?.node_key && <p className="dashboard-next-action-node mt-4 text-xs font-semibold">Recommended node: {nextAction.node_key}</p>}
+          {nextActionError && <p className="dashboard-next-action-error mt-4 text-xs">{nextActionError}</p>}
         </section>
 
         <div className="dashboard-surface dashboard-skill-levels bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>

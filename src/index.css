@@ -2775,3 +2775,30 @@ textarea:focus-visible {
 .learner-more-menu { background: color-mix(in srgb, var(--dk-surface) 94%, transparent) !important; border-color: var(--dk-border) !important; }
 .learner-nav-item.is-active { color: var(--dk-link) !important; background: color-mix(in srgb, var(--dk-link) 14%, var(--dk-surface)) !important; }
 .learner-nav-dock { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+
+/* Dashboard next-action contrast correction. */
+.dashboard-next-action {
+  background: color-mix(in srgb, var(--dk-link) 12%, var(--dk-surface));
+  box-shadow: var(--dk-shadow-sm);
+}
+.dashboard-next-action-eyebrow,
+.dashboard-next-action-label,
+.dashboard-next-action-node { color: var(--dk-link); }
+.dashboard-next-action-title { color: var(--dk-text) !important; }
+.dashboard-next-action-copy { color: var(--dk-text-muted); }
+.dashboard-next-action-badge { background: var(--dk-surface); color: var(--dk-link); }
+.dashboard-next-action-detail { background: var(--dk-surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dk-border) 70%, transparent); }
+.dashboard-next-action-meta { color: var(--dk-muted); }
+.dashboard-next-action-button { background: var(--dk-link); color: var(--dk-link-contrast); }
+.dashboard-next-action-button:hover,
+.dashboard-next-action-button:focus-visible { background: var(--dk-link-strong); color: var(--dk-link-contrast); }
+.dashboard-next-action-error { color: var(--dk-danger); }
+
+html[data-theme='dark'] .dashboard-next-action {
+  background: color-mix(in srgb, var(--dk-link) 18%, var(--dk-surface));
+}
+html[data-theme='dark'] .dashboard-next-action-detail {
+  background: color-mix(in srgb, var(--dk-surface-soft) 86%, var(--dk-surface));
+}
+html[data-theme='dark'] .dashboard-next-action-copy,
+html[data-theme='dark'] .dashboard-next-action-meta { color: var(--dk-text-muted); }
