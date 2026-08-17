@@ -350,14 +350,17 @@ export default function Lesson() {
   return (
     <div className="lesson-page min-h-screen" style={{ background: '#F5F7FA' }}>
       <Navbar xp={xp} streak={streak} />
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <Link to="/dashboard" className="text-sm font-semibold mb-6 inline-block"
-          style={{ color: '#6B7A99' }}>
-          ← Back to Dashboard
+      <main className="lesson-shell max-w-3xl mx-auto px-6 py-10">
+        <Link to="/dashboard" className="lesson-back-link inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-black mb-6"
+          style={{ color: '#0A2342', borderColor: '#B9C8D8', background: '#FFFFFF' }}>
+          <span aria-hidden="true">←</span> Back to Dashboard
         </Link>
 
-        <h1 className="text-2xl font-bold mb-1" style={{ color: '#0A2342' }}>{phase.title}</h1>
-        <p className="text-sm mb-8" style={{ color: '#6B7A99' }}>{phase.weeks}</p>
+        <header className="lesson-hero mb-8 rounded-3xl border p-6 sm:p-8" style={{ borderColor: '#DCE5F0', background: '#FFFFFF' }}>
+          <p className="lesson-eyebrow text-xs font-black uppercase tracking-[.18em]" style={{ color: '#8A6500' }}>Your guided lesson</p>
+          <h1 className="lesson-page-title mt-2 text-3xl font-black tracking-tight" style={{ color: '#0A2342' }}>{phase.title}</h1>
+          <p className="lesson-page-subtitle mt-2 text-sm font-semibold" style={{ color: '#52677E' }}>{phase.weeks}</p>
+        </header>
 
         {viewMode === 'path' && (
           <div className="space-y-4">
@@ -406,7 +409,7 @@ export default function Lesson() {
         )}
 
         {viewMode === 'choice' && choiceIndex !== null && (
-          <div className="bg-white rounded-3xl p-8 text-center" style={{ boxShadow: '0 8px 32px rgba(10,35,66,0.1)' }}>
+          <div className="lesson-choice-card lesson-surface bg-white rounded-3xl p-8 text-center" style={{ boxShadow: '0 8px 32px rgba(10,35,66,0.1)' }}>
             <button onClick={backToPath} className="text-sm font-semibold mb-6 inline-block" style={{ color: '#6B7A99' }}>
               ← Back
             </button>
@@ -433,7 +436,7 @@ export default function Lesson() {
         )}
 
         {viewMode === 'content' && (
-          <div className="bg-white rounded-3xl p-8" style={{ boxShadow: '0 8px 32px rgba(10,35,66,0.1)' }}>
+          <div className="lesson-content-card lesson-surface bg-white rounded-3xl p-6 sm:p-8" style={{ boxShadow: '0 8px 32px rgba(10,35,66,0.1)' }}>
 
             {generating ? (
               <div className="text-center py-10">
@@ -458,7 +461,7 @@ export default function Lesson() {
                 <div className="flex items-center gap-3 mb-6">
                   <button onClick={backToPath}
                     className="text-sm font-semibold" style={{ color: '#6B7A99' }}>←</button>
-                  <h2 className="text-xl font-bold" style={{ color: '#0A2342' }}>
+                  <h2 className="lesson-content-title text-xl font-black" style={{ color: '#0A2342' }}>
                     {lessonTitles[activeIndex]}
                   </h2>
                   {reviewOnly && (
@@ -468,7 +471,7 @@ export default function Lesson() {
                   )}
                 </div>
 
-                <div className="text-sm mb-6 space-y-3 leading-relaxed" style={{ color: '#1E293B' }}>
+                <div className="lesson-body-copy text-sm mb-6 space-y-3 leading-relaxed" style={{ color: '#1E293B' }}>
                   {activeContent.explanation.split('\n').filter(Boolean).map((para, i) => (
                     <p key={i}>{para}</p>
                   ))}
@@ -478,8 +481,8 @@ export default function Lesson() {
 
                 {activeContent.keyPoints?.length > 0 && (
                   <div className="rounded-2xl p-5 mb-6" style={{ background: '#F5F7FA' }}>
-                    <p className="text-xs font-bold mb-3" style={{ color: '#0A2342' }}>📌 KEY POINTS</p>
-                    <ul className="text-sm space-y-2 list-disc pl-5" style={{ color: '#1E293B' }}>
+                    <p className="lesson-section-label text-xs font-black mb-3" style={{ color: '#0A2342' }}>📌 KEY POINTS</p>
+                    <ul className="lesson-section-copy text-sm space-y-2 list-disc pl-5" style={{ color: '#1E293B' }}>
                       {activeContent.keyPoints.map((point, i) => (
                         <li key={i}>{point}</li>
                       ))}
@@ -490,16 +493,16 @@ export default function Lesson() {
                 {activeContent.example && (
                   <div className="rounded-2xl p-5 mb-6"
                     style={{ background: '#FFFBEF', border: '1px solid #D4AF37' }}>
-                    <p className="text-xs font-bold mb-2" style={{ color: '#0A2342' }}>💡 REAL-WORLD EXAMPLE</p>
-                    <p className="text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.example}</p>
+                    <p className="lesson-section-label text-xs font-black mb-2" style={{ color: '#0A2342' }}>💡 REAL-WORLD EXAMPLE</p>
+                    <p className="lesson-section-copy text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.example}</p>
                   </div>
                 )}
 
                 {activeContent.exercise && (
                   <div className="rounded-2xl p-5 mb-6"
                     style={{ background: '#F0F4FF', border: '1px solid #0A2342' }}>
-                    <p className="text-xs font-bold mb-2" style={{ color: '#0A2342' }}>🏋️ TRY IT YOURSELF</p>
-                    <p className="text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.exercise}</p>
+                    <p className="lesson-section-label text-xs font-black mb-2" style={{ color: '#0A2342' }}>🏋️ TRY IT YOURSELF</p>
+                    <p className="lesson-section-copy text-sm leading-relaxed" style={{ color: '#1E293B' }}>{activeContent.exercise}</p>
                   </div>
                 )}
 
@@ -716,7 +719,7 @@ export default function Lesson() {
             ) : null}
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }

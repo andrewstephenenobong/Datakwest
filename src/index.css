@@ -2151,3 +2151,150 @@ button.dk-whot-card { cursor: pointer; }
 html[data-theme='dark'] .tracks-page .tracks-learning-skill-card h3 { color: #0A2342 !important; }
 html[data-theme='dark'] .tracks-page .tracks-learning-skill-card p { color: #52657F !important; }
 html[data-theme='dark'] .tracks-page .tracks-learning-skill-card button { color: #0A2342 !important; }
+
+/* Lesson experience refresh: readable surfaces, clear hierarchy, and deliberate navigation behavior. */
+.app-navbar {
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+}
+
+.learner-nav-desktop {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.lesson-page {
+  background: #F5F7FA !important;
+  color: #0A2342 !important;
+}
+
+.lesson-shell {
+  padding-bottom: calc(8.5rem + env(safe-area-inset-bottom));
+}
+
+.lesson-back-link {
+  border-color: #B9C8D8 !important;
+  background: #FFFFFF !important;
+  color: #0A2342 !important;
+  box-shadow: 0 2px 8px rgba(10,35,66,.06);
+}
+
+.lesson-back-link:hover,
+.lesson-back-link:focus-visible {
+  border-color: #2456A6 !important;
+  background: #E8F0FE !important;
+  color: #0A2342 !important;
+}
+
+.lesson-hero,
+.lesson-surface,
+.lesson-content-card,
+.lesson-choice-card {
+  border-color: #DCE5F0 !important;
+  background: #FFFFFF !important;
+  color: #0A2342 !important;
+}
+
+.lesson-page-title,
+.lesson-content-title,
+.lesson-surface h2,
+.lesson-surface h3,
+.lesson-surface p,
+.lesson-surface li,
+.lesson-body-copy,
+.lesson-section-copy,
+.lesson-section-label {
+  color: #0A2342 !important;
+}
+
+.lesson-page-subtitle,
+.lesson-surface .lesson-muted,
+.lesson-surface button[style*='#6B7A99'],
+.lesson-surface button[style*="color: '#6B7A99'"] {
+  color: #52677E !important;
+}
+
+.lesson-content-card .rounded-2xl,
+.lesson-content-card .rounded-xl {
+  color: #0A2342;
+}
+
+html[data-theme='dark'] .lesson-page {
+  background: #0B1B20 !important;
+  color: #F3FAF6 !important;
+}
+
+html[data-theme='dark'] .lesson-hero,
+html[data-theme='dark'] .lesson-surface,
+html[data-theme='dark'] .lesson-content-card,
+html[data-theme='dark'] .lesson-choice-card {
+  border-color: #35535B !important;
+  background: #142B31 !important;
+  color: #F3FAF6 !important;
+}
+
+html[data-theme='dark'] .lesson-back-link {
+  border-color: #55737B !important;
+  background: #1D3941 !important;
+  color: #F3FAF6 !important;
+}
+
+html[data-theme='dark'] .lesson-back-link:hover,
+html[data-theme='dark'] .lesson-back-link:focus-visible {
+  border-color: #8BC6B5 !important;
+  background: #24484F !important;
+  color: #FFFFFF !important;
+}
+
+html[data-theme='dark'] .lesson-page-title,
+html[data-theme='dark'] .lesson-content-title,
+html[data-theme='dark'] .lesson-surface h2,
+html[data-theme='dark'] .lesson-surface h3,
+html[data-theme='dark'] .lesson-surface p,
+html[data-theme='dark'] .lesson-surface li,
+html[data-theme='dark'] .lesson-body-copy,
+html[data-theme='dark'] .lesson-section-copy,
+html[data-theme='dark'] .lesson-section-label {
+  color: #F3FAF6 !important;
+}
+
+html[data-theme='dark'] .lesson-page-subtitle,
+html[data-theme='dark'] .lesson-surface .lesson-muted,
+html[data-theme='dark'] .lesson-surface button[style*='#6B7A99'],
+html[data-theme='dark'] .lesson-surface button[style*="color: '#6B7A99'"] {
+  color: #B5CBC8 !important;
+}
+
+html[data-theme='dark'] .lesson-content-card [style*='background: #F5F7FA'],
+html[data-theme='dark'] .lesson-content-card [style*="background: '#F5F7FA'"] {
+  background: #1D3941 !important;
+}
+
+html[data-theme='dark'] .lesson-content-card [style*='background: #FFFBEF'],
+html[data-theme='dark'] .lesson-content-card [style*="background: '#FFFBEF'"] {
+  background: #3C3820 !important;
+}
+
+html[data-theme='dark'] .lesson-content-card [style*='background: #F0F4FF'],
+html[data-theme='dark'] .lesson-content-card [style*="background: '#F0F4FF'"] {
+  background: #203A4A !important;
+}
+
+@media (min-width: 1024px) {
+  .lesson-shell {
+    padding-bottom: 3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .lesson-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .lesson-hero {
+    padding: 1.25rem;
+  }
+}
