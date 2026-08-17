@@ -2725,3 +2725,53 @@ textarea:focus-visible {
   color: var(--dk-accent-contrast);
   font-weight: 800;
 }
+
+/* Migrated global header color roles. */
+.app-navbar-metrics { color: var(--dk-muted); }
+.app-navbar-avatar { background: color-mix(in srgb, var(--dk-link) 14%, var(--dk-surface)); color: var(--dk-link); }
+.app-navbar-profile-arrow { color: var(--dk-muted); }
+.app-navbar-menu-trigger { color: var(--dk-text); background: var(--dk-surface-soft); }
+.app-navbar-menu-trigger:hover,
+.app-navbar-menu-trigger:focus-visible { background: color-mix(in srgb, var(--dk-link) 14%, var(--dk-surface)); color: var(--dk-link); }
+
+.dk-network-status.is-restored { border-color: color-mix(in srgb, var(--dk-success) 55%, var(--dk-border)); background: color-mix(in srgb, var(--dk-success) 12%, var(--dk-surface)); color: var(--dk-success); }
+.dk-network-status.is-offline { border-color: color-mix(in srgb, var(--dk-danger) 55%, var(--dk-border)); background: color-mix(in srgb, var(--dk-danger) 12%, var(--dk-surface)); color: var(--dk-danger); }
+.dk-network-retry { border-color: currentColor; color: inherit; background: transparent; }
+.dk-network-retry:hover,
+.dk-network-retry:focus-visible { background: color-mix(in srgb, currentColor 12%, transparent); }
+
+.password-requirement.is-valid { color: var(--dk-success); }
+.password-requirement.is-pending { color: var(--dk-subtle); }
+
+/* Migrated Owl loading color roles. */
+.dk-owl-loading { background: linear-gradient(145deg, var(--dk-page) 0%, var(--dk-surface-soft) 58%, color-mix(in srgb, var(--dk-success) 14%, var(--dk-page)) 100%); color: var(--dk-text); }
+.dk-owl-loading-orb-gold { background: color-mix(in srgb, var(--dk-accent) 18%, transparent); }
+.dk-owl-loading-orb-mint { background: color-mix(in srgb, var(--dk-success) 24%, transparent); }
+.dk-owl-halo { background: var(--dk-success); }
+.dk-owl-loading-dashed { border-color: color-mix(in srgb, var(--dk-link) 24%, transparent); }
+.dk-owl-ring { border-top-color: var(--dk-accent); border-right-color: color-mix(in srgb, var(--dk-accent) 25%, transparent); }
+.dk-owl-loading-brand { color: var(--dk-accent); }
+.dk-owl-loading-message { color: var(--dk-muted); }
+.dk-owl-loading-subtle { color: var(--dk-subtle); }
+.dk-owl-loading-progress { background: color-mix(in srgb, var(--dk-link) 12%, transparent); }
+.dk-owl-loading-progress-bar { background: linear-gradient(90deg, var(--dk-link), var(--dk-success)); }
+.dk-owl-loading-slow { border-color: var(--dk-border); background: color-mix(in srgb, var(--dk-surface) 82%, transparent); }
+.dk-owl-loading-slow-title { color: var(--dk-text); }
+.dk-owl-loading-retry { background: var(--dk-text); color: var(--dk-page); }
+.dk-owl-loading-retry:hover,
+.dk-owl-loading-retry:focus-visible { background: var(--dk-link); color: var(--dk-page); }
+
+/* Migrated authentication shell color roles. */
+.auth-hero { background: var(--auth-hero-surface, var(--dk-text)); box-shadow: var(--dk-shadow-lg); }
+.auth-hero-eyebrow { color: var(--dk-accent); }
+.auth-hero-copy { color: color-mix(in srgb, var(--auth-hero-text, #fff) 72%, transparent); }
+.auth-hero-step { display: flex; height: 2rem; width: 2rem; align-items: center; justify-content: center; border-radius: .5rem; font-size: .75rem; font-weight: 900; }
+.auth-hero-step-gold { background: color-mix(in srgb, var(--dk-accent) 16%, transparent); color: var(--dk-accent); }
+.auth-hero-step-muted { background: color-mix(in srgb, #fff 10%, transparent); color: #fff; }
+.auth-card { box-shadow: var(--dk-shadow-lg) !important; }
+
+.learner-nav-desktop,
+.learner-nav-mobile,
+.learner-more-menu { background: color-mix(in srgb, var(--dk-surface) 94%, transparent) !important; border-color: var(--dk-border) !important; }
+.learner-nav-item.is-active { color: var(--dk-link) !important; background: color-mix(in srgb, var(--dk-link) 14%, var(--dk-surface)) !important; }
+.learner-nav-dock { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
