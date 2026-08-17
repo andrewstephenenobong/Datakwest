@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(null)
   const [progress, setProgress] = useState([])
   const [skillProgress, setSkillProgress] = useState({})
+  const [activeSkillTitle, setActiveSkillTitle] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [mission, setMission] = useState(null)
@@ -71,13 +72,16 @@ export default function Dashboard() {
 
       const { mission: todaysMission, error: missionLoadError } = await getTodaysMission(user.id)
       const { readiness: readinessScore, error: readinessLoadError } = await getReadinessScore()
+      const { data: activePreference } = await supabase
+        .from('learner_preferences')
+        .select('active_skill_enrolment_id')
+        .eq('learner_id', user.id)
+        .maybeSingle()
       const { data: activeEnrolment } = await supabase
         .from('learner_skill_enrolments')
-        .select('id')
-        .eq('learner_id', user.id)
+        .select('id, skills(title)')
+        .eq('id', activePreference?.active_skill_enrolment_id || '')
         .eq('status', 'active')
-        .order('updated_at', { ascending: false })
-        .limit(1)
         .maybeSingle()
       let nextLearningAction = null
       let nextLearningActionError = ''
@@ -91,6 +95,7 @@ export default function Dashboard() {
 
       setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
       setSkillProgress(data.skill_progress || {})
+      setActiveSkillTitle(activeEnrolment?.skills?.title || '')
       setProgress(progressRows || [])
       setMission(todaysMission)
       setMissionError(missionLoadError ? 'Today’s mission is temporarily unavailable. Your learning progress is safe; please try again shortly.' : '')
@@ -126,7 +131,7 @@ export default function Dashboard() {
   }
 
   const { roadmap, streak, xp } = profile
-  const selectedSkill = profile.assessment?.targetSkill || roadmap.targetSkill || roadmap.skill || Object.keys(roadmap.skillLevels || {})[0] || ''
+  const selectedSkill = activeSkillTitle || profile.assessment?.targetSkill || roadmap.targetSkill || roadmap.skill || Object.keys(roadmap.skillLevels || {})[0] || ''
   const normaliseSkill = (value) => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '')
   const selectedSkillKey = Object.keys(roadmap.skillLevels || {}).find((key) => normaliseSkill(key) === normaliseSkill(selectedSkill)) || selectedSkill
   const selectedSkillEntries = selectedSkillKey ? [[selectedSkillKey, roadmap.skillLevels?.[selectedSkillKey] ?? 0]] : []

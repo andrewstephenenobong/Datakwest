@@ -22,13 +22,23 @@ export function setActiveSkillEnrolment(enrolmentId) {
 }
 
 export async function getLearnerSkillEnrolments() {
-  const { data, error } = await supabase
-    .from('learner_skill_enrolments')
-    .select('id, skill_id, skill_graph_version_id, status, target_outcome, weekly_minutes, starting_level, updated_at, skills(id, slug, title, description)')
-    .eq('status', 'active')
-    .order('updated_at', { ascending: false })
+  const [{ data, error }, { data: preference, error: preferenceError }] = await Promise.all([
+    supabase
+      .from('learner_skill_enrolments')
+      .select('id, skill_id, skill_graph_version_id, status, target_outcome, weekly_minutes, starting_level, updated_at, skills(id, slug, title, description)')
+      .eq('status', 'active')
+      .order('updated_at', { ascending: false }),
+    supabase
+      .from('learner_preferences')
+      .select('active_skill_enrolment_id')
+      .maybeSingle(),
+  ])
   if (error) throw error
-  return data ?? []
+  if (preferenceError) throw preferenceError
+  return (data ?? []).map((enrolment) => ({
+    ...enrolment,
+    is_active: Boolean(preference?.active_skill_enrolment_id && enrolment.id === preference.active_skill_enrolment_id),
+  }))
 }
 
 export function startLearningEvidence(learningObjectVersionId) {
