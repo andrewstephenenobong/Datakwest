@@ -2,14 +2,15 @@ import { useNavigate } from 'react-router-dom'
 import LearnerNavigation from './LearnerNavigation'
 import { useAuth } from '../context/AuthContext'
 
-export default function Navbar({ streak = 0, xp = 0, streakActive = true }) {
+export default function Navbar({ streak = 0, xp = 0, streakActive = true, compact = false }) {
   const navigate = useNavigate()
   const { user } = useAuth()
 
   return (
     <>
-    <nav className="app-navbar w-full h-20 px-4 sm:px-6 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #E2E8F0' }}>
-    <div className="flex items-center gap-3 h-full overflow-visible">
+    <nav className={`app-navbar ${compact ? 'app-navbar-compact' : ''} w-full h-20 px-4 sm:px-6 flex items-center justify-between bg-white`} style={{ borderBottom: '1px solid #E2E8F0' }}>
+    <div className="flex items-center gap-2 h-full overflow-visible">
+      {compact && <button type="button" onClick={() => navigate('/tracks')} className="app-navbar-menu-trigger flex h-10 w-10 items-center justify-center rounded-xl" aria-label="Open learning paths">☰</button>}
       <div className="app-navbar-brand h-12 w-44 flex items-center overflow-visible">
         <img
           src="/datakwest_logo_lockup.png"

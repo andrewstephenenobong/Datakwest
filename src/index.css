@@ -2357,3 +2357,69 @@ html[data-theme='dark'] .lesson-quiz-option:focus-visible {
   background: #24484F !important;
   border-color: #8BC6B5 !important;
 }
+
+/* Compact lesson header inspired by the supplied focused-learning layout. */
+.app-navbar-compact {
+  min-height: 4.5rem;
+  height: 4.5rem;
+  background: #071A32 !important;
+  border-bottom-color: #163454 !important;
+}
+
+.app-navbar-compact .app-navbar-brand {
+  width: auto;
+}
+
+.app-navbar-compact .app-navbar-logo {
+  height: 3rem;
+  width: 10.5rem;
+  filter: brightness(1.75) saturate(.9) contrast(1.12);
+}
+
+.app-navbar-menu-trigger {
+  color: #F7FBFA;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.app-navbar-menu-trigger:hover,
+.app-navbar-menu-trigger:focus-visible {
+  background: rgba(139,198,181,.18);
+  border-color: #8BC6B5;
+  outline: 2px solid #8BC6B5;
+  outline-offset: 2px;
+}
+
+.app-navbar-compact .app-navbar-metrics {
+  color: #D7E8E4 !important;
+}
+
+.app-navbar-compact .app-navbar-profile {
+  border-color: #36546D !important;
+  background: rgba(255,255,255,.06);
+  color: #F7FBFA !important;
+}
+
+.app-navbar-compact .app-navbar-profile:hover,
+.app-navbar-compact .app-navbar-profile:focus-visible {
+  border-color: #8BC6B5 !important;
+  background: rgba(139,198,181,.16);
+}
+
+@media (max-width: 640px) {
+  .app-navbar-compact {
+    padding-left: .75rem;
+    padding-right: .75rem;
+  }
+
+  .app-navbar-compact .app-navbar-logo {
+    width: 8.5rem;
+  }
+
+  .app-navbar-compact .app-navbar-profile {
+    padding-left: .5rem;
+    padding-right: .5rem;
+  }
+}

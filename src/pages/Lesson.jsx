@@ -349,7 +349,7 @@ export default function Lesson() {
 
   return (
     <div className="lesson-page min-h-screen" style={{ background: '#F5F7FA' }}>
-      <Navbar xp={xp} streak={streak} />
+      <Navbar xp={xp} streak={streak} compact />
       <main className="lesson-shell max-w-3xl mx-auto px-6 py-10">
         <Link to="/dashboard" className="lesson-back-link inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-black mb-6"
           style={{ color: '#0A2342', borderColor: '#B9C8D8', background: '#FFFFFF' }}>
