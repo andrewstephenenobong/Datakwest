@@ -1980,6 +1980,10 @@ html[data-theme='dark'] .dk-dedicated-game .dk-guide-button:focus-visible { back
 .dk-ladder-panel.dk-ladder-theme-moonlit { --ladder-teal: #425b9e; --ladder-coral: #b97888; --ladder-gold: #d9bf74; }
 .dk-ladder-panel.dk-ladder-theme-sunset { --ladder-teal: #a95e59; --ladder-coral: #e47763; --ladder-gold: #edbd69; }
 .dk-ladder-panel.dk-ladder-theme-honey { --ladder-teal: #927136; --ladder-coral: #c86f5e; --ladder-gold: #f1c85f; }
+.dk-ladder-panel.dk-ladder-theme-aurora { --ladder-teal: #4b769f; --ladder-coral: #8b73b7; --ladder-gold: #a8d8c8; }
+.dk-ladder-panel.dk-ladder-theme-harvest { --ladder-teal: #ad6b43; --ladder-coral: #c75f50; --ladder-gold: #e5b65b; }
+.dk-ladder-panel.dk-ladder-theme-frost { --ladder-teal: #6496a7; --ladder-coral: #8c779d; --ladder-gold: #d7eced; }
+.dk-ladder-panel.dk-ladder-theme-bloom { --ladder-teal: #6b8f78; --ladder-coral: #a86186; --ladder-gold: #e9c37e; }
 .dk-ladder-intro { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem 5.5rem; gap: .6rem; align-items: stretch; width: min(100%, 38rem); margin: .55rem auto .7rem; }
 .dk-ladder-intro > div:first-child { padding: .75rem .9rem; border: 1px solid var(--dk-border); border-radius: 1.15rem; background: linear-gradient(135deg, color-mix(in srgb, var(--dk-surface-soft) 85%, var(--ladder-teal) 15%), var(--dk-surface)); }
 .dk-ladder-intro h3 { margin: .2rem 0 .3rem; color: var(--dk-text); font-size: clamp(1.05rem, 2.5vw, 1.45rem); letter-spacing: -.03em; }
