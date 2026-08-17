@@ -91,7 +91,7 @@ export default function Dashboard() {
       setSkillProgress(data.skill_progress || {})
       setProgress(progressRows || [])
       setMission(todaysMission)
-      setMissionError(missionLoadError?.message || '')
+      setMissionError(missionLoadError ? 'Today’s mission is temporarily unavailable. Your learning progress is safe; please try again shortly.' : '')
       setReadiness(readinessScore)
       setReadinessError(readinessLoadError?.message || '')
       setNextAction(nextLearningAction)
@@ -124,7 +124,11 @@ export default function Dashboard() {
   }
 
   const { roadmap, streak, xp } = profile
-  const skillValues = Object.values(roadmap.skillLevels || {})
+  const selectedSkill = profile.assessment?.targetSkill || roadmap.targetSkill || roadmap.skill || Object.keys(roadmap.skillLevels || {})[0] || ''
+  const normaliseSkill = (value) => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '')
+  const selectedSkillKey = Object.keys(roadmap.skillLevels || {}).find((key) => normaliseSkill(key) === normaliseSkill(selectedSkill)) || selectedSkill
+  const selectedSkillEntries = selectedSkillKey ? [[selectedSkillKey, roadmap.skillLevels?.[selectedSkillKey] ?? 0]] : []
+  const skillValues = selectedSkillEntries.map(([, value]) => value)
   const masteryScore = skillValues.length
     ? Math.round(skillValues.reduce((a, b) => a + b, 0) / skillValues.length)
     : 0
@@ -301,12 +305,12 @@ export default function Dashboard() {
         <div className="dashboard-surface dashboard-skill-levels bg-white rounded-2xl p-6 mb-8" style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)' }}>
           <h3 className="dashboard-heading text-sm font-bold mb-5">Your skill levels</h3>
           <div className="space-y-4">
-            {Object.entries(roadmap.skillLevels || {}).map(([key, startingValue]) => {
+            {selectedSkillEntries.map(([key, startingValue]) => {
               const grown = Math.min(100, Math.round((startingValue || 0) + (skillProgress[key] || 0)))
               return (
                 <div key={key}>
                   <div className="flex justify-between text-sm mb-1.5">
-                    <span className="dashboard-skill-name">{skillLabels[key] || key}</span>
+                    <span className="dashboard-skill-name">{skillLabels[key] || key || 'Your selected skill'}</span>
                     <span className="dashboard-skill-value">{grown}%</span>
                   </div>
                   <div className="dashboard-progress-track w-full h-2 rounded-full" style={{ background: '#E2E8F0' }}>
