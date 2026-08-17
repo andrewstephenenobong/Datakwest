@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [progress, setProgress] = useState([])
   const [skillProgress, setSkillProgress] = useState({})
   const [activeSkillTitle, setActiveSkillTitle] = useState('')
+  const [activeSkillTrack, setActiveSkillTrack] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [mission, setMission] = useState(null)
@@ -79,10 +80,19 @@ export default function Dashboard() {
         .maybeSingle()
       const { data: activeEnrolment } = await supabase
         .from('learner_skill_enrolments')
-        .select('id, skills(title)')
+        .select('id, skills(slug, title)')
         .eq('id', activePreference?.active_skill_enrolment_id || '')
         .eq('status', 'active')
         .maybeSingle()
+      let activeTrack = null
+      if (activeEnrolment?.skills) {
+        const { data: trackRows } = await supabase
+          .from('skill_tracks')
+          .select('skill, title, description, phases')
+        const normalise = (value) => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '')
+        const candidates = [activeEnrolment.skills.slug, activeEnrolment.skills.title].filter(Boolean).map(normalise)
+        activeTrack = (trackRows || []).find((track) => candidates.includes(normalise(track.skill)) || candidates.includes(normalise(track.title))) || null
+      }
       let nextLearningAction = null
       let nextLearningActionError = ''
       if (activeEnrolment?.id) {
@@ -96,6 +106,7 @@ export default function Dashboard() {
       setProfile({ ...data, streak: displayStreak, streakActiveToday: isActiveToday })
       setSkillProgress(data.skill_progress || {})
       setActiveSkillTitle(activeEnrolment?.skills?.title || '')
+      setActiveSkillTrack(activeTrack)
       setProgress(progressRows || [])
       setMission(todaysMission)
       setMissionError(missionLoadError ? 'Today’s mission is temporarily unavailable. Your learning progress is safe; please try again shortly.' : '')
@@ -130,10 +141,18 @@ export default function Dashboard() {
     )
   }
 
-  const { roadmap, streak, xp } = profile
+  const { streak, xp } = profile
+  const profileRoadmapSkill = profile.roadmap?.targetSkill || profile.roadmap?.skill || profile.assessment?.targetSkill || ''
+  const activeTrackKey = activeSkillTrack?.skill || ''
+  const normaliseSkillValue = (value) => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '')
+  const activeSkillMatchesProfileRoadmap = !activeSkillTitle || normaliseSkillValue(activeSkillTitle) === normaliseSkillValue(profileRoadmapSkill)
+  const roadmap = activeSkillTrack?.phases?.length
+    ? { ...profile.roadmap, ...activeSkillTrack, targetSkill: activeSkillTitle }
+    : activeSkillMatchesProfileRoadmap
+      ? profile.roadmap
+      : { ...profile.roadmap, targetSkill: activeSkillTitle, skill: activeTrackKey, phases: [], skillLevels: {} }
   const selectedSkill = activeSkillTitle || profile.assessment?.targetSkill || roadmap.targetSkill || roadmap.skill || Object.keys(roadmap.skillLevels || {})[0] || ''
-  const normaliseSkill = (value) => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '')
-  const selectedSkillKey = Object.keys(roadmap.skillLevels || {}).find((key) => normaliseSkill(key) === normaliseSkill(selectedSkill)) || selectedSkill
+  const selectedSkillKey = Object.keys(roadmap.skillLevels || {}).find((key) => normaliseSkillValue(key) === normaliseSkillValue(selectedSkill)) || selectedSkill
   const selectedSkillEntries = selectedSkillKey ? [[selectedSkillKey, roadmap.skillLevels?.[selectedSkillKey] ?? 0]] : []
   const skillValues = selectedSkillEntries.map(([, value]) => value)
   const masteryScore = skillValues.length
@@ -154,7 +173,10 @@ export default function Dashboard() {
     if (nextAction.action_type === 'submit_project') return navigate('/project')
     if (nextAction.action_type === 'practice' || nextAction.action_type === 'review_misconception' || nextAction.action_type === 'review_prerequisite') return navigate('/practice')
     if (nextAction.action_type === 'reflect' || nextAction.action_type === 'complete_path_reflection') return navigate('/portfolio')
-    if (nextAction.action_type === 'continue_learning' && nextAction.node_id) return navigate(`/lesson/${nextAction.node_id}`)
+    if (nextAction.action_type === 'continue_learning') {
+      if (activeTrackKey && currentPhase) return navigate(`/tracks/${encodeURIComponent(activeTrackKey)}/phase/${currentPhase}`)
+      return navigate('/tutor')
+    }
     return navigate('/tracks')
   }
 
@@ -339,10 +361,10 @@ export default function Dashboard() {
             return (
               <button
                 key={phase.number}
-                onClick={() => isActive && navigate(`/lesson/${phase.number}`)}
+                onClick={() => isActive && activeTrackKey && navigate(`/tracks/${encodeURIComponent(activeTrackKey)}/phase/${phase.number}`)}
                 disabled={!isActive}
                 className={`dashboard-phase-card w-full text-left bg-white rounded-2xl p-6 transition-all ${isActive ? 'dashboard-phase-active' : 'dashboard-phase-locked'}`}
-                style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)', opacity: isActive ? 1 : 0.5, cursor: isActive ? 'pointer' : 'default' }}
+                style={{ boxShadow: '0 2px 12px rgba(10,35,66,0.06)', opacity: isActive ? 1 : 0.5, cursor: isActive && activeTrackKey ? 'pointer' : 'default' }}
               >
                 <div className="flex items-start justify-between mb-2 flex-wrap gap-2">
                   <div className="flex items-center gap-3">
