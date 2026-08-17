@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
 import {
@@ -46,6 +47,7 @@ function formatSkill(entry) {
 
 export default function Tracks() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [catalogue, setCatalogue] = useState([])
   const [enrolments, setEnrolments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -129,7 +131,7 @@ export default function Tracks() {
         })
         setEnrolments((current) => [enrolment, ...current.filter((item) => item.id !== enrolment.id)])
         setLevelDialog(null)
-        setStatus({ type: 'success', text: `${published.skills.title} was added. It is now your active skill for today.` })
+        navigate(`/dashboard?skill-added=1&skill=${encodeURIComponent(published.skills.title)}`)
         return
       }
 
@@ -153,7 +155,7 @@ export default function Tracks() {
         })
         setEnrolments((current) => [enrolment, ...current.filter((item) => item.id !== enrolment.id)])
         setLevelDialog(null)
-        setStatus({ type: 'success', text: `${discovered.skill.title || cleanSkill} was added. It is now your active skill for today.` })
+        navigate(`/dashboard?skill-added=1&skill=${encodeURIComponent(discovered.skill.title || cleanSkill)}`)
       } else {
         setStatus({ type: 'review', text: `${cleanSkill} was received. DataKwest is preparing a safe provisional path for review before it becomes an active learning track.` })
       }
