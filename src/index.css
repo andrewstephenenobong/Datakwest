@@ -2423,3 +2423,51 @@ html[data-theme='dark'] .lesson-quiz-option:focus-visible {
     padding-right: .5rem;
   }
 }
+
+/* Skill-library state tokens: exactly one active card, readable inactive cards. */
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-inactive {
+  background: #142A31 !important;
+  border-color: #35515A !important;
+  color: #F7FBFA !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-inactive h3 {
+  color: #F7FBFA !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-inactive p {
+  color: #BFD1D2 !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-inactive button {
+  background: #1C3942 !important;
+  border-color: #D4AF37 !important;
+  color: #F7FBFA !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-inactive button:hover,
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-inactive button:focus-visible {
+  background: #2B5057 !important;
+  border-color: #F0D56A !important;
+  color: #FFFFFF !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-active {
+  background: #FFF9E8 !important;
+  border-color: #D4AF37 !important;
+  color: #0A2342 !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-active h3 {
+  color: #0A2342 !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-active p {
+  color: #52657F !important;
+}
+
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card.is-active button {
+  background: #E6C85C !important;
+  border-color: #0A2342 !important;
+  color: #0A2342 !important;
+}
