@@ -2146,3 +2146,8 @@ button.dk-whot-card { cursor: pointer; }
 @keyframes dk-nest-pop { 0% { opacity: 0; transform: translateY(1rem) scale(.88); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes dk-confetti-fall { 0% { opacity: 0; transform: translateY(-5vh) rotate(0); } 12% { opacity: 1; } 100% { opacity: .85; transform: translateY(115vh) rotate(540deg); } }
 @media (prefers-reduced-motion: reduce) { .dk-ladder-celebration-card, .dk-ladder-confetti i { animation: none; } .dk-ladder-confetti { display: none; } }
+
+/* Learning-skill cards keep readable text in dark mode even when the active card uses a light Owl palette. */
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card h3 { color: #0A2342 !important; }
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card p { color: #52657F !important; }
+html[data-theme='dark'] .tracks-page .tracks-learning-skill-card button { color: #0A2342 !important; }

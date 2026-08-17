@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import fs from 'node:fs/promises'
-import { markActiveSkill, upsertActiveSkill } from '../src/lib/skillLibrary.js'
+import { createActiveSkillSwitchGuard, getSkillSwitchErrorMessage, markActiveSkill, upsertActiveSkill } from '../src/lib/skillLibrary.js'
 
 const tracksSource = await fs.readFile(new URL('../src/pages/Tracks.jsx', import.meta.url), 'utf8')
 const dashboardSource = await fs.readFile(new URL('../src/pages/Dashboard.jsx', import.meta.url), 'utf8')
@@ -48,6 +48,28 @@ test('switching active skills remains single-source-of-truth after reload', () =
   assert.equal(saved.find((item) => item.is_active)?.skills.title, 'Data Analytics')
   assert.match(intelligenceSource, /active_skill_enrolment_id/)
   assert.match(dashboardSource, /activeSkillTitle/)
+})
+
+test('concurrent switching applies only the latest learner intent', async () => {
+  const guard = createActiveSkillSwitchGuard()
+  const skills = [fakeEnrolment('skill-1', 'Cybersecurity', 'beginner'), fakeEnrolment('skill-2', 'Cloud & DevOps', 'familiar')]
+  const firstIntent = guard.begin()
+  const secondIntent = guard.begin()
+  const results = []
+  await Promise.all([
+    new Promise((resolve) => setTimeout(() => { if (guard.isLatest(firstIntent)) results.push(markActiveSkill(skills, 'skill-1')); resolve() }, 20)),
+    new Promise((resolve) => setTimeout(() => { if (guard.isLatest(secondIntent)) results.push(markActiveSkill(skills, 'skill-2')); resolve() }, 5)),
+  ])
+  assert.equal(results.length, 1)
+  assert.equal(results[0].find((item) => item.is_active)?.id, 'skill-2')
+})
+
+test('offline switching preserves current state and returns a safe recovery message', () => {
+  const message = getSkillSwitchErrorMessage(new TypeError('Failed to fetch'), false)
+  assert.match(message, /offline/i)
+  assert.match(message, /unchanged/i)
+  const current = markActiveSkill([fakeEnrolment('skill-1', 'Cybersecurity', 'beginner'), fakeEnrolment('skill-2', 'Cloud & DevOps', 'familiar')], 'skill-1')
+  assert.equal(current.find((item) => item.is_active)?.id, 'skill-1')
 })
 
 test('missions are readable through RLS without restoring client writes', () => {

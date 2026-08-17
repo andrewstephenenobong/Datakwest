@@ -11,7 +11,7 @@ import {
   setActiveSkillEnrolment,
 } from '../lib/learningIntelligence'
 import { supabase } from '../lib/supabase'
-import { markActiveSkill, upsertActiveSkill } from '../lib/skillLibrary'
+import { createActiveSkillSwitchGuard, getSkillSwitchErrorMessage, markActiveSkill, upsertActiveSkill } from '../lib/skillLibrary'
 
 const FALLBACK_TRACKS = [
   { title: 'Frontend Development', description: 'Build websites and interfaces people enjoy using.', emoji: '◈' },
@@ -56,6 +56,7 @@ export default function Tracks() {
   const [levelDialog, setLevelDialog] = useState(null)
   const [startingLevel, setStartingLevel] = useState('beginner')
   const [activeSkillLoading, setActiveSkillLoading] = useState(null)
+  const activeSkillSwitchGuard = useMemo(() => createActiveSkillSwitchGuard(), [])
   const [error, setError] = useState('')
   const [requestedSkill, setRequestedSkill] = useState('')
   const [weeklyLabel, setWeeklyLabel] = useState(weeklyOptions[0][0])
@@ -169,16 +170,18 @@ export default function Tracks() {
   }
 
   async function chooseActiveSkill(enrolment) {
+    const intent = activeSkillSwitchGuard.begin()
     setActiveSkillLoading(enrolment.id)
     setError('')
     try {
       await setActiveSkillEnrolment(enrolment.id)
+      if (!activeSkillSwitchGuard.isLatest(intent)) return
       setEnrolments((current) => markActiveSkill(current, enrolment.id))
       setStatus({ type: 'success', text: `${enrolment.skills?.title || 'Skill'} is now your active skill for today.` })
-    } catch {
-      setError('We could not switch your active skill right now. Your current learning path is unchanged.')
+    } catch (err) {
+      if (activeSkillSwitchGuard.isLatest(intent)) setError(getSkillSwitchErrorMessage(err, typeof navigator === 'undefined' ? true : navigator.onLine))
     } finally {
-      setActiveSkillLoading(null)
+      if (activeSkillSwitchGuard.isLatest(intent)) setActiveSkillLoading(null)
     }
   }
 
@@ -200,7 +203,7 @@ export default function Tracks() {
 
         <section className="mb-8 rounded-3xl border p-5 sm:p-7" style={{ background: '#fff', borderColor: '#DCE5F0', boxShadow: '0 8px 24px rgba(10,35,66,.05)' }} aria-labelledby="my-skills-title">
           <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.18em]" style={{ color: '#D4AF37' }}>Your learning skills</p><h2 id="my-skills-title" className="mt-2 text-xl font-black" style={{ color: '#0A2342' }}>Choose what you want to learn today.</h2><p className="mt-2 text-sm" style={{ color: '#6B7A99' }}>Your library keeps every path. Switching the active skill changes the next lessons and missions without deleting your progress.</p></div><span className="text-xs font-bold" style={{ color: '#6B7A99' }}>{enrolments.length} saved</span></div>
-          {enrolments.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2">{enrolments.map((enrolment) => { const isActive = Boolean(enrolment.is_active); return <article key={enrolment.id} className="rounded-2xl border p-4" style={{ borderColor: isActive ? '#D4AF37' : '#DCE5F0', background: isActive ? '#FFF9E8' : '#F8FAFD', color: '#0A2342' }}><div className="flex items-start justify-between gap-3"><div><h3 className="font-black" style={{ color: '#0A2342' }}>{enrolment.skills?.title || 'Learning skill'}</h3><p className="mt-1 text-xs" style={{ color: '#52657F' }}>{LEVEL_OPTIONS.find(([value]) => value === enrolment.starting_level)?.[1] || 'Starting level recorded'}</p></div>{isActive && <span className="rounded-full px-2.5 py-1 text-[11px] font-black" style={{ background: '#0A2342', color: '#fff' }}>Active today</span>}</div><button type="button" onClick={() => chooseActiveSkill(enrolment)} disabled={Boolean(activeSkillLoading)} className="mt-4 min-h-10 w-full rounded-xl border px-3 py-2 text-xs font-black" style={{ borderColor: isActive ? '#0A2342' : '#D4AF37', color: '#0A2342', background: isActive ? '#E6C85C' : '#fff', opacity: activeSkillLoading && activeSkillLoading !== enrolment.id ? .55 : 1 }}>{activeSkillLoading === enrolment.id ? 'Switching…' : (isActive ? 'Learning today' : 'Learn this today')}</button></article> })}</div> : <p className="mt-5 rounded-2xl p-4 text-sm" style={{ background: '#F8FAFD', color: '#6B7A99' }}>Add your first skill below. You will be asked how much you already understand before it is saved.</p>}
+          {enrolments.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2">{enrolments.map((enrolment) => { const isActive = Boolean(enrolment.is_active); return <article key={enrolment.id} className="tracks-learning-skill-card rounded-2xl border p-4" style={{ borderColor: isActive ? '#D4AF37' : '#DCE5F0', background: isActive ? '#FFF9E8' : '#F8FAFD', color: '#0A2342' }}><div className="flex items-start justify-between gap-3"><div><h3 className="font-black" style={{ color: '#0A2342' }}>{enrolment.skills?.title || 'Learning skill'}</h3><p className="mt-1 text-xs" style={{ color: '#52657F' }}>{LEVEL_OPTIONS.find(([value]) => value === enrolment.starting_level)?.[1] || 'Starting level recorded'}</p></div>{isActive && <span className="rounded-full px-2.5 py-1 text-[11px] font-black" style={{ background: '#0A2342', color: '#fff' }}>Active today</span>}</div><button type="button" onClick={() => chooseActiveSkill(enrolment)} disabled={Boolean(activeSkillLoading)} className="mt-4 min-h-10 w-full rounded-xl border px-3 py-2 text-xs font-black" style={{ borderColor: isActive ? '#0A2342' : '#D4AF37', color: '#0A2342', background: isActive ? '#E6C85C' : '#fff', opacity: activeSkillLoading && activeSkillLoading !== enrolment.id ? .55 : 1 }}>{activeSkillLoading === enrolment.id ? 'Switching…' : (isActive ? 'Learning today' : 'Learn this today')}</button></article> })}</div> : <p className="mt-5 rounded-2xl p-4 text-sm" style={{ background: '#F8FAFD', color: '#6B7A99' }}>Add your first skill below. You will be asked how much you already understand before it is saved.</p>}
         </section>
 
         <section className="mb-8" aria-labelledby="published-tracks-title">
