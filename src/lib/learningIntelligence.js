@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { markActiveSkill } from './skillLibrary'
 
 async function callLearningRpc(name, args = {}) {
   const { data, error } = await supabase.rpc(name, args)
@@ -35,10 +36,7 @@ export async function getLearnerSkillEnrolments() {
   ])
   if (error) throw error
   if (preferenceError) throw preferenceError
-  return (data ?? []).map((enrolment) => ({
-    ...enrolment,
-    is_active: Boolean(preference?.active_skill_enrolment_id && enrolment.id === preference.active_skill_enrolment_id),
-  }))
+  return markActiveSkill(data ?? [], preference?.active_skill_enrolment_id)
 }
 
 export function startLearningEvidence(learningObjectVersionId) {

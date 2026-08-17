@@ -11,6 +11,7 @@ import {
   setActiveSkillEnrolment,
 } from '../lib/learningIntelligence'
 import { supabase } from '../lib/supabase'
+import { markActiveSkill, upsertActiveSkill } from '../lib/skillLibrary'
 
 const FALLBACK_TRACKS = [
   { title: 'Frontend Development', description: 'Build websites and interfaces people enjoy using.', emoji: '◈' },
@@ -129,7 +130,7 @@ export default function Tracks() {
           targetOutcome: goal,
           startingLevel: selectedLevel,
         })
-        setEnrolments((current) => [enrolment, ...current.filter((item) => item.id !== enrolment.id)].map((item) => ({ ...item, is_active: item.id === enrolment.id })))
+        setEnrolments((current) => upsertActiveSkill(current, enrolment))
         setLevelDialog(null)
         navigate(`/dashboard?skill-added=1&skill=${encodeURIComponent(published.skills.title)}`)
         return
@@ -153,7 +154,7 @@ export default function Tracks() {
           targetOutcome: goal,
           startingLevel: selectedLevel,
         })
-        setEnrolments((current) => [enrolment, ...current.filter((item) => item.id !== enrolment.id)].map((item) => ({ ...item, is_active: item.id === enrolment.id })))
+        setEnrolments((current) => upsertActiveSkill(current, enrolment))
         setLevelDialog(null)
         navigate(`/dashboard?skill-added=1&skill=${encodeURIComponent(discovered.skill.title || cleanSkill)}`)
       } else {
@@ -172,7 +173,7 @@ export default function Tracks() {
     setError('')
     try {
       await setActiveSkillEnrolment(enrolment.id)
-      setEnrolments((current) => current.map((item) => ({ ...item, is_active: item.id === enrolment.id })))
+      setEnrolments((current) => markActiveSkill(current, enrolment.id))
       setStatus({ type: 'success', text: `${enrolment.skills?.title || 'Skill'} is now your active skill for today.` })
     } catch {
       setError('We could not switch your active skill right now. Your current learning path is unchanged.')
