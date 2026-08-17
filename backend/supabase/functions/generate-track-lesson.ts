@@ -36,7 +36,20 @@ Deno.serve(async (req) => {
     }
 
     const { skill, phaseNumber, lessonIndex, topic, phaseTitle } = await req.json()
-    const cacheKey = `${phaseNumber}-${lessonIndex}`
+    const { data: learnerPreferences } = await supabaseClient
+      .from('learner_preferences')
+      .select('age_band, explanation_style, preferred_modalities, weekly_minutes')
+      .eq('learner_id', userId)
+      .maybeSingle()
+    const ageBand = learnerPreferences?.age_band || '13_plus'
+    const explanationStyle = learnerPreferences?.explanation_style || 'clear and practical'
+    const ageGuidance = {
+      under_6: 'Use one idea at a time, very short sentences, concrete everyday objects, playful repetition, and no career or personal-data language.',
+      '6_12': 'Use clear child-friendly language, short sections, concrete examples, encouraging feedback, and no adult employment pressure or personal-data requests.',
+      '13_plus': 'Use accessible language with gradual technical depth, relatable examples, and respectful learner autonomy.',
+      adult: 'Use professional but clear language, realistic workplace examples, and practical trade-offs without assuming prior expertise.',
+    }[ageBand] || 'Use accessible language, concrete examples, and gradual technical depth.'
+    const cacheKey = `${phaseNumber}-${lessonIndex}-${ageBand}-${explanationStyle}`
 
     const serviceUrl = Deno.env.get('SUPABASE_URL')
     const serviceKey = Deno.env.get('SERVICE_ROLE_KEY')
@@ -95,15 +108,21 @@ Deno.serve(async (req) => {
       })
     }
 
-    const prompt = `You are an elite Data Analysis instructor and mentor. Your teaching style is beginner-friendly, practical, interactive, and professional-level. Assume the learner knows nothing beyond what is stated below, and never skip prerequisites.
+    const prompt = `You are an expert DataKwest learning designer and mentor teaching the learner's selected skill: ${skill}. Your teaching style is beginner-friendly, practical, interactive, and accurate. Assume the learner knows nothing beyond what is stated below, and never skip prerequisites.
 
 For this lesson you must:
 1. Explain the concept simply first, then add technical depth
 2. Give one real-world example from an industry context
 3. Give one short practical exercise the learner can try immediately
-4. Test mastery with 10 to 15 multiple choice questions covering different angles and difficulty levels
+4. Test understanding with age-appropriate multiple choice questions covering different angles and difficulty levels
 
-This is ONE bite-sized micro-lesson. Keep the explanation focused and do not overwhelm. This lesson is part of a standalone, non-personalized "${skill}: Beginner to Advanced" track — write for a general motivated beginner, not any specific learner's background.
+This is ONE bite-sized micro-lesson for the learner's selected skill, not a generic Data Analysis lesson. Keep the explanation focused and do not overwhelm. Adapt the vocabulary, examples, pacing, and question count to the learner profile below.
+
+Learner age band: ${ageBand}
+Learner explanation preference: ${explanationStyle}
+Preferred modalities: ${JSON.stringify(learnerPreferences?.preferred_modalities || [])}
+Weekly learning time: ${learnerPreferences?.weekly_minutes || 'not provided'} minutes
+Age guidance: ${ageGuidance}
 
 Phase: ${phaseTitle}
 Lesson topic: ${topic}
@@ -119,7 +138,7 @@ Additionally, create a visual diagram to accompany this lesson when it would gen
 - "comparison": 2 to 4 items being contrasted side by side
 - "none": skip the diagram if this topic doesn't naturally fit a flow or comparison structure
 
-IMPORTANT — Hands-on practice task: Include a "practiceTask" if this lesson topic is specifically about writing SQL queries, writing Python code, or writing Excel formulas/using Excel features. Determine which:
+IMPORTANT — Hands-on practice task: Include a "practiceTask" only when the learner can complete a safe, self-contained task with the supported evaluator. For SQL, Python, or Excel topics, include one when appropriate. For every other skill, set "practiceTask" to null unless a deterministic evaluator is available:
 
 - If this lesson is about writing SQL queries: set "practiceType" to "sql". Give a small realistic table schema with sample rows, and a concrete task.
 - If this lesson's skill is "python", default to creating a hands-on coding practiceTask. Set "practiceType" to "python". Use pandas only if this lesson's phase has already taught pandas; otherwise stick to plain Python.
@@ -128,11 +147,11 @@ IMPORTANT — Hands-on practice task: Include a "practiceTask" if this lesson to
 
 In all cases, "expectedOutcome" should clearly describe what a correct solution should achieve — used for grading, never shown to the learner. The task must be small enough for a beginner to complete in 3 to 7 minutes.
 
-This lesson also belongs to exactly one of these skill categories: excel, sql, python, statistics, powerBI, dataViz, or none.
+The returned "skill" must be the learner's selected skill, normalized as a short lowercase label. Do not force an unsupported skill into an unrelated category. Use "practiceType": "sql", "python", or "excel" only when the task truly matches that evaluator; otherwise set "practiceTask" to null.
 
 Return ONLY valid JSON (no markdown, no backticks, no extra text) in this exact structure:
 {
-  "skill": "one of: excel, sql, python, statistics, powerBI, dataViz, none",
+      "skill": "the learner's selected skill as a short lowercase label",
   "explanation": "well-structured explanation using short paragraphs separated by newlines.",
   "keyPoints": ["point 1", "point 2", "point 3", "point 4", "point 5"],
   "example": "one detailed, concrete, real-world industry example illustrating the concept",
@@ -165,7 +184,7 @@ Return ONLY valid JSON (no markdown, no backticks, no extra text) in this exact 
 
 If diagram type is "none", set "title" to an empty string and "items" to an empty array.
 
-Rules for checkQuestions: include exactly 10 to 15 questions, basic recall progressing to applied/analytical, each testing a different aspect, plausible wrong answers, varied correctIndex positions, last 3 slightly harder.`
+Rules for checkQuestions: choose a developmentally appropriate number of questions: 6 to 8 for under_6, 8 to 10 for 6_12, 10 to 15 for 13_plus, and 12 to 18 for adult. Start with recall, progress to application, use plausible wrong answers, vary correctIndex positions, and make the final questions slightly harder while keeping them fair.`
 
     let data
     for (const apiKey of apiKeys) {

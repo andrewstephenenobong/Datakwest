@@ -6,15 +6,15 @@ import { logEvent } from '../lib/analytics'
 import { sendTutorMessage } from '../lib/tutor'
 
 const MODES = [
-  { id: 'tutor', label: 'Explain', prompt: 'Explain a concept clearly' },
-  { id: 'hint', label: 'Give me a hint', prompt: 'Give me a hint without solving it for me' },
-  { id: 'practice', label: 'Practice me', prompt: 'Give me a short practice question' },
-  { id: 'review', label: 'Review my work', prompt: 'Review my answer and tell me what to improve' },
+  { id: 'tutor', serverMode: 'tutor', label: 'Explain', prompt: 'Explain a concept clearly' },
+  { id: 'hint', serverMode: 'tutor', label: 'Give me a hint', prompt: 'Give me a hint without solving it for me' },
+  { id: 'practice', serverMode: 'practice', label: 'Practice me', prompt: 'Give me a short practice question' },
+  { id: 'review', serverMode: 'project_reviewer', label: 'Review my work', prompt: 'Review my answer and tell me what to improve' },
 ]
 
 function normaliseSources(response) {
-  const sources = response?.sources || response?.citations || []
-  return Array.isArray(sources) ? sources.filter((source) => source?.title || source?.url) : []
+  const sources = response?.sources || response?.citations || response?.grounding || []
+  return Array.isArray(sources) ? sources.filter((source) => source?.title || source?.url || source?.claim) : []
 }
 
 function renderTutorText(text) {
@@ -72,13 +72,14 @@ export default function Tutor() {
 
     setSending(true)
     setError('')
+    const modeConfig = MODES.find((item) => item.id === nextMode) || MODES[0]
     setLastRequest({ message: trimmedMessage, mode: nextMode })
     setMessages((current) => [...current, { role: 'user', text: trimmedMessage, mode: nextMode }])
     setMessage('')
 
     const { response, error: requestError } = await sendTutorMessage({
       message: trimmedMessage,
-      mode: nextMode,
+      mode: modeConfig.serverMode,
       conversationId,
     })
 
@@ -192,8 +193,8 @@ export default function Tutor() {
                       </div>
                       <div className="mt-2 text-sm leading-7">{renderTutorText(item.text)}</div>
                       {item.role === 'assistant' && item.confidence != null && <p className="mt-3 text-xs font-semibold" style={{ color: '#8290A5' }}>Response confidence: {Math.round(Number(item.confidence) * 100)}%. Verify important decisions with the cited evidence.</p>}
-                      {item.role === 'assistant' && item.sources.length > 0 && <details className="mt-4 rounded-xl p-3" style={{ background: '#F4F7FB' }}><summary className="cursor-pointer text-xs font-black" style={{ color: '#2456A6' }}>Sources and learning evidence</summary><ul className="mt-2 space-y-2">{item.sources.map((source, sourceIndex) => <li key={`${source.url || source.title}-${sourceIndex}`}><a href={source.url} target="_blank" rel="noreferrer" className="text-xs font-semibold underline" style={{ color: '#416181' }}>{source.title || source.url}</a></li>)}</ul></details>}
-                      {item.role === 'assistant' && item.nextAction?.label && <div className="mt-4 rounded-xl p-3" style={{ background: '#FFF9E8' }}><p className="text-[11px] font-black uppercase tracking-wide" style={{ color: '#967414' }}>Next best action</p><p className="mt-1 text-sm font-bold" style={{ color: '#0A2342' }}>{item.nextAction.label}</p>{item.nextAction.reason && <p className="mt-1 text-xs leading-5" style={{ color: '#6B7A99' }}>{item.nextAction.reason}</p>}<Link to="/practice" className="mt-3 inline-flex text-xs font-bold" style={{ color: '#2456A6' }}>Turn this into practice →</Link></div>}
+                      {item.role === 'assistant' && item.sources.length > 0 && <details className="mt-4 rounded-xl p-3" style={{ background: '#F4F7FB' }}><summary className="cursor-pointer text-xs font-black" style={{ color: '#2456A6' }}>Sources and learning evidence</summary><ul className="mt-2 space-y-2">{item.sources.map((source, sourceIndex) => <li key={`${source.url || source.title}-${sourceIndex}`}>{source.url ? <a href={source.url} target="_blank" rel="noreferrer" className="text-xs font-semibold underline" style={{ color: '#416181' }}>{source.title || source.url}</a> : <span className="text-xs font-semibold" style={{ color: '#416181' }}>{source.title || source.claim}</span>}{source.claim && <p className="mt-1 text-xs leading-5" style={{ color: '#6B7A99' }}>{source.claim}</p>}</li>)}</ul></details>}
+                      {item.role === 'assistant' && item.evidenceRequest?.requested && <div className="mt-4 rounded-xl p-3" style={{ background: '#EEF6F1' }}><p className="text-[11px] font-black uppercase tracking-wide" style={{ color: '#2D8A5A' }}>Evidence request</p><p className="mt-1 text-sm font-bold" style={{ color: '#0A2342' }}>{item.evidenceRequest.instruction || 'Show what you can do with this idea.'}</p>{item.evidenceRequest.kind && <p className="mt-1 text-xs" style={{ color: '#6B7A99' }}>Evidence type: {item.evidenceRequest.kind}</p>}</div>}{item.role === 'assistant' && item.nextAction?.label && <div className="mt-4 rounded-xl p-3" style={{ background: '#FFF9E8' }}><p className="text-[11px] font-black uppercase tracking-wide" style={{ color: '#967414' }}>Next best action</p><p className="mt-1 text-sm font-bold" style={{ color: '#0A2342' }}>{item.nextAction.label}</p>{item.nextAction.reason && <p className="mt-1 text-xs leading-5" style={{ color: '#6B7A99' }}>{item.nextAction.reason}</p>}<Link to="/practice" className="mt-3 inline-flex text-xs font-bold" style={{ color: '#2456A6' }}>Turn this into practice →</Link></div>}
                     </article>
                   ))}
                   {sending && <div className="flex items-center gap-3 rounded-2xl border bg-white p-4 text-sm" style={{ borderColor: '#E2EAF3', color: '#6B7A99' }}><img src="/datakwest-owl-3d.webp" alt="" aria-hidden="true" className="h-8 w-8 object-contain" />The owl is thinking through your path…</div>}
