@@ -6,14 +6,29 @@ async function callLearningRpc(name, args = {}) {
   return data
 }
 
-export function createSkillEnrolment({ skillId, skillGraphVersionId = null, locale = 'en', weeklyMinutes = null, targetOutcome = '' }) {
+export function createSkillEnrolment({ skillId, skillGraphVersionId = null, locale = 'en', weeklyMinutes = null, targetOutcome = '', startingLevel = 'beginner' }) {
   return callLearningRpc('create_skill_enrolment', {
     p_skill_id: skillId,
     p_skill_graph_version_id: skillGraphVersionId,
     p_locale: locale,
     p_weekly_minutes: weeklyMinutes,
     p_target_outcome: targetOutcome,
+    p_starting_level: startingLevel,
   })
+}
+
+export function setActiveSkillEnrolment(enrolmentId) {
+  return callLearningRpc('set_active_skill_enrolment', { p_enrolment_id: enrolmentId })
+}
+
+export async function getLearnerSkillEnrolments() {
+  const { data, error } = await supabase
+    .from('learner_skill_enrolments')
+    .select('id, skill_id, skill_graph_version_id, status, target_outcome, weekly_minutes, starting_level, updated_at, skills(id, slug, title, description)')
+    .eq('status', 'active')
+    .order('updated_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
 }
 
 export function startLearningEvidence(learningObjectVersionId) {

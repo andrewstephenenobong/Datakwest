@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
 import {
@@ -7,6 +6,8 @@ import {
   discoverUniversalSkill,
   findPublishedSkillForTarget,
   getPublishedSkillCatalogue,
+  getLearnerSkillEnrolments,
+  setActiveSkillEnrolment,
 } from '../lib/learningIntelligence'
 import { supabase } from '../lib/supabase'
 
@@ -22,7 +23,14 @@ const FALLBACK_TRACKS = [
 const weeklyOptions = [
   ['5–10 hrs/week', 450],
   ['10–20 hrs/week', 900],
-  ['20+ hrs/week', 1800],
+  ['20+ hrs/week (full-time)', 1800],
+]
+
+const LEVEL_OPTIONS = [
+  ['beginner', 'I’m completely new', 'Start with foundations and gentle explanations.'],
+  ['familiar', 'I know the basics', 'Skip obvious definitions and build confidence with guided practice.'],
+  ['intermediate', 'I can use it already', 'Start with applied problems, gaps, and stronger project work.'],
+  ['advanced', 'I’m quite experienced', 'Focus on deeper trade-offs, advanced practice, and portfolio proof.'],
 ]
 
 function formatSkill(entry) {
@@ -38,10 +46,13 @@ function formatSkill(entry) {
 
 export default function Tracks() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [catalogue, setCatalogue] = useState([])
+  const [enrolments, setEnrolments] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingSkill, setLoadingSkill] = useState(null)
+  const [levelDialog, setLevelDialog] = useState(null)
+  const [startingLevel, setStartingLevel] = useState('beginner')
+  const [activeSkillLoading, setActiveSkillLoading] = useState(null)
   const [error, setError] = useState('')
   const [requestedSkill, setRequestedSkill] = useState('')
   const [weeklyLabel, setWeeklyLabel] = useState(weeklyOptions[0][0])
@@ -50,6 +61,14 @@ export default function Tracks() {
 
   useEffect(() => {
     let active = true
+    async function loadEnrolments() {
+      try {
+        const rows = await getLearnerSkillEnrolments()
+        if (active) setEnrolments(rows)
+      } catch (enrolmentError) {
+        console.warn('Skill library unavailable:', enrolmentError)
+      }
+    }
     async function loadCatalogue() {
       try {
         const entries = await getPublishedSkillCatalogue({ locale: 'en', limit: 24 })
@@ -61,6 +80,7 @@ export default function Tracks() {
       }
     }
     loadCatalogue()
+    loadEnrolments()
     return () => { active = false }
   }, [])
 
@@ -80,7 +100,16 @@ export default function Tracks() {
     return { targetAgeMin: range?.[0] || null, targetAgeMax: range?.[1] || null }
   }
 
-  async function enrolInSkill(targetSkill) {
+  function beginEnrolment(targetSkill) {
+    const cleanSkill = String(targetSkill || '').trim()
+    if (!cleanSkill) return
+    setStartingLevel('beginner')
+    setLevelDialog(cleanSkill)
+    setError('')
+    setStatus(null)
+  }
+
+  async function enrolInSkill(targetSkill, selectedLevel = startingLevel) {
     const cleanSkill = String(targetSkill || '').trim()
     if (!cleanSkill) return
     setLoadingSkill(cleanSkill)
@@ -90,15 +119,17 @@ export default function Tracks() {
       const weeklyMinutes = weeklyOptions.find(([label]) => label === weeklyLabel)?.[1] || 450
       const published = await findPublishedSkillForTarget(cleanSkill)
       if (published?.skills?.id && published.id) {
-        await createSkillEnrolment({
+        const enrolment = await createSkillEnrolment({
           skillId: published.skills.id,
           skillGraphVersionId: published.id,
           locale: 'en',
           weeklyMinutes,
           targetOutcome: goal,
+          startingLevel: selectedLevel,
         })
-        setStatus({ type: 'success', text: `${published.skills.title} was added to your learning space.` })
-        setTimeout(() => navigate('/dashboard?skill-added=1'), 500)
+        setEnrolments((current) => [enrolment, ...current.filter((item) => item.id !== enrolment.id)])
+        setLevelDialog(null)
+        setStatus({ type: 'success', text: `${published.skills.title} was added. It is now your active skill for today.` })
         return
       }
 
@@ -106,21 +137,23 @@ export default function Tracks() {
       const discovered = await discoverUniversalSkill({
         requestedSkill: cleanSkill,
         goal,
-        currentLevel: 'beginner',
+        currentLevel: selectedLevel,
         weeklyMinutes,
         locale: 'en',
         ...ageScope,
       })
       if ((discovered.status === 'published' || discovered.resolution === 'existing') && discovered.skill?.id && discovered.skillGraphVersionId) {
-        await createSkillEnrolment({
+        const enrolment = await createSkillEnrolment({
           skillId: discovered.skill.id,
           skillGraphVersionId: discovered.skillGraphVersionId,
           locale: 'en',
           weeklyMinutes,
           targetOutcome: goal,
+          startingLevel: selectedLevel,
         })
-        setStatus({ type: 'success', text: `${discovered.skill.title || cleanSkill} was added to your learning space.` })
-        setTimeout(() => navigate('/dashboard?skill-added=1'), 500)
+        setEnrolments((current) => [enrolment, ...current.filter((item) => item.id !== enrolment.id)])
+        setLevelDialog(null)
+        setStatus({ type: 'success', text: `${discovered.skill.title || cleanSkill} was added. It is now your active skill for today.` })
       } else {
         setStatus({ type: 'review', text: `${cleanSkill} was received. DataKwest is preparing a safe provisional path for review before it becomes an active learning track.` })
       }
@@ -129,6 +162,20 @@ export default function Tracks() {
       setError(err?.message || 'We could not add that skill right now. Please try again.')
     } finally {
       setLoadingSkill(null)
+    }
+  }
+
+  async function chooseActiveSkill(enrolment) {
+    setActiveSkillLoading(enrolment.id)
+    setError('')
+    try {
+      await setActiveSkillEnrolment(enrolment.id)
+      setEnrolments((current) => current.map((item) => ({ ...item, is_active: item.id === enrolment.id })))
+      setStatus({ type: 'success', text: `${enrolment.skills?.title || 'Skill'} is now your active skill for today.` })
+    } catch {
+      setError('We could not switch your active skill right now. Your current learning path is unchanged.')
+    } finally {
+      setActiveSkillLoading(null)
     }
   }
 
@@ -148,6 +195,11 @@ export default function Tracks() {
         {error && <div role="alert" className="mb-5 rounded-xl p-4 text-sm font-semibold" style={{ background: '#FEE2E2', color: '#991B1B' }}>{error}</div>}
         {status && <div role="status" className="mb-5 rounded-xl border p-4 text-sm font-semibold" style={{ background: status.type === 'success' ? '#E8F5E9' : '#FFF9E8', borderColor: status.type === 'success' ? '#9DD7B2' : '#E5D394', color: status.type === 'success' ? '#216E46' : '#856404' }}>{status.text}</div>}
 
+        <section className="mb-8 rounded-3xl border p-5 sm:p-7" style={{ background: '#fff', borderColor: '#DCE5F0', boxShadow: '0 8px 24px rgba(10,35,66,.05)' }} aria-labelledby="my-skills-title">
+          <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.18em]" style={{ color: '#D4AF37' }}>Your learning skills</p><h2 id="my-skills-title" className="mt-2 text-xl font-black" style={{ color: '#0A2342' }}>Choose what you want to learn today.</h2><p className="mt-2 text-sm" style={{ color: '#6B7A99' }}>Your library keeps every path. Switching the active skill changes the next lessons and missions without deleting your progress.</p></div><span className="text-xs font-bold" style={{ color: '#6B7A99' }}>{enrolments.length} saved</span></div>
+          {enrolments.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2">{enrolments.map((enrolment, index) => <article key={enrolment.id} className="rounded-2xl border p-4" style={{ borderColor: enrolment.is_active || index === 0 ? '#D4AF37' : '#DCE5F0', background: enrolment.is_active || index === 0 ? '#FFF9E8' : '#F8FAFD' }}><div className="flex items-start justify-between gap-3"><div><h3 className="font-black" style={{ color: '#0A2342' }}>{enrolment.skills?.title || 'Learning skill'}</h3><p className="mt-1 text-xs" style={{ color: '#6B7A99' }}>{LEVEL_OPTIONS.find(([value]) => value === enrolment.starting_level)?.[1] || 'Starting level recorded'}</p></div>{(enrolment.is_active || index === 0) && <span className="rounded-full px-2.5 py-1 text-[11px] font-black" style={{ background: '#0A2342', color: '#fff' }}>Active today</span>}</div><button type="button" onClick={() => chooseActiveSkill(enrolment)} disabled={Boolean(activeSkillLoading)} className="mt-4 min-h-10 w-full rounded-xl border px-3 py-2 text-xs font-black" style={{ borderColor: '#D4AF37', color: '#856404', background: '#fff', opacity: activeSkillLoading && activeSkillLoading !== enrolment.id ? .55 : 1 }}>{activeSkillLoading === enrolment.id ? 'Switching…' : (enrolment.is_active || index === 0 ? 'Learning today' : 'Learn this today')}</button></article>)}</div> : <p className="mt-5 rounded-2xl p-4 text-sm" style={{ background: '#F8FAFD', color: '#6B7A99' }}>Add your first skill below. You will be asked how much you already understand before it is saved.</p>}
+        </section>
+
         <section className="mb-8" aria-labelledby="published-tracks-title">
           <div className="mb-4 flex items-center justify-between gap-3"><h2 id="published-tracks-title" className="text-xl font-black" style={{ color: '#0A2342' }}>Explore learning paths</h2><span className="text-xs font-bold" style={{ color: '#6B7A99' }}>{loading ? 'Loading paths…' : `${visibleTracks.length} paths`}</span></div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -156,7 +208,7 @@ export default function Tracks() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-black" style={{ background: '#0A2342', color: '#E6C85C' }}>{track.emoji}</div>
                 <h3 className="text-base font-black" style={{ color: '#0A2342' }}>{track.title}</h3>
                 <p className="mt-2 min-h-12 text-sm leading-5" style={{ color: '#6B7A99' }}>{track.description}</p>
-                <button type="button" onClick={() => enrolInSkill(track.title)} disabled={Boolean(loadingSkill)} className="mt-5 min-h-11 w-full rounded-xl border px-4 py-3 text-sm font-black" style={{ borderColor: '#D4AF37', color: '#856404', background: '#FFF9E8', opacity: loadingSkill && loadingSkill !== track.title ? .55 : 1 }}>{loadingSkill === track.title ? 'Adding…' : 'Add this skill'}</button>
+                <button type="button" onClick={() => beginEnrolment(track.title)} disabled={Boolean(loadingSkill)} className="mt-5 min-h-11 w-full rounded-xl border px-4 py-3 text-sm font-black" style={{ borderColor: '#D4AF37', color: '#856404', background: '#FFF9E8', opacity: loadingSkill && loadingSkill !== track.title ? .55 : 1 }}>{loadingSkill === track.title ? 'Adding…' : 'Add this skill'}</button>
               </article>
             ))}
           </div>
@@ -170,7 +222,7 @@ export default function Tracks() {
               <p className="mt-3 text-sm leading-6" style={{ color: 'rgba(255,255,255,.74)' }}>Tell DataKwest what you want to learn. The Owl will map the foundations, explain the beginner direction, and prepare a provisional path without pretending that an unreviewed AI graph is an authoritative course.</p>
               <p className="mt-4 text-xs font-semibold" style={{ color: 'rgba(255,255,255,.58)' }}>Your age band and learning pace are used to adjust language, lesson length, examples, and practice expectations.</p>
             </div>
-            <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); enrolInSkill(requestedSkill) }}>
+              <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); beginEnrolment(requestedSkill) }}>
               <label className="grid gap-2 text-sm font-bold text-white">Skill or subject<input value={requestedSkill} onChange={(event) => setRequestedSkill(event.target.value)} maxLength={160} required placeholder="e.g. Digital Photography" className="min-h-12 rounded-xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: 'rgba(255,255,255,.22)', background: 'rgba(255,255,255,.1)', color: '#fff' }} /></label>
               <label className="grid gap-2 text-sm font-bold text-white">How much time can you give it?<select value={weeklyLabel} onChange={(event) => setWeeklyLabel(event.target.value)} className="min-h-12 rounded-xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: 'rgba(255,255,255,.22)', background: '#14252A', color: '#fff' }}>{weeklyOptions.map(([label]) => <option key={label}>{label}</option>)}</select></label>
               <label className="grid gap-2 text-sm font-bold text-white">What would success look like?<textarea value={goal} onChange={(event) => setGoal(event.target.value)} maxLength={1000} rows={3} className="rounded-xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: 'rgba(255,255,255,.22)', background: 'rgba(255,255,255,.1)', color: '#fff' }} /></label>
@@ -178,6 +230,7 @@ export default function Tracks() {
             </form>
           </div>
         </section>
+        {levelDialog && <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#06151bcc] p-4" role="dialog" aria-modal="true" aria-labelledby="skill-level-title"><div className="w-full max-w-lg rounded-3xl border p-6 sm:p-8" style={{ background: '#10252B', borderColor: 'rgba(230,200,92,.5)', boxShadow: '0 24px 80px rgba(0,0,0,.35)' }}><p className="text-xs font-black uppercase tracking-[.18em]" style={{ color: '#E6C85C' }}>Before we add it</p><h2 id="skill-level-title" className="mt-3 text-2xl font-black text-white">How well do you understand {levelDialog} already?</h2><p className="mt-2 text-sm leading-6" style={{ color: 'rgba(255,255,255,.72)' }}>This helps the Owl choose the right starting point. You can change your active skill later without losing progress.</p><div className="mt-5 grid gap-3">{LEVEL_OPTIONS.map(([value, label, description]) => <label key={value} className="flex cursor-pointer items-start gap-3 rounded-2xl border p-4" style={{ borderColor: startingLevel === value ? '#E6C85C' : 'rgba(255,255,255,.16)', background: startingLevel === value ? 'rgba(230,200,92,.14)' : 'rgba(255,255,255,.05)' }}><input type="radio" name="starting-level" value={value} checked={startingLevel === value} onChange={() => setStartingLevel(value)} className="mt-1" /><span><strong className="block text-sm text-white">{label}</strong><span className="mt-1 block text-xs" style={{ color: 'rgba(255,255,255,.68)' }}>{description}</span></span></label>)}</div><div className="mt-6 flex flex-wrap justify-end gap-3"><button type="button" onClick={() => setLevelDialog(null)} className="min-h-11 rounded-xl border px-4 py-3 text-sm font-black text-white" style={{ borderColor: 'rgba(255,255,255,.2)', background: 'transparent' }}>Cancel</button><button type="button" onClick={() => enrolInSkill(levelDialog)} disabled={Boolean(loadingSkill)} className="min-h-11 rounded-xl px-4 py-3 text-sm font-black" style={{ background: '#E6C85C', color: '#10252B' }}>{loadingSkill ? 'Saving skill…' : 'Add and start learning'}</button></div></div></div>}
       </main>
     </div>
   )
