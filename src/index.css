@@ -2298,3 +2298,16 @@ html[data-theme='dark'] .lesson-content-card [style*="background: '#F0F4FF'"] {
     padding: 1.25rem;
   }
 }
+
+.lesson-back-link {
+  min-height: 44px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .lesson-back-link {
+    width: fit-content;
+    max-width: 100%;
+  }
+}
